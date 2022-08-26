@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33b762a7796d94449896cd40528add32, type: 3}
+  m_Name: FruitsData
+  m_EditorClassIdentifier: 
+  questions:
+  - questionchord: Dominant7
+    answer: cherry
+    answer2: 0000000004000000070000000a000000
+  - questionchord: Major7
+    answer: lemon
+    answer2: 0000000004000000070000000b000000
+  - questionchord: Minor7
+    answer: pear
+    answer2: 0000000003000000070000000a000000
+  - questionchord: Major (maj)
+    answer: apple
+    answer2: 000000000400000007000000
+  - questionchord: Minor (min)
+    answer: banana
+    answer2: 000000000300000007000000
+  - questionchord: min7b5
+    answer: plum
+    answer2: 0000000003000000060000000a000000
