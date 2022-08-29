@@ -65,13 +65,15 @@ public class intervalbutton : Button
 
     public int notevalue;
     public int stringnum;  //guitar string
+    public int fretnum;
+
     public int isroot = 0; //flag for root note
 
     private Button buttonComponent;
 
     protected  override void Awake()
     {
-         buttonComponent = GetComponent<Button>();
+         buttonComponent = GetComponent<intervalbutton>();
          if (buttonComponent)
          {
              buttonComponent.onClick.AddListener(() => buttonselected());
@@ -80,7 +82,8 @@ public class intervalbutton : Button
         
         notevalue = notevalue_dict[this.transform.GetSiblingIndex()];
         intervalText.text = notevalue.ToString();
-        stringnum = this.transform.GetSiblingIndex();// 7;
+        stringnum = this.transform.GetSiblingIndex()/ 7; //the 6 strings are numbered from 0 to 5
+        fretnum = this.transform.GetSiblingIndex() % 7;  //the 7 frets are numbered from 0 to 6
         
 
     }
@@ -90,12 +93,30 @@ public class intervalbutton : Button
     private void buttonselected()
     {
         QuizManager.instance.SelectedButton(this);
+        Debug.Log(this.stringnum + "   " + this.fretnum);
+    }
+
+    protected override void DoStateTransition(Selectable.SelectionState state, bool instant)
+    {
+        
+        base.DoStateTransition(state, instant);
+        //base.Reset();
+        //this.gameObject.GetComponent<intervalbutton>().enabled = false;
+        //this.gameObject.GetComponent<intervalbutton>().enabled = true;
+
+        // this.gameObject.GetComponent<Button>().enabled = true;
+
+        //this.gameObject.SetActive(true);
+        //Debug.Log(this.currentSelectionState);
+        // Do what you need here.
     }
 
     public void DeselectButton()
     {
-       // base.DoStateTransition(SelectionState.Pressed, true);
-        // Do what you need here.
+        this.DoStateTransition(Selectable.SelectionState.Normal, false);
+        //base.DoStateTransition(Selectable.SelectionState.Pressed, true);
+
+        //Debug.Log(this.currentSelectionState);
     }
     /*public void SetWord2(int value)
     {

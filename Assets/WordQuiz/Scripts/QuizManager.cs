@@ -40,6 +40,7 @@ public class QuizManager : MonoBehaviour
     GameObject nullbutton;
     public intervalbutton[] intervalbuttons_;   //array of objects of class intervalbutton
     public intervalbutton currentrootnode; //stores an instance of the current Root button
+    public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
@@ -82,7 +83,7 @@ public class QuizManager : MonoBehaviour
 
 
         RegularButton = ColorBlock.defaultColorBlock;
-        RegularButton.normalColor = new Color(0, 0, 1, 1);
+        RegularButton.normalColor = new Color(0, 0, 1, 0);
         RegularButton.selectedColor = new Color(1, 1, 0, 1);
 
 
@@ -137,33 +138,42 @@ public class QuizManager : MonoBehaviour
         gameStatus = GameStatus.Playing;
 
        // nullbutton.GetComponent<Button>().Select();
-        int a = Random.Range(0, 41);
+        int a = Random.Range(0, 5);
         
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
+            // intervalbutton_.DeselectButton();
+            intervalbutton_.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
+           // intervalbutton_.DoState
             //Debug.Log("hi bitch");
-            if (intervalbutton_.transform.GetSiblingIndex() == a)
+            if (intervalbutton_.transform.GetSiblingIndex() == rootoptions[a])
             {
                 intervalbutton_.isroot = 1;
                 // ColorBlock colorBlock = new ColorBlock();
                 // colorBlock = ColorBlock.defaultColorBlock;
                 // colorBlock.normalColor = new Color(1,0,0,1);
 
-                intervalbutton_.GetComponent<Button>().colors = RootButton;
+                //intervalbutton_.GetComponent<intervalbutton>().colors = RootButton;
+                intervalbutton_.colors = RootButton;
                 currentrootnode = intervalbutton_;
                // intervalbutton_.GetComponent<Button>().interactable = false;
             }
             else
             {
                 intervalbutton_.isroot = 0;
-                intervalbutton_.GetComponent<Button>().colors = RegularButton;
-                intervalbutton_.DeselectButton();
+                //intervalbutton_.GetComponent<intervalbutton>().colors = RegularButton;
+                intervalbutton_.colors = RegularButton;
+               // intervalbutton_.DeselectButton();
+               
+                //intervalbutton_.DeselectButton();
+               // intervalbutton_.GetComponent<Button>().enabled = true;
                 //intervalbutton_.DoStateTransition
                // intervalbutton_.Do
 
             }
 
             //Debug.Log(intervalbutton_.isroot);
+            intervalbutton_.interactable = true;
         }
         intervalquestion_val =Random.Range(0, 11);
         intervalquestion_text = intervalname[intervalquestion_val];
@@ -266,7 +276,8 @@ public class QuizManager : MonoBehaviour
 
         if((value.notevalue - currentrootnode.notevalue)==intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
         {
-            value.GetComponent<Button>().colors = CorrectButton;
+            // value.GetComponent<intervalbutton>().colors = CorrectButton;
+            value.colors = CorrectButton;
             Debug.Log("Correct Answer");
             gameStatus = GameStatus.Next;
             Invoke("SetQuestion_intervals", 0.5f);

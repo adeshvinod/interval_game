@@ -9,10 +9,10 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - strings
   - Water
   - UI
-  - 
+  - gg
   - 
   - 
   - 
@@ -44,6 +44,9 @@ TagManager:
     locked: 0
   - name: fretboard
     uniqueID: 2712325591
+    locked: 0
+  - name: strings
+    uniqueID: 4026338379
     locked: 0
   - name: nodes
     uniqueID: 4167067249
