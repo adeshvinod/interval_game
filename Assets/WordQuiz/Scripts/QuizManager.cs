@@ -30,9 +30,11 @@ public class QuizManager : MonoBehaviour
     private bool correctAnswer = true;                      //bool to decide if answer is correct or not
     private int[] answerWord2;                           //string to store answer of current question, it has to be the right answer
 
+
     ColorBlock RootButton = new ColorBlock();
     ColorBlock CorrectButton = new ColorBlock();
     ColorBlock RegularButton = new ColorBlock();
+    ColorBlock debugButton = new ColorBlock(); //a temporary colour block to help with debugging 
 
     public string intervalquestion_text;
     public int intervalquestion_val;
@@ -41,6 +43,10 @@ public class QuizManager : MonoBehaviour
     public intervalbutton[] intervalbuttons_;   //array of objects of class intervalbutton
     public intervalbutton currentrootnode; //stores an instance of the current Root button
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
+    public GameObject[] strings;
+    private List<intervalbutton> possibleAnswers;
+
+    private int highlightedstring;
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
@@ -86,6 +92,11 @@ public class QuizManager : MonoBehaviour
         RegularButton.normalColor = new Color(0, 0, 1, 0);
         RegularButton.selectedColor = new Color(1, 1, 0, 1);
 
+        debugButton= ColorBlock.defaultColorBlock; ;
+        debugButton.normalColor = new Color(1, 1, 1, 1);
+
+        
+
 
 
         nullbutton = GameObject.Find("nullbutton");
@@ -94,10 +105,19 @@ public class QuizManager : MonoBehaviour
         //GameObject child = originalGameObject.transform.GetChild(0).gameObject;
 
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
-      
+
+        //GameObject originalstrings = GameObject.Find("strings");
+        // strings = originalstrings.gameObject.GetComponentInChildren<GameObject[]>();
+
+        strings = GameObject.FindGameObjectsWithTag("string");
+        //strings[2].SetActive(false);
+
+
+
 
 
           selectedWordsIndex = new List<int>();   //create a new list at start
+        possibleAnswers = new List<intervalbutton>();
                                                
         //shuffledquestions = new List<QuestionData>();
         //shuffledquestions = questionDataScriptable.questions.ToList<QuestionData>();
@@ -137,7 +157,21 @@ public class QuizManager : MonoBehaviour
     {
         gameStatus = GameStatus.Playing;
 
-       // nullbutton.GetComponent<Button>().Select();
+        // nullbutton.GetComponent<Button>().Select();
+        intervalquestion_val = Random.Range(0, 11);
+
+
+        intervalquestion_text = intervalname[intervalquestion_val];
+        //intervalquestion = "hi biiiittch";
+        questionChordFloating.text = intervalquestion_text;
+        //questionChordFloating.text = "Hi Bitch";
+        possibleAnswers.Clear();
+
+        foreach(GameObject string_ in strings)
+        {
+            string_.GetComponent<SpriteRenderer>().color=new Color(0f, 0f, 0.5f,1);
+        }
+
         int a = Random.Range(0, 5);
         
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
@@ -172,18 +206,26 @@ public class QuizManager : MonoBehaviour
 
             }
 
-            //Debug.Log(intervalbutton_.isroot);
-            intervalbutton_.interactable = true;
+            if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue )== (intervalquestion_val - 12))
+            {
+                possibleAnswers.Add(intervalbutton_);
+            }            
+            
+                //Debug.Log(intervalbutton_.isroot);
+                intervalbutton_.interactable = true;
         }
-        intervalquestion_val =Random.Range(0, 11);
-        intervalquestion_text = intervalname[intervalquestion_val];
-        //intervalquestion = "hi biiiittch";
-         questionChordFloating.text = intervalquestion_text;
-        //questionChordFloating.text = "Hi Bitch";
+
+        int b = Random.Range(0, possibleAnswers.Count - 1);
+        highlightedstring = possibleAnswers[b].stringnum;
+        
 
 
+    }
 
-
+    public void Update()
+    {
+        strings[highlightedstring].GetComponent<SpriteRenderer>().color =new Color((Mathf.Sin(Time.time*8)+1)/2,(Mathf.Sin(Time.time*8)+1)/2,0.5f,1f);
+        Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
     }
 
     //Method called on Reset Button click and on new question
@@ -274,13 +316,16 @@ public class QuizManager : MonoBehaviour
     {
         if (gameStatus == GameStatus.Next) return;
 
-        if((value.notevalue - currentrootnode.notevalue)==intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
+        if ((value.notevalue - currentrootnode.notevalue) == intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
         {
+            if (value.stringnum == highlightedstring)
+            { 
             // value.GetComponent<intervalbutton>().colors = CorrectButton;
             value.colors = CorrectButton;
             Debug.Log("Correct Answer");
             gameStatus = GameStatus.Next;
             Invoke("SetQuestion_intervals", 0.5f);
+            }
         }
 
 

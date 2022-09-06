@@ -93,7 +93,7 @@ public class intervalbutton : Button
     private void buttonselected()
     {
         QuizManager.instance.SelectedButton(this);
-        Debug.Log(this.stringnum + "   " + this.fretnum);
+        //Debug.Log(this.stringnum + "   " + this.fretnum);
     }
 
     protected override void DoStateTransition(Selectable.SelectionState state, bool instant)

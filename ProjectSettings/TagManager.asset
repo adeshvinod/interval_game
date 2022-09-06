@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - node_button
+  - string
   layers:
   - Default
   - TransparentFX
