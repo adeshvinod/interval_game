@@ -45,8 +45,15 @@ public class QuizManager : MonoBehaviour
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
     public GameObject[] strings;
     private List<intervalbutton> possibleAnswers;
-
     private int highlightedstring;
+
+    public int score=0;
+    public Text score_text;
+    public int lives = 3;
+    [SerializeField] public List<Image> lives_image;
+    public float timer=10;
+    private int time; //int form of time
+    [SerializeField]  public Text timer_text;
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
@@ -64,8 +71,8 @@ public class QuizManager : MonoBehaviour
             {11, "M7"},
           };
 
-    
-
+    public GameObject GameoverPanel;
+   
     private void Awake()
     {
         if (instance == null)
@@ -111,6 +118,8 @@ public class QuizManager : MonoBehaviour
 
         strings = GameObject.FindGameObjectsWithTag("string");
         //strings[2].SetActive(false);
+      // GameObject GameoverPanel = GameObject.Find("Gameover_panel");
+
 
 
 
@@ -126,7 +135,7 @@ public class QuizManager : MonoBehaviour
 
         //SetQuestion();                                  //set question
         SetQuestion_intervals();
-
+        timer = 10f;
 
 
 
@@ -224,8 +233,27 @@ public class QuizManager : MonoBehaviour
 
     public void Update()
     {
+        if(gameStatus== GameStatus.Playing)
+        {
+            timer -= Time.deltaTime;
+            time = (int) timer;
+            SetTimer(time);
+        }
+        else if(gameStatus == GameStatus.Next)
+        {
+            timer = 10f;
+        }
         strings[highlightedstring].GetComponent<SpriteRenderer>().color =new Color((Mathf.Sin(Time.time*8)+1)/2,(Mathf.Sin(Time.time*8)+1)/2,0.5f,1f);
         Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
+
+        if (time <= 0 || lives==0)
+            gameStatus = GameStatus.Gameover;
+
+        if(gameStatus==GameStatus.Gameover)
+        {
+            GameoverPanel.gameObject.SetActive(true);
+
+        }
     }
 
     //Method called on Reset Button click and on new question
@@ -312,21 +340,47 @@ public class QuizManager : MonoBehaviour
         }
     }
 
+    private void SetTimer(int value)
+    {
+        //TimeSpan time = TimeSpan.FromSeconds(value);
+        
+         timer_text.text = "Time:" + value.ToString();
+        //timer_text.text = "fffff";
+    }
+
     public void SelectedButton(intervalbutton value)
     {
         if (gameStatus == GameStatus.Next) return;
+        if (value.stringnum == highlightedstring)
 
-        if ((value.notevalue - currentrootnode.notevalue) == intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
         {
-            if (value.stringnum == highlightedstring)
-            { 
-            // value.GetComponent<intervalbutton>().colors = CorrectButton;
-            value.colors = CorrectButton;
-            Debug.Log("Correct Answer");
-            gameStatus = GameStatus.Next;
-            Invoke("SetQuestion_intervals", 0.5f);
+            if ((value.notevalue - currentrootnode.notevalue) == intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
+            {
+                // value.GetComponent<intervalbutton>().colors = CorrectButton;
+                value.colors = CorrectButton;
+                Debug.Log("Correct Answer");
+
+                if (time >= 7)
+                    score = score + 10;
+                else if (time > 0 && time < 7)
+                    score = score + 5;
+
+
+                score_text.text = score.ToString();
+                gameStatus = GameStatus.Next;
+                Invoke("SetQuestion_intervals", 4f);
             }
+            else
+            {
+                lives--;
+                lives_image[lives].gameObject.SetActive(false);
+            }
+
+
+
         }
+        else
+            return;
 
 
     }
@@ -359,5 +413,6 @@ public class QuestionData
 public enum GameStatus
 {
    Next,
-   Playing
+   Playing,
+   Gameover
 }
