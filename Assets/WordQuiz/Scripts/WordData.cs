@@ -59,7 +59,9 @@ public class WordData : MonoBehaviour
 
     private void WordSelected()
     {
-        QuizManager.instance.SelectedOption(this);
+        //QuizManager.instance.SelectedOption(this);
+
+        QuizManager.instance.SelectedOption_guessmode(this);
     }
     
 }
