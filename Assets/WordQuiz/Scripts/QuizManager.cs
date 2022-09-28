@@ -7,29 +7,32 @@ using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 
+
 //'WORDS' AND 'CHARACTERS' ARE USED INTERCHANGABLY IN THESE SCRIPT COMMENTS AND VARIABLEES
 
 public class QuizManager : MonoBehaviour
 {
+   
+
     public static QuizManager instance; //Instance to make is available in other scripts without reference
 
     [SerializeField] private GameObject gameComplete;
     //Scriptable data which store our questions data
-    [SerializeField] private QuizDataScriptable questionDataScriptable;
+   // [SerializeField] private QuizDataScriptable questionDataScriptable;
    // [SerializeField] private Image questionImage;           //image element to show the image
     [SerializeField] private Text questionChordFloating;
-    [SerializeField] private WordData[] answerWordList2;
+    //[SerializeField] private WordData[] answerWordList2;
     [SerializeField] private WordData[] optionsWordList;    //list of options word in the game
     private GameObject optionsWordList_parent;
 
     private GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status
     private QuestionMode questionMode = QuestionMode.PressTheInterval;
                                                        
-    private List<int> selectedWordsIndex;                   //list which keep track of option word index w.r.t answer word index
-    private List<QuestionData> shuffledquestions;
-    private int currentAnswerIndex = 0, currentQuestionIndex = 0;   //index to keep track of current answer and current question
-    private bool correctAnswer = true;                      //bool to decide if answer is correct or not
-    private int[] answerWord2;                           //string to store answer of current question, it has to be the right answer
+   // private List<int> selectedWordsIndex;                   //list which keep track of option word index w.r.t answer word index
+   // private List<QuestionData> shuffledquestions;
+    //private int currentAnswerIndex = 0, currentQuestionIndex = 0;   //index to keep track of current answer and current question
+   // private bool correctAnswer = true;                      //bool to decide if answer is correct or not
+  //  private int[] answerWord2;                           //string to store answer of current question, it has to be the right answer
 
 
     ColorBlock RootButton = new ColorBlock();
@@ -111,13 +114,9 @@ public class QuizManager : MonoBehaviour
 
         nullbutton = GameObject.Find("nullbutton");
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
-        //Debug.Log(originalGameObject.name);
-        //GameObject child = originalGameObject.transform.GetChild(0).gameObject;
+       
 
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
-
-        //GameObject originalstrings = GameObject.Find("strings");
-        // strings = originalstrings.gameObject.GetComponentInChildren<GameObject[]>();
 
         strings = GameObject.FindGameObjectsWithTag("string");
         optionsWordList_parent = GameObject.Find("option_buttons");
@@ -126,8 +125,7 @@ public class QuizManager : MonoBehaviour
         {
             optionsWordList[k].SetWord2(k);
         }
-        //strings[2].SetActive(false);
-        // GameObject GameoverPanel = GameObject.Find("Gameover_panel");
+    
 
         questionmode_counter = Random.Range(4, 8);
 
@@ -136,17 +134,8 @@ public class QuizManager : MonoBehaviour
 
 
 
-        selectedWordsIndex = new List<int>();   //create a new list at start
+        //selectedWordsIndex = new List<int>();   //create a new list at start
         possibleAnswers = new List<intervalbutton>();
-
-        //shuffledquestions = new List<QuestionData>();
-        //shuffledquestions = questionDataScriptable.questions.ToList<QuestionData>();
-        //shuffledquestions = ShuffleList.ShuffleListItems<QuestionData>(shuffledquestions);
-        // questionDataScriptable.questions = shuffledquestions;
-
-        //SetQuestion();                                  //set question
-        // SetQuestion_intervals();
-        //SetQuestion_intervals_guessmode();
         nextQuestion();
         timer = 10f;
 
@@ -154,41 +143,15 @@ public class QuizManager : MonoBehaviour
 
     }
 
-    
-
-    void SetQuestion()
-    {
-        gameStatus = GameStatus.Playing;                //set GameStatus to playing 
-
-        //set the answerWord string variable
-        answerWord2 = questionDataScriptable.questions[currentQuestionIndex].answer2;
-
-        //set the image of question
-        questionChordFloating.text= questionDataScriptable.questions[currentQuestionIndex].questionchord;
-        ResetQuestion();                               //reset the answers and options value to orignal     
-        
-        selectedWordsIndex.Clear();                     //clear the list for new question
-       
-        //set the options words Text value
-        for (int k = 0; k < optionsWordList.Length; k++)
-        {         
-           optionsWordList[k].SetWord2(k);         
-        }
-
-    }
-
+   
     void SetQuestion_intervals()
     {
         gameStatus = GameStatus.Playing;
-
-        // nullbutton.GetComponent<Button>().Select();
         intervalquestion_val = Random.Range(0, 11);
 
 
         intervalquestion_text = intervalname[intervalquestion_val];
-        //intervalquestion = "hi biiiittch";
-        questionChordFloating.text = intervalquestion_text;
-        //questionChordFloating.text = "Hi Bitch";
+        questionChordFloating.text = intervalquestion_text;  
         possibleAnswers.Clear();
 
         foreach(GameObject string_ in strings)
@@ -223,7 +186,7 @@ public class QuizManager : MonoBehaviour
                 possibleAnswers.Add(intervalbutton_);
             }            
             
-                //Debug.Log(intervalbutton_.isroot);
+              
                 intervalbutton_.interactable = true;
         }
 
@@ -237,14 +200,11 @@ public class QuizManager : MonoBehaviour
 
     void SetQuestion_intervals_guessmode()
     {
-        gameStatus = GameStatus.Playing;
-
-        // nullbutton.GetComponent<Button>().Select();
+        gameStatus = GameStatus.Playing;       
         intervalquestion_val = Random.Range(0, 11);
 
 
-        intervalquestion_text = intervalname[intervalquestion_val];
-        //intervalquestion = "hi biiiittch";
+        intervalquestion_text = intervalname[intervalquestion_val];    
         questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
@@ -277,12 +237,11 @@ public class QuizManager : MonoBehaviour
                 possibleAnswers.Add(intervalbutton_);
             }
 
-            //Debug.Log(intervalbutton_.isroot);
+           
             intervalbutton_.interactable = true;
         }
 
-        int b = Random.Range(0, possibleAnswers.Count - 1);
-        // highlightedstring = possibleAnswers[b].stringnum;
+        int b = Random.Range(0, possibleAnswers.Count - 1);   
         possibleAnswers[b].colors = CorrectButton;
         
 
@@ -306,7 +265,7 @@ public class QuizManager : MonoBehaviour
         if (questionMode == QuestionMode.PressTheInterval)
         {
             strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
-            Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
+           // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
         }
 
         if (time <= 0 || lives==0)
@@ -319,29 +278,7 @@ public class QuizManager : MonoBehaviour
         }
     }
 
-    //Method called on Reset Button click and on new question
-    public void ResetQuestion()
-    {
-        for (int i = 0; i < answerWordList2.Length; i++)
-        {
-            answerWordList2[i].gameObject.SetActive(true);
-            answerWordList2[i].SetWord2(-1);
-        }
-
-        //Now deactivate the unwanted answerWordList gameobject (object more than answer string length)
-        for (int i = answerWord2.Length; i < answerWordList2.Length; i++)
-        {
-            answerWordList2[i].gameObject.SetActive(false);
-        }
-
-        //activate all the optionsWordList objects
-        for (int i = 0; i < optionsWordList.Length; i++)
-        {
-            optionsWordList[i].gameObject.SetActive(true);
-        }
-        currentAnswerIndex = 0;
-    }
-
+    
     /// <summary>
     /// When we click on any options button this method is called
     /// </summary>
@@ -402,6 +339,64 @@ public class QuizManager : MonoBehaviour
 
     }
 
+    private void SetTimer(int value)
+    {           
+         timer_text.text = "Time:" + value.ToString();   
+    }
+
+    public void SelectedButton(intervalbutton value)
+    {
+        if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
+        if (value.stringnum == highlightedstring)
+
+        {
+            if ((value.notevalue - currentrootnode.notevalue) == intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
+            {
+               
+                value.colors = CorrectButton;
+                Debug.Log("Correct Answer");
+
+                if (time >= 7)
+                    score = score + 10;
+                else if (time > 0 && time < 7)
+                    score = score + 5;
+
+
+                score_text.text = score.ToString();
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 0.5f);
+            }
+            else
+            {
+                lives--;
+                lives_image[lives].gameObject.SetActive(false);
+            }
+
+
+
+        }
+        else
+            return;
+
+
+    }
+    /*
+    public void ResetLastWord()
+    {
+        if (selectedWordsIndex.Count > 0)
+        {
+            int index = selectedWordsIndex[selectedWordsIndex.Count - 1];
+            optionsWordList[index].gameObject.SetActive(true);
+            selectedWordsIndex.RemoveAt(selectedWordsIndex.Count - 1);
+            
+           
+            currentAnswerIndex--;
+            answerWordList2[currentAnswerIndex].SetWord2(-1);
+        }
+    }
+  */
+
+    /*
     public void SelectedOption(WordData value)
     {
         //if gameStatus is next or currentAnswerIndex is more or equal to answerWord length
@@ -458,71 +453,59 @@ public class QuizManager : MonoBehaviour
        
         }
     }
-
-    private void SetTimer(int value)
+*/
+    //Method called on Reset Button click and on new question
+    /*
+    public void ResetQuestion()
     {
-        //TimeSpan time = TimeSpan.FromSeconds(value);
-        
-         timer_text.text = "Time:" + value.ToString();
-        //timer_text.text = "fffff";
-    }
-
-    public void SelectedButton(intervalbutton value)
-    {
-        if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
-        if (value.stringnum == highlightedstring)
-
+        for (int i = 0; i < answerWordList2.Length; i++)
         {
-            if ((value.notevalue - currentrootnode.notevalue) == intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
-            {
-                // value.GetComponent<intervalbutton>().colors = CorrectButton;
-                value.colors = CorrectButton;
-                Debug.Log("Correct Answer");
-
-                if (time >= 7)
-                    score = score + 10;
-                else if (time > 0 && time < 7)
-                    score = score + 5;
-
-
-                score_text.text = score.ToString();
-                gameStatus = GameStatus.Next;
-                Invoke("nextQuestion", 0.5f);
-            }
-            else
-            {
-                lives--;
-                lives_image[lives].gameObject.SetActive(false);
-            }
-
-
-
+            answerWordList2[i].gameObject.SetActive(true);
+            answerWordList2[i].SetWord2(-1);
         }
-        else
-            return;
 
-
-    }
-    public void ResetLastWord()
-    {
-        if (selectedWordsIndex.Count > 0)
+        //Now deactivate the unwanted answerWordList gameobject (object more than answer string length)
+        for (int i = answerWord2.Length; i < answerWordList2.Length; i++)
         {
-            int index = selectedWordsIndex[selectedWordsIndex.Count - 1];
-            optionsWordList[index].gameObject.SetActive(true);
-            selectedWordsIndex.RemoveAt(selectedWordsIndex.Count - 1);
-            
-           
-            currentAnswerIndex--;
-            answerWordList2[currentAnswerIndex].SetWord2(-1);
+            answerWordList2[i].gameObject.SetActive(false);
         }
+
+        //activate all the optionsWordList objects
+        for (int i = 0; i < optionsWordList.Length; i++)
+        {
+            optionsWordList[i].gameObject.SetActive(true);
+        }
+        currentAnswerIndex = 0;
     }
 
+    */
+
+    /*
+
+   void SetQuestion()
+   {
+       gameStatus = GameStatus.Playing;                //set GameStatus to playing 
+       answerWord2 = questionDataScriptable.questions[currentQuestionIndex].answer2;
+
+       //set the image of question
+       questionChordFloating.text= questionDataScriptable.questions[currentQuestionIndex].questionchord;
+       ResetQuestion();                               //reset the answers and options value to orignal     
+
+       selectedWordsIndex.Clear();                     //clear the list for new question
+
+       //set the options words Text value
+       for (int k = 0; k < optionsWordList.Length; k++)
+       {         
+          optionsWordList[k].SetWord2(k);         
+       }
+
+   }
+   */
 }
 
 [System.Serializable]
 public class QuestionData
 {
-    //public Sprite questionImage;
     public string questionchord;
     public string answer;
 

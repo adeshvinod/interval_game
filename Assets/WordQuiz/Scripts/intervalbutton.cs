@@ -1,11 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+
 
 public class intervalbutton : Button
 {
     //[SerializeField] private Text wordText;
-    [SerializeField] private Text intervalText;
+    [SerializeField] public Text intervalText;
+    Scene scene; //this needs to be in game settings static instance
+
 
     //lets imagine the fretboard starts from the 5th fret of the guitar and accordingle assign notes to each button. the notes A to G# is indexed from 0 to 11
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
@@ -73,7 +77,8 @@ public class intervalbutton : Button
 
     protected  override void Awake()
     {
-         buttonComponent = GetComponent<intervalbutton>();
+       
+        buttonComponent = GetComponent<intervalbutton>();
          if (buttonComponent)
          {
              buttonComponent.onClick.AddListener(() => buttonselected());
@@ -92,8 +97,16 @@ public class intervalbutton : Button
 
     private void buttonselected()
     {
-        QuizManager.instance.SelectedButton(this);
-        //Debug.Log(this.stringnum + "   " + this.fretnum);
+       // Debug.Log("HIYA BITCH!");
+        scene = SceneManager.GetActiveScene();
+        if (scene.buildIndex == 0)
+            QuizManager.instance.SelectedButton(this);
+        else if (scene.buildIndex == 2)
+        {
+            //Debug.Log("HIYA BITCH! -1");
+            learnmode.instance.SelectedButton_learnmode(this);
+        }
+       // Debug.Log(this.stringnum + "   " + this.fretnum);
     }
 
     protected override void DoStateTransition(Selectable.SelectionState state, bool instant)

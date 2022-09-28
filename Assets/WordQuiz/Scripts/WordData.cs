@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class WordData : MonoBehaviour
 {
     [SerializeField] private Text wordText;
+    Scene scene; //this needs to be in game settings static instance
 
-   public Dictionary<int, string> intervalname = new Dictionary<int, string>()
+    public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
             {0, "R"},
             {1, "b2"},
@@ -60,8 +62,12 @@ public class WordData : MonoBehaviour
     private void WordSelected()
     {
         //QuizManager.instance.SelectedOption(this);
+        scene = SceneManager.GetActiveScene();
+        if (scene.buildIndex == 0)
+            QuizManager.instance.SelectedOption_guessmode(this);
+        else if(scene.buildIndex == 2)
+            learnmode.instance.SelectedOption_learnmode(this);
 
-        QuizManager.instance.SelectedOption_guessmode(this);
     }
     
 }
