@@ -22,10 +22,10 @@ public class QuizManager : MonoBehaviour
    // [SerializeField] private Image questionImage;           //image element to show the image
     [SerializeField] private Text questionChordFloating;
     //[SerializeField] private WordData[] answerWordList2;
-    [SerializeField] private WordData[] optionsWordList;    //list of options word in the game
-    private GameObject optionsWordList_parent;
+    [SerializeField] private interval_option[] optionintervalList;    //list of options word in the game
+    private GameObject optionintervalList_parent;
 
-    private GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status
+     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     private QuestionMode questionMode = QuestionMode.PressTheInterval;
                                                        
    // private List<int> selectedWordsIndex;                   //list which keep track of option word index w.r.t answer word index
@@ -44,7 +44,7 @@ public class QuizManager : MonoBehaviour
     public int intervalquestion_val;
     // var gameobjects:GameObject[] = GameObject.FindGameObjectsWithTag("node_button");
     GameObject nullbutton;
-    public intervalbutton[] intervalbuttons_;   //array of objects of class intervalbutton
+    public intervalbutton[] intervalbuttons_;   //array of all the interval buttons on fretboard
     public intervalbutton currentrootnode; //stores an instance of the current Root button
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
     public GameObject[] strings;
@@ -119,11 +119,11 @@ public class QuizManager : MonoBehaviour
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
 
         strings = GameObject.FindGameObjectsWithTag("string");
-        optionsWordList_parent = GameObject.Find("option_buttons");
-        optionsWordList = GameObject.Find("option_buttons").GetComponentsInChildren<WordData>();
-        for (int k = 0; k < optionsWordList.Length; k++)
+        optionintervalList_parent = GameObject.Find("option_buttons");
+        optionintervalList = GameObject.Find("option_buttons").GetComponentsInChildren<interval_option>();
+        for (int k = 0; k < optionintervalList.Length; k++)
         {
-            optionsWordList[k].SetWord2(k);
+            optionintervalList[k].SetValue(k);
         }
     
 
@@ -300,25 +300,51 @@ public class QuizManager : MonoBehaviour
 
         if(questionMode==QuestionMode.PressTheInterval)
         {
-            optionsWordList_parent.gameObject.SetActive(false);
+            optionintervalList_parent.gameObject.SetActive(false);
             SetQuestion_intervals();
             
             
         }
         else if(questionMode==QuestionMode.GuessTheInterval)
         {
-            optionsWordList_parent.gameObject.SetActive(true);
+            optionintervalList_parent.gameObject.SetActive(true);
             SetQuestion_intervals_guessmode();
 
         }
         
         questionmode_counter--;
     }
+    /*
     public void SelectedOption_guessmode(WordData value)
     {
         if (gameStatus == GameStatus.Next || questionMode==QuestionMode.PressTheInterval) return;
 
         if(value.wordValue2==intervalquestion_val)
+        {
+
+            if (time >= 7)
+                score = score + 10;
+            else if (time > 0 && time < 7)
+                score = score + 5;
+
+
+            score_text.text = score.ToString();
+            gameStatus = GameStatus.Next;
+            Invoke("nextQuestion", 0.5f);
+        }
+        else
+        {
+            lives--;
+            lives_image[lives].gameObject.SetActive(false);
+        }
+
+    }
+    */
+    public void SelectedOption_guessmode(interval_option value)
+    {
+        if (gameStatus == GameStatus.Next || questionMode == QuestionMode.PressTheInterval) return;
+
+        if (value.intervalValue == intervalquestion_val)
         {
 
             if (time >= 7)

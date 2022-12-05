@@ -10,14 +10,15 @@ public class learnmode : MonoBehaviour
     public static learnmode instance; //Instance to make is available in other scripts without reference
 
     public intervalbutton[] intervalbuttons_;   //array of objects of class intervalbutton
-    [SerializeField] private WordData[] optionsWordList;    //list of options word in the game
-    private GameObject optionsWordList_parent;
+    [SerializeField] private interval_option[] optionintervalList;    //list of options word in the game
+    private GameObject optionintervalList_parent;
     public intervalbutton currentrootnode; //stores an instance of the current Root button
     ColorBlock RootButton = new ColorBlock();
     ColorBlock RevealedButton = new ColorBlock();
     ColorBlock RegularButton = new ColorBlock();
 
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
+    public int root_options_index = 0;
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
@@ -58,20 +59,21 @@ public class learnmode : MonoBehaviour
 
         RegularButton = ColorBlock.defaultColorBlock;
         RegularButton.normalColor = new Color(0, 0, 1, 0);
+        RegularButton.selectedColor= new Color(0, 0, 1, 0);
 
 
 
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
 
-        optionsWordList_parent = GameObject.Find("option_buttons");
-        optionsWordList = GameObject.Find("option_buttons").GetComponentsInChildren<WordData>();
-        for (int k = 0; k < optionsWordList.Length; k++)
+        optionintervalList_parent = GameObject.Find("option_buttons");
+        optionintervalList = GameObject.Find("option_buttons").GetComponentsInChildren<interval_option>();
+        for (int k = 0; k < optionintervalList.Length; k++)
         {
-            optionsWordList[k].SetWord2(k);
+            optionintervalList[k].SetValue(k);
         }
 
-        setrootbutton(rootoptions[0]);
+        setrootbutton(rootoptions[root_options_index]);
     }
 
     void setrootbutton(int siblingindex_root)
@@ -79,13 +81,14 @@ public class learnmode : MonoBehaviour
         currentrootnode = intervalbuttons_[siblingindex_root];
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
-
+            intervalbutton_.isSelected = false;
             intervalbutton_.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
 
             if (intervalbutton_.transform.GetSiblingIndex() == siblingindex_root)
             {
                 intervalbutton_.isroot = 1;
                 intervalbutton_.colors = RootButton;
+                intervalbutton_.intervalText.text = intervalname[0];
                 // currentrootnode = intervalbutton_;
             }
             else
@@ -102,19 +105,46 @@ public class learnmode : MonoBehaviour
 
     }
 
+    public void shiftroot(int direction)
+    {
+        if(direction==1)
+        {
+            root_options_index = (root_options_index + 1)%6;
+            Debug.Log("Shifted up");
+        }
+        else if(direction==-1)
+        {
+            if (root_options_index > 0)
+                root_options_index = root_options_index - 1;
+            else
+                root_options_index = 5;
+        }
+        setrootbutton(rootoptions[root_options_index]);
+    }
     public void SelectedButton_learnmode(intervalbutton value)
     {
-        value.colors = RevealedButton;
+        StartCoroutine(Selectedinterval(value));
         Debug.Log("HIYA BITCH!");
     }
 
-    public void SelectedOption_learnmode(WordData value)
+    IEnumerator Selectedinterval(intervalbutton value)
+    {
+        value.colors = RevealedButton;
+        yield return new WaitForSeconds(3f);
+        value.colors = RegularButton;
+
+    }
+
+    public void SelectedOption_learnmode(interval_option value)
     {
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
-            if((intervalbutton_.notevalue-currentrootnode.notevalue==value.wordValue2)||(12-currentrootnode.notevalue+intervalbutton_.notevalue==value.wordValue2))
+            if((intervalbutton_.notevalue-currentrootnode.notevalue==value.intervalValue)||(12-currentrootnode.notevalue+intervalbutton_.notevalue==value.intervalValue))
             {
+               if(value.isSelected==true)
                 intervalbutton_.colors = RevealedButton;
+               else
+                intervalbutton_.colors = RegularButton;
             }
         }
     }

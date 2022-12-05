@@ -70,7 +70,7 @@ public class intervalbutton : Button
     public int notevalue;
     public int stringnum;  //guitar string
     public int fretnum;
-
+    public bool isSelected = false;
     public int isroot = 0; //flag for root note
 
     private Button buttonComponent;
@@ -97,7 +97,8 @@ public class intervalbutton : Button
 
     private void buttonselected()
     {
-       // Debug.Log("HIYA BITCH!");
+        // Debug.Log("HIYA BITCH!");
+        this.isSelected = !this.isSelected;
         scene = SceneManager.GetActiveScene();
         if (scene.buildIndex == 0)
             QuizManager.instance.SelectedButton(this);

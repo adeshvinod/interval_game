@@ -1,12 +1,11 @@
-﻿/*
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-public class WordData : MonoBehaviour
+public class interval_option : MonoBehaviour
 {
-    [SerializeField] private Text wordText;
+    [SerializeField] private Text interval_option_Text;
     Scene scene; //this needs to be in game settings static instance
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
@@ -19,57 +18,57 @@ public class WordData : MonoBehaviour
             {5, "P4"},
             {6, "b5"},
             {7, "P5"},
-            {8, "m6"}, 
-            {9, "M6"},  
+            {8, "m6"},
+            {9, "M6"},
             {10, "b7"},
             {11, "M7"},
           };
 
 
     [HideInInspector]
-    
-    public int wordValue2;
 
-   
+    public int intervalValue;
+    public bool isSelected = false;
+
 
     private Button buttonComponent;
 
     private void Awake()
     {
-         buttonComponent = GetComponent<Button>();
+        buttonComponent = GetComponent<Button>();
         if (buttonComponent)
         {
-            buttonComponent.onClick.AddListener(() => WordSelected());
+            buttonComponent.onClick.AddListener(() => optionSelected());
         }
-       
-     }
+
+    }
 
     private void Start()
     {
 
     }
-    public void SetWord2(int value)
+    public void SetValue(int value)
     {
-        if(value==-1)
-            wordText.text = "_";
+        if (value == -1)
+            interval_option_Text.text = "_";
         else
-            wordText.text = intervalname[value];
-        
-        wordValue2 = value;
+            interval_option_Text.text = intervalname[value];
 
-        
+        intervalValue = value;
+
+
     }
 
-    private void WordSelected()
+    private void optionSelected()
     {
+        this.isSelected = !this.isSelected;
         //QuizManager.instance.SelectedOption(this);
         scene = SceneManager.GetActiveScene();
         if (scene.buildIndex == 0)
             QuizManager.instance.SelectedOption_guessmode(this);
-        else if(scene.buildIndex == 2)
+        else if (scene.buildIndex == 2)
             learnmode.instance.SelectedOption_learnmode(this);
 
     }
-    
+
 }
-*/

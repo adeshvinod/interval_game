@@ -91,7 +91,7 @@ GameObject:
   - component: {fileID: 487587187283059543}
   - component: {fileID: 5779270484158367430}
   - component: {fileID: 704788484044140624}
-  - component: {fileID: 2134420910107803081}
+  - component: {fileID: 3338154686043529897}
   m_Layer: 5
   m_Name: option_Button 1
   m_TagString: Untagged
@@ -180,8 +180,8 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -201,7 +201,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2134420910107803081
+--- !u!114 &3338154686043529897
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -210,8 +210,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 6017078123531171511}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8702f098a62673243865b75d07d27f8c, type: 3}
+  m_Script: {fileID: 11500000, guid: c491f9e9a82394c46a316db92786f74f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wordText: {fileID: 346812204760598097}
-  wordValue2: 0
+  interval_option_Text: {fileID: 346812204760598097}
+  intervalValue: 0
+  isSelected: 0
