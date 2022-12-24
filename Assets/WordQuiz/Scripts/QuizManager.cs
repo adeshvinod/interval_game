@@ -17,36 +17,28 @@ public class QuizManager : MonoBehaviour
     public static QuizManager instance; //Instance to make is available in other scripts without reference
 
     [SerializeField] private GameObject gameComplete;
-    //Scriptable data which store our questions data
-   // [SerializeField] private QuizDataScriptable questionDataScriptable;
-   // [SerializeField] private Image questionImage;           //image element to show the image
-    [SerializeField] private Text questionChordFloating;
-    //[SerializeField] private WordData[] answerWordList2;
-    [SerializeField] private interval_option[] optionintervalList;    //list of options word in the game
+    [SerializeField] private Text questionChordFloating;   //the text which shows the question
+  
+    [SerializeField] private interval_option[] optionintervalList;    //list of interval options in the game (R,b2,M2,b3 etc)
     private GameObject optionintervalList_parent;
 
      public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     private QuestionMode questionMode = QuestionMode.PressTheInterval;
                                                        
-   // private List<int> selectedWordsIndex;                   //list which keep track of option word index w.r.t answer word index
-   // private List<QuestionData> shuffledquestions;
-    //private int currentAnswerIndex = 0, currentQuestionIndex = 0;   //index to keep track of current answer and current question
-   // private bool correctAnswer = true;                      //bool to decide if answer is correct or not
-  //  private int[] answerWord2;                           //string to store answer of current question, it has to be the right answer
-
+    
 
     ColorBlock RootButton = new ColorBlock();
     ColorBlock CorrectButton = new ColorBlock();
     ColorBlock RegularButton = new ColorBlock();
     ColorBlock debugButton = new ColorBlock(); //a temporary colour block to help with debugging 
 
-    public string intervalquestion_text;
-    public int intervalquestion_val;
+    //public string intervalquestion_text;
+    public int intervalquestion_val;  //actual value of the interval 
     // var gameobjects:GameObject[] = GameObject.FindGameObjectsWithTag("node_button");
-    GameObject nullbutton;
-    public intervalbutton[] intervalbuttons_;   //array of all the interval buttons on fretboard
+    //GameObject nullbutton;
+    public intervalbutton[] intervalbuttons_;   //array of all the interval buttons on fretboard (everything that you can press)
     public intervalbutton currentrootnode; //stores an instance of the current Root button
-    public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
+    public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 }; //Roots will only occur on middle frets of E,A,D,G,B strings.
     public GameObject[] strings;
     private List<intervalbutton> possibleAnswers;
     private int highlightedstring;
@@ -59,7 +51,7 @@ public class QuizManager : MonoBehaviour
     private int time; //int form of time
     [SerializeField]  public Text timer_text;
 
-    private int questionmode_counter;
+    private int questionmode_counter;  //variable to countdown the number of questions in a particular mode( press interval, guess interval).each mode will have a series of 4-8 questions at a go
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
@@ -77,8 +69,9 @@ public class QuizManager : MonoBehaviour
             {11, "M7"},
           };
 
-    public GameObject GameoverPanel;
-   
+    public GameObject GameoverPanel;  //panel displays highscore and current score
+    //public gameover gameover_object;
+
     private void Awake()
     {
         if (instance == null)
@@ -112,10 +105,8 @@ public class QuizManager : MonoBehaviour
 
 
 
-        nullbutton = GameObject.Find("nullbutton");
+        //nullbutton = GameObject.Find("nullbutton");
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
-       
-
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
 
         strings = GameObject.FindGameObjectsWithTag("string");
@@ -126,15 +117,9 @@ public class QuizManager : MonoBehaviour
             optionintervalList[k].SetValue(k);
         }
     
-
+        //gameover_object=gameObject.GetComponent<gameover>
         questionmode_counter = Random.Range(4, 8);
-
-
-
-
-
-
-        //selectedWordsIndex = new List<int>();   //create a new list at start
+          //selectedWordsIndex = new List<int>();   //create a new list at start
         possibleAnswers = new List<intervalbutton>();
         nextQuestion();
         timer = 10f;
@@ -150,16 +135,17 @@ public class QuizManager : MonoBehaviour
         intervalquestion_val = Random.Range(0, 11);
 
 
-        intervalquestion_text = intervalname[intervalquestion_val];
+        String intervalquestion_text = intervalname[intervalquestion_val];
         questionChordFloating.text = intervalquestion_text;  
         possibleAnswers.Clear();
 
+        //resets the color of the strings to blue
         foreach(GameObject string_ in strings)
         {
             string_.GetComponent<SpriteRenderer>().color=new Color(0f, 0f, 0.5f,1);
         }
 
-        int a = Random.Range(0, 5);
+        int a = Random.Range(0, 5);  //chooseing which string to put the root on
         
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
@@ -184,18 +170,12 @@ public class QuizManager : MonoBehaviour
             if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue )== (intervalquestion_val - 12))
             {
                 possibleAnswers.Add(intervalbutton_);
-            }            
-            
-              
+            }                      
                 intervalbutton_.interactable = true;
         }
 
         int b = Random.Range(0, possibleAnswers.Count - 1);
         highlightedstring = possibleAnswers[b].stringnum;
-
-       
-
-
     }
 
     void SetQuestion_intervals_guessmode()
@@ -204,11 +184,15 @@ public class QuizManager : MonoBehaviour
         intervalquestion_val = Random.Range(0, 11);
 
 
-        intervalquestion_text = intervalname[intervalquestion_val];    
+        String intervalquestion_text = intervalname[intervalquestion_val];    
         questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
-
+        //resets the color of the strings to blue
+        foreach (GameObject string_ in strings)
+        {
+            string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
+        }
 
         int a = Random.Range(0, 5);
 
@@ -222,6 +206,7 @@ public class QuizManager : MonoBehaviour
                 intervalbutton_.isroot = 1;
                 intervalbutton_.colors = RootButton;
                 currentrootnode = intervalbutton_;
+                intervalbutton_.interactable = true;  //this ensures red color is seen
 
             }
             else
@@ -238,12 +223,13 @@ public class QuizManager : MonoBehaviour
             }
 
            
-            intervalbutton_.interactable = true;
+            //intervalbutton_.interactable = true;  
         }
 
         int b = Random.Range(0, possibleAnswers.Count - 1);   
         possibleAnswers[b].colors = CorrectButton;
-        
+        possibleAnswers[b].interactable = true;    //this ensures blue color is seen
+
 
 
 
@@ -274,6 +260,12 @@ public class QuizManager : MonoBehaviour
         if(gameStatus==GameStatus.Gameover)
         {
             GameoverPanel.gameObject.SetActive(true);
+            
+            GameoverPanel.GetComponent<gameover>().loadGame();
+          
+            GameoverPanel.GetComponent<gameover>().saveGame();
+            
+           
 
         }
     }
@@ -288,7 +280,7 @@ public class QuizManager : MonoBehaviour
     /// 
     public void nextQuestion()
     {
-        if(questionmode_counter==0)
+        if(questionmode_counter==0)  //once we exhasuted the list of question in a particular mode, switch the mode
         {
             questionmode_counter = Random.Range(4, 8);
             if (questionMode == QuestionMode.PressTheInterval)
@@ -300,14 +292,14 @@ public class QuizManager : MonoBehaviour
 
         if(questionMode==QuestionMode.PressTheInterval)
         {
-            optionintervalList_parent.gameObject.SetActive(false);
+            optionintervalList_parent.gameObject.SetActive(false);  //hide the interval options panel
             SetQuestion_intervals();
             
             
         }
         else if(questionMode==QuestionMode.GuessTheInterval)
         {
-            optionintervalList_parent.gameObject.SetActive(true);
+            optionintervalList_parent.gameObject.SetActive(true);    //display interval options panel
             SetQuestion_intervals_guessmode();
 
         }
@@ -402,7 +394,7 @@ public class QuizManager : MonoBehaviour
 
         }
         else
-            return;
+            return;   //does nothing to score if you select option in a different string
 
 
     }
