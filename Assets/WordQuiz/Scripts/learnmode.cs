@@ -107,6 +107,12 @@ public class learnmode : MonoBehaviour
 
     public void shiftroot(int direction)
     {
+        //deselct all options
+        foreach(interval_option optionintervalList_ in optionintervalList)
+        {
+            optionintervalList_.isSelected = false;
+        }
+
         if(direction==1)
         {
             root_options_index = (root_options_index + 1)%6;

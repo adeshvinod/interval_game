@@ -64,11 +64,23 @@ public class interval_option : MonoBehaviour
         this.isSelected = !this.isSelected;
         //QuizManager.instance.SelectedOption(this);
         scene = SceneManager.GetActiveScene();
-        if (scene.buildIndex == 0)
+        if (scene.buildIndex == 3) //challenge mode
             QuizManager.instance.SelectedOption_guessmode(this);
-        else if (scene.buildIndex == 2)
+        else if (scene.buildIndex == 1) //learn mode
             learnmode.instance.SelectedOption_learnmode(this);
+        else if (scene.buildIndex == 2)  //challenge settings
+        {
+            if (this.isSelected == true)
+            {
+                challenge_settings.instance.questionList.Add(intervalValue);
+                Debug.Log(intervalValue + "added");
+            }
+            else
+            {     challenge_settings.instance.questionList.Remove(intervalValue);
+                Debug.Log(intervalValue + "removed");
+            }
 
+        }
     }
 
 }

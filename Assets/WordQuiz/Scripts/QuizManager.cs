@@ -24,8 +24,9 @@ public class QuizManager : MonoBehaviour
 
      public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     private QuestionMode questionMode = QuestionMode.PressTheInterval;
-                                                       
-    
+
+    //bool coroutine_toggle = true;
+
 
     ColorBlock RootButton = new ColorBlock();
     ColorBlock CorrectButton = new ColorBlock();
@@ -39,7 +40,8 @@ public class QuizManager : MonoBehaviour
     public intervalbutton[] intervalbuttons_;   //array of all the interval buttons on fretboard (everything that you can press)
     public intervalbutton currentrootnode; //stores an instance of the current Root button
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 }; //Roots will only occur on middle frets of E,A,D,G,B strings.
-    public GameObject[] strings;
+    //public GameObject[] strings;
+    public SpriteRenderer[] strings;
     private List<intervalbutton> possibleAnswers;
     private int highlightedstring;
 
@@ -47,7 +49,7 @@ public class QuizManager : MonoBehaviour
     public Text score_text;
     public int lives = 3;
     [SerializeField] public List<Image> lives_image;
-    public float timer=10;
+    public float timer=25;
     private int time; //int form of time
     [SerializeField]  public Text timer_text;
 
@@ -68,9 +70,15 @@ public class QuizManager : MonoBehaviour
             {10, "b7"},
             {11, "M7"},
           };
-
+    public List<int> questionList;
     public GameObject GameoverPanel;  //panel displays highscore and current score
     //public gameover gameover_object;
+
+    //set of audio sounds
+    public AudioSource correctanswer_audio;
+    public AudioSource wronganswer_audio;
+    private bool correctanswer=false;
+    private bool togglesound = false;
 
     private void Awake()
     {
@@ -109,7 +117,9 @@ public class QuizManager : MonoBehaviour
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
 
-        strings = GameObject.FindGameObjectsWithTag("string");
+        //strings = GameObject.FindGameObjectsWithTag("string");
+        GameObject strings_parent = GameObject.Find("strings");
+        strings = strings_parent.GetComponentsInChildren<SpriteRenderer>();
         optionintervalList_parent = GameObject.Find("option_buttons");
         optionintervalList = GameObject.Find("option_buttons").GetComponentsInChildren<interval_option>();
         for (int k = 0; k < optionintervalList.Length; k++)
@@ -122,9 +132,9 @@ public class QuizManager : MonoBehaviour
           //selectedWordsIndex = new List<int>();   //create a new list at start
         possibleAnswers = new List<intervalbutton>();
         nextQuestion();
-        timer = 10f;
+        timer = 25f;
 
-
+        StartCoroutine(CallFunctionEvery5Seconds());
 
     }
 
@@ -132,21 +142,21 @@ public class QuizManager : MonoBehaviour
     void SetQuestion_intervals()
     {
         gameStatus = GameStatus.Playing;
-        intervalquestion_val = Random.Range(0, 11);
-
+        //intervalquestion_val = Random.Range(0, 11);
+        intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //chooses which intervals to ask depending on settings
 
         String intervalquestion_text = intervalname[intervalquestion_val];
         questionChordFloating.text = intervalquestion_text;  
         possibleAnswers.Clear();
 
         //resets the color of the strings to blue
-        foreach(GameObject string_ in strings)
+        foreach(SpriteRenderer string_ in strings)
         {
             string_.GetComponent<SpriteRenderer>().color=new Color(0f, 0f, 0.5f,1);
         }
 
-        int a = Random.Range(0, 5);  //chooseing which string to put the root on
-        
+        //int a = Random.Range(0, 5);  //chooseing which string to put the root on
+        int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)];  //chooses which strings to ask depending on settings
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
             
@@ -176,26 +186,38 @@ public class QuizManager : MonoBehaviour
 
         int b = Random.Range(0, possibleAnswers.Count - 1);
         highlightedstring = possibleAnswers[b].stringnum;
+        StartCoroutine(highlightedstringcoroutine());
     }
+
+    IEnumerator highlightedstringcoroutine()
+    {
+        while(gameStatus==GameStatus.Playing)
+        {
+            strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
+            yield return null;
+
+        }
+    }
+
 
     void SetQuestion_intervals_guessmode()
     {
-        gameStatus = GameStatus.Playing;       
-        intervalquestion_val = Random.Range(0, 11);
-
+        gameStatus = GameStatus.Playing;
+        // intervalquestion_val = Random.Range(0, 11);
+        intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //choses which intervals to ask depending on the settings
 
         String intervalquestion_text = intervalname[intervalquestion_val];    
         questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
         //resets the color of the strings to blue
-        foreach (GameObject string_ in strings)
+        foreach (SpriteRenderer string_ in strings)
         {
             string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
         }
 
-        int a = Random.Range(0, 5);
-
+       // int a = Random.Range(0, 5);
+        int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)]; //chooses which string to put the root on depending on the settings
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
 
@@ -234,7 +256,7 @@ public class QuizManager : MonoBehaviour
 
 
     }
-
+    int temp_highlight = 0;
     public void Update()
     {
         if(gameStatus== GameStatus.Playing)
@@ -245,18 +267,35 @@ public class QuizManager : MonoBehaviour
         }
         else if(gameStatus == GameStatus.Next)
         {
-            timer = 10f;
+            timer = 25f;
+        }
+        if (correctanswer == true && togglesound == true)
+        {
+            correctanswer_audio.Play();
+            togglesound = false;
+        }
+        else if(correctanswer ==false && togglesound==true)
+        {
+            wronganswer_audio.Play();
+            togglesound = false;
         }
 
+        // else
+        // wronganswer_audio.Play();
+       
         if (questionMode == QuestionMode.PressTheInterval)
         {
-            strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
-           // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
+            ;
+            
+           // strings[temp_highlight].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
+            // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
+            // Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+            
         }
 
         if (time <= 0 || lives==0)
             gameStatus = GameStatus.Gameover;
-
+        
         if(gameStatus==GameStatus.Gameover)
         {
             GameoverPanel.gameObject.SetActive(true);
@@ -268,9 +307,32 @@ public class QuizManager : MonoBehaviour
            
 
         }
+
+
+       
+    }
+   
+    IEnumerator CallFunctionEvery5Seconds()
+    {
+        while (true)
+        {
+            //coroutine_toggle = false;
+            // Call the function
+            //Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+            if (questionMode == QuestionMode.PressTheInterval)
+            {
+                debughighlightedstring();
+                temp_highlight = highlightedstring;
+            }
+                // Wait for 5 seconds before calling the function again
+                yield return new WaitForSeconds(5.0f);
+        }
     }
 
-    
+    void debughighlightedstring()
+    {
+        Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+    }
     /// <summary>
     /// When we click on any options button this method is called
     /// </summary>
@@ -344,13 +406,14 @@ public class QuizManager : MonoBehaviour
             else if (time > 0 && time < 7)
                 score = score + 5;
 
-
+            correctanswer_audio.Play();
             score_text.text = score.ToString();
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
         }
         else
         {
+            wronganswer_audio.Play();
             lives--;
             lives_image[lives].gameObject.SetActive(false);
         }
@@ -365,6 +428,7 @@ public class QuizManager : MonoBehaviour
     public void SelectedButton(intervalbutton value)
     {
         if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
+        Debug.Log("the string value is: " + value.stringnum+ "  HL:"+highlightedstring);
         if (value.stringnum == highlightedstring)
 
         {
@@ -379,13 +443,17 @@ public class QuizManager : MonoBehaviour
                 else if (time > 0 && time < 7)
                     score = score + 5;
 
-
+                correctanswer = true;  //for playing audio
+                togglesound = true;
                 score_text.text = score.ToString();
                 gameStatus = GameStatus.Next;
                 Invoke("nextQuestion", 0.5f);
             }
             else
             {
+                correctanswer = false;
+                togglesound = true;
+
                 lives--;
                 lives_image[lives].gameObject.SetActive(false);
             }
