@@ -39,6 +39,7 @@ public class QuizManager : MonoBehaviour
     //GameObject nullbutton;
     public intervalbutton[] intervalbuttons_;   //array of all the interval buttons on fretboard (everything that you can press)
     public intervalbutton currentrootnode; //stores an instance of the current Root button
+    private intervalbutton correctnode;  //records the correct answer to display when you hit wrong answer
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 }; //Roots will only occur on middle frets of E,A,D,G,B strings.
     //public GameObject[] strings;
     public SpriteRenderer[] strings;
@@ -49,9 +50,13 @@ public class QuizManager : MonoBehaviour
     public Text score_text;
     public int lives = 3;
     [SerializeField] public List<Image> lives_image;
-    public float timer=25;
-    private int time; //int form of time
+    public float timer=10;
+    public int time; //int form of time
     [SerializeField]  public Text timer_text;
+
+    public float[] accuracies=new float[12];
+    public float[] reactiontimes=new float[12];
+    public int[] questioncounter = new int[12]; //count how many times each interval question has been asked, used to calculate average reaction times and accuracies for individual intervals
 
     private int questionmode_counter;  //variable to countdown the number of questions in a particular mode( press interval, guess interval).each mode will have a series of 4-8 questions at a go
 
@@ -98,7 +103,7 @@ public class QuizManager : MonoBehaviour
         RootButton.normalColor = new Color(1, 0, 0, 1);
 
         CorrectButton = ColorBlock.defaultColorBlock;
-        CorrectButton.normalColor = new Color(0, 0, 1, 1);
+        CorrectButton.normalColor = new Color(0, 1, 0, 1);
         CorrectButton.selectedColor = new Color(0, 1, 0, 1);
 
 
@@ -132,7 +137,7 @@ public class QuizManager : MonoBehaviour
           //selectedWordsIndex = new List<int>();   //create a new list at start
         possibleAnswers = new List<intervalbutton>();
         nextQuestion();
-        timer = 25f;
+        timer = 10f;
 
         StartCoroutine(CallFunctionEvery5Seconds());
 
@@ -144,6 +149,7 @@ public class QuizManager : MonoBehaviour
         gameStatus = GameStatus.Playing;
         //intervalquestion_val = Random.Range(0, 11);
         intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //chooses which intervals to ask depending on settings
+        questioncounter[intervalquestion_val]++; //records the number of times this interval has been asked
 
         String intervalquestion_text = intervalname[intervalquestion_val];
         questionChordFloating.text = intervalquestion_text;  
@@ -185,7 +191,9 @@ public class QuizManager : MonoBehaviour
         }
 
         int b = Random.Range(0, possibleAnswers.Count - 1);
+       
         highlightedstring = possibleAnswers[b].stringnum;
+        correctnode = possibleAnswers[b];
         StartCoroutine(highlightedstringcoroutine());
     }
 
@@ -205,6 +213,7 @@ public class QuizManager : MonoBehaviour
         gameStatus = GameStatus.Playing;
         // intervalquestion_val = Random.Range(0, 11);
         intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //choses which intervals to ask depending on the settings
+        questioncounter[intervalquestion_val]++; //records the number of times this interval has been asked
 
         String intervalquestion_text = intervalname[intervalquestion_val];    
         questionChordFloating.text = intervalquestion_text;
@@ -216,7 +225,7 @@ public class QuizManager : MonoBehaviour
             string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
         }
 
-       // int a = Random.Range(0, 5);
+        // int a = Random.Range(0, 5);
         int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)]; //chooses which string to put the root on depending on the settings
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
@@ -267,7 +276,7 @@ public class QuizManager : MonoBehaviour
         }
         else if(gameStatus == GameStatus.Next)
         {
-            timer = 25f;
+            timer = 10f;
         }
         if (correctanswer == true && togglesound == true)
         {
@@ -408,6 +417,8 @@ public class QuizManager : MonoBehaviour
 
             correctanswer_audio.Play();
             score_text.text = score.ToString();
+            reactiontimes[intervalquestion_val] = reactiontimes[intervalquestion_val]+ (10f - time);
+            accuracies[intervalquestion_val]++;
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
         }
@@ -446,6 +457,8 @@ public class QuizManager : MonoBehaviour
                 correctanswer = true;  //for playing audio
                 togglesound = true;
                 score_text.text = score.ToString();
+                reactiontimes[intervalquestion_val] = reactiontimes[intervalquestion_val] + (10f - time);
+                accuracies[intervalquestion_val]++;
                 gameStatus = GameStatus.Next;
                 Invoke("nextQuestion", 0.5f);
             }
@@ -456,6 +469,10 @@ public class QuizManager : MonoBehaviour
 
                 lives--;
                 lives_image[lives].gameObject.SetActive(false);
+                correctnode.colors = CorrectButton;
+
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 2.5f);
             }
 
 
