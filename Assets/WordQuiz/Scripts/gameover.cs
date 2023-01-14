@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using System;
 
 
 public class gameover : MonoBehaviour
@@ -14,6 +15,9 @@ public class gameover : MonoBehaviour
 
     public int HighScore=0;
     public int currentscore;
+    public DateTime currentTime;
+
+
 
     private float[] avg_rxntime=new float[12];
     private string[] avg_accuracy=new string[12];
@@ -23,10 +27,10 @@ public class gameover : MonoBehaviour
      
         currentscore = QuizManager.instance.score;
         //currentscore_floating.text = currentscore.ToString();
-       
+        currentTime = DateTime.Now;
 
-       // highscore_floating.text = HighScore.ToString();
-       for(int i=0;i<12;i++)
+        // highscore_floating.text = HighScore.ToString();
+        for (int i=0;i<12;i++)
         {
             if (QuizManager.instance.questioncounter[i] == 0)
                 continue;
