@@ -147,6 +147,11 @@ public class note_challenge : MonoBehaviour
     int question_noteval;
     QuestionMode questionmode = QuestionMode.PressTheNote;
     public note_button[] notebuttons_;
+    private int questionmode_counter;
+
+    private List<note_button> possibleAnswers;
+
+    private GameObject option_notes_panel;
 
     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     // Start is called before the first frame update
@@ -165,6 +170,10 @@ public class note_challenge : MonoBehaviour
         GameObject originalGameObject = GameObject.Find("notebuttons");
         notebuttons_ = originalGameObject.GetComponentsInChildren<note_button>();
 
+        option_notes_panel = GameObject.Find("option_notes");
+
+        possibleAnswers = new List<note_button>();
+        questionmode_counter = Random.Range(4, 8);
         nextQuestion();
     }
 
@@ -176,10 +185,63 @@ public class note_challenge : MonoBehaviour
 
     private void nextQuestion()
     {
-        setquestion_notes();
+        if (questionmode_counter == 0)  //once we exhasuted the list of question in a particular mode, switch the mode
+        {
+            questionmode_counter = Random.Range(4, 8);
+            if (questionmode == QuestionMode.PressTheNote)
+                questionmode = QuestionMode.GuessTheNote;
+            else if (questionmode == QuestionMode.GuessTheNote)
+                questionmode = QuestionMode.PressTheNote;
+
+        }
+        //setquestion_notes();
+
+        if (questionmode == QuestionMode.PressTheNote)
+        {
+           option_notes_panel.gameObject.SetActive(false);  //hide the interval options panel
+            setquestion_notes();
+
+
+        }
+        else if (questionmode == QuestionMode.GuessTheNote)
+        {
+           option_notes_panel.gameObject.SetActive(true);    //display interval options panel
+           setquestion_notes_guessmode();
+
+        }
+
+        questionmode_counter--;
 
     }
 
+    private void setquestion_notes_guessmode()
+    {
+        gameStatus = GameStatus.Playing;
+        question_noteval = Random.Range(0, 11);
+        question_noteval_floating.text = "Guess the note displayed on the fretboard";
+
+        possibleAnswers.Clear();
+        foreach (note_button note_button_temp in notebuttons_)
+        {
+            note_button_temp.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
+
+           
+  
+            note_button_temp.colors = RegularButton;
+            note_button_temp.noteText.color = new Color(note_button_temp.noteText.color.r, note_button_temp.noteText.color.g, note_button_temp.noteText.color.b, 0);
+            
+            if(note_button_temp.notevalue==question_noteval)
+            {
+                possibleAnswers.Add(note_button_temp);
+            }
+
+            note_button_temp.interactable = true;
+
+        }
+        int b = Random.Range(0, possibleAnswers.Count - 1);
+        possibleAnswers[b].colors = CorrectButton;
+        possibleAnswers[b].interactable = true;    //this ensures blue color is seen
+    }
     private void setquestion_notes()
     {
         gameStatus = GameStatus.Playing;
@@ -210,6 +272,18 @@ public class note_challenge : MonoBehaviour
         }
 
 
+    }
+
+    public void SelectedOption_guessmode(option_note value)
+    {
+        if (gameStatus == GameStatus.Next || questionmode == QuestionMode.PressTheNote) return;
+
+        if(value.noteValue==question_noteval)
+        {
+           gameStatus = GameStatus.Next;
+           Invoke("nextQuestion", 0.5f);
+        }
+  
     }
     public enum GameStatus
     {

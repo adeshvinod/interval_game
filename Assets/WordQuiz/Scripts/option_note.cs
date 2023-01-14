@@ -61,10 +61,8 @@ public class option_note : MonoBehaviour
     private void optionSelected()
     {
         this.isSelected = !this.isSelected;
-        //QuizManager.instance.SelectedOption(this);
        
-           // QuizManager.instance.SelectedOption_guessmode(this);
-       
+            note_challenge.instance.SelectedOption_guessmode(this);
        
     }
 
