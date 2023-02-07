@@ -292,15 +292,15 @@ public class QuizManager : MonoBehaviour
         // else
         // wronganswer_audio.Play();
        
-        if (questionMode == QuestionMode.PressTheInterval)
-        {
-            ;
+      //  if (questionMode == QuestionMode.PressTheInterval)
+       // {
+         //   ;
             
            // strings[temp_highlight].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
             // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
             // Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
             
-        }
+        //}
 
         if (time <= 0 || lives==0)
             gameStatus = GameStatus.Gameover;

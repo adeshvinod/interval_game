@@ -139,6 +139,7 @@ public class note_button : Button
     public int notevalue;
     string notename_sharp;
     string notename_flat;
+    public bool selectedRegion = false; //to check if the button is in the user selected region of the fretboard defined in settings 
     // Start is called before the first frame update
     protected override void Awake()
     {

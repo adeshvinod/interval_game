@@ -149,14 +149,27 @@ public class note_challenge : MonoBehaviour
     public note_button[] notebuttons_;
     private int questionmode_counter;
 
+    public int score = 0;
+    public Text score_text;
+    public int lives = 3;
+    [SerializeField] public List<Image> lives_image;
+    public float timer = 10;
+    public int time; //int form of time
+    [SerializeField] public Text timer_text;
+
     private List<note_button> possibleAnswers;
 
+    private List<note_button> Question_button_list = new List<note_button>();
+
     private GameObject option_notes_panel;
+    [SerializeField] public GameObject gameover_panel;
 
     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     // Start is called before the first frame update
     void Start()
     {
+
+        
         CorrectButton = ColorBlock.defaultColorBlock;
         CorrectButton.normalColor = new Color(0, 1, 0, 1);
         CorrectButton.selectedColor = new Color(0, 1, 0, 1);
@@ -174,13 +187,82 @@ public class note_challenge : MonoBehaviour
 
         possibleAnswers = new List<note_button>();
         questionmode_counter = Random.Range(4, 8);
+
+        foreach ((int, int) question in settings_notechallenge.instance.questionList)
+        {
+            Question_button_list.Add(notebuttons_[settings_notechallenge.instance.Coordinate_system[question]]);
+            notebuttons_[settings_notechallenge.instance.Coordinate_system[question]].selectedRegion = true;
+            notebuttons_[settings_notechallenge.instance.Coordinate_system[question]].transform.Find("Sprite Mask").gameObject.SetActive(true);
+        }
+
+        Debug.Log("total list:" + Question_button_list.Count + "      radom note val:" + Question_button_list[2].notevalue);
+
+
         nextQuestion();
+
+        
+
+       
     }
 
     // Update is called once per frame
     void Update()
+    {   
+        if (gameStatus == GameStatus.Playing)
+        {
+            timer -= Time.deltaTime;
+            time = (int)timer;
+            SetTimer(time);
+        }
+        else if (gameStatus == GameStatus.Next)
+        {
+            timer = 10f;
+        }
+       
+        /*
+        if (correctanswer == true && togglesound == true)
+        {
+            correctanswer_audio.Play();
+            togglesound = false;
+        }
+        else if (correctanswer == false && togglesound == true)
+        {
+            wronganswer_audio.Play();
+            togglesound = false;
+        }
+        */
+        // else
+        // wronganswer_audio.Play();
+
+        //  if (questionMode == QuestionMode.PressTheInterval)
+        // {
+        //   ;
+
+        // strings[temp_highlight].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
+        // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
+        // Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+
+        //}
+
+        if (time <= 0 || lives == 0)
+            gameStatus = GameStatus.Gameover;
+
+        if (gameStatus == GameStatus.Gameover)
+        {
+            gameover_panel.gameObject.SetActive(true);
+
+           // GameoverPanel.GetComponent<gameover>().loadGame();
+
+          //  GameoverPanel.GetComponent<gameover>().saveGame();
+
+
+
+        }
+    }
+
+    private void SetTimer(int value)
     {
-        
+        timer_text.text = "Time:" + value.ToString();
     }
 
     private void nextQuestion()
@@ -217,7 +299,9 @@ public class note_challenge : MonoBehaviour
     private void setquestion_notes_guessmode()
     {
         gameStatus = GameStatus.Playing;
-        question_noteval = Random.Range(0, 11);
+       //  question_noteval = Random.Range(0, 11);
+        question_noteval = Question_button_list[Random.Range(0, Question_button_list.Count)].notevalue;
+        //question_noteval = Question_button_list[0].notevalue;
         question_noteval_floating.text = "Guess the note displayed on the fretboard";
 
         possibleAnswers.Clear();
@@ -230,7 +314,7 @@ public class note_challenge : MonoBehaviour
             note_button_temp.colors = RegularButton;
             note_button_temp.noteText.color = new Color(note_button_temp.noteText.color.r, note_button_temp.noteText.color.g, note_button_temp.noteText.color.b, 0);
             
-            if(note_button_temp.notevalue==question_noteval)
+            if(note_button_temp.notevalue==question_noteval && note_button_temp.selectedRegion==true)
             {
                 possibleAnswers.Add(note_button_temp);
             }
@@ -245,7 +329,8 @@ public class note_challenge : MonoBehaviour
     private void setquestion_notes()
     {
         gameStatus = GameStatus.Playing;
-        question_noteval = Random.Range(0, 11);
+        //question_noteval = Random.Range(0, 11);
+        question_noteval = Question_button_list[Random.Range(0,Question_button_list.Count)].notevalue;
         question_noteval_floating.text = notename_sharps[question_noteval];
 
         foreach(note_button note_button in notebuttons_)
@@ -264,13 +349,30 @@ public class note_challenge : MonoBehaviour
     public void SelectedButton(note_button value)
     {
         if (gameStatus == GameStatus.Next || questionmode == QuestionMode.GuessTheNote) return;
-        if (value.notevalue==question_noteval)
+        if (value.notevalue == question_noteval && value.selectedRegion == true)
         {
+
+
+            if (time >= 7)
+                score = score + 10;
+            else if (time > 0 && time < 7)
+                score = score + 5;
+            score_text.text = score.ToString();
+
             value.colors = CorrectButton;
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
         }
+        else
+        {
 
+            lives--;
+            lives_image[lives].gameObject.SetActive(false);
+            // correctnode.colors = CorrectButton;
+
+            gameStatus = GameStatus.Next;
+            Invoke("nextQuestion", 2.5f);
+        }
 
     }
 
@@ -280,8 +382,25 @@ public class note_challenge : MonoBehaviour
 
         if(value.noteValue==question_noteval)
         {
-           gameStatus = GameStatus.Next;
+
+            if (time >= 7)
+                score = score + 10;
+            else if (time > 0 && time < 7)
+                score = score + 5;
+            score_text.text = score.ToString();
+
+            gameStatus = GameStatus.Next;
            Invoke("nextQuestion", 0.5f);
+        }
+        else
+        {
+
+            lives--;
+            lives_image[lives].gameObject.SetActive(false);
+           // correctnode.colors = CorrectButton;
+
+            gameStatus = GameStatus.Next;
+            Invoke("nextQuestion", 2.5f);
         }
   
     }
