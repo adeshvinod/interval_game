@@ -17,22 +17,15 @@ public class QuizManager : MonoBehaviour
     public static QuizManager instance; //Instance to make is available in other scripts without reference
 
     [SerializeField] private GameObject gameComplete;
-    //Scriptable data which store our questions data
-   // [SerializeField] private QuizDataScriptable questionDataScriptable;
-   // [SerializeField] private Image questionImage;           //image element to show the image
-    [SerializeField] private Text questionChordFloating;
-    //[SerializeField] private WordData[] answerWordList2;
-    [SerializeField] private WordData[] optionsWordList;    //list of options word in the game
-    private GameObject optionsWordList_parent;
+    [SerializeField] private Text questionChordFloating;   //the text which shows the question
+  
+    [SerializeField] private interval_option[] optionintervalList;    //list of interval options in the game (R,b2,M2,b3 etc)
+    private GameObject optionintervalList_parent;
 
-    private GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status
+     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     private QuestionMode questionMode = QuestionMode.PressTheInterval;
-                                                       
-   // private List<int> selectedWordsIndex;                   //list which keep track of option word index w.r.t answer word index
-   // private List<QuestionData> shuffledquestions;
-    //private int currentAnswerIndex = 0, currentQuestionIndex = 0;   //index to keep track of current answer and current question
-   // private bool correctAnswer = true;                      //bool to decide if answer is correct or not
-  //  private int[] answerWord2;                           //string to store answer of current question, it has to be the right answer
+
+    //bool coroutine_toggle = true;
 
 
     ColorBlock RootButton = new ColorBlock();
@@ -40,14 +33,16 @@ public class QuizManager : MonoBehaviour
     ColorBlock RegularButton = new ColorBlock();
     ColorBlock debugButton = new ColorBlock(); //a temporary colour block to help with debugging 
 
-    public string intervalquestion_text;
-    public int intervalquestion_val;
+    //public string intervalquestion_text;
+    public int intervalquestion_val;  //actual value of the interval 
     // var gameobjects:GameObject[] = GameObject.FindGameObjectsWithTag("node_button");
-    GameObject nullbutton;
-    public intervalbutton[] intervalbuttons_;   //array of objects of class intervalbutton
+    //GameObject nullbutton;
+    public intervalbutton[] intervalbuttons_;   //array of all the interval buttons on fretboard (everything that you can press)
     public intervalbutton currentrootnode; //stores an instance of the current Root button
-    public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
-    public GameObject[] strings;
+    private intervalbutton correctnode;  //records the correct answer to display when you hit wrong answer
+    public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 }; //Roots will only occur on middle frets of E,A,D,G,B strings.
+    //public GameObject[] strings;
+    public SpriteRenderer[] strings;
     private List<intervalbutton> possibleAnswers;
     private int highlightedstring;
 
@@ -56,10 +51,14 @@ public class QuizManager : MonoBehaviour
     public int lives = 3;
     [SerializeField] public List<Image> lives_image;
     public float timer=10;
-    private int time; //int form of time
+    public int time; //int form of time
     [SerializeField]  public Text timer_text;
 
-    private int questionmode_counter;
+    public float[] accuracies=new float[12];
+    public float[] reactiontimes=new float[12];
+    public int[] questioncounter = new int[12]; //count how many times each interval question has been asked, used to calculate average reaction times and accuracies for individual intervals
+
+    private int questionmode_counter;  //variable to countdown the number of questions in a particular mode( press interval, guess interval).each mode will have a series of 4-8 questions at a go
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
@@ -76,9 +75,16 @@ public class QuizManager : MonoBehaviour
             {10, "b7"},
             {11, "M7"},
           };
+    public List<int> questionList;
+    public GameObject GameoverPanel;  //panel displays highscore and current score
+    //public gameover gameover_object;
 
-    public GameObject GameoverPanel;
-   
+    //set of audio sounds
+    public AudioSource correctanswer_audio;
+    public AudioSource wronganswer_audio;
+    private bool correctanswer=false;
+    private bool togglesound = false;
+
     private void Awake()
     {
         if (instance == null)
@@ -97,7 +103,7 @@ public class QuizManager : MonoBehaviour
         RootButton.normalColor = new Color(1, 0, 0, 1);
 
         CorrectButton = ColorBlock.defaultColorBlock;
-        CorrectButton.normalColor = new Color(0, 0, 1, 1);
+        CorrectButton.normalColor = new Color(0, 1, 0, 1);
         CorrectButton.selectedColor = new Color(0, 1, 0, 1);
 
 
@@ -112,34 +118,28 @@ public class QuizManager : MonoBehaviour
 
 
 
-        nullbutton = GameObject.Find("nullbutton");
+        //nullbutton = GameObject.Find("nullbutton");
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
-       
-
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
 
-        strings = GameObject.FindGameObjectsWithTag("string");
-        optionsWordList_parent = GameObject.Find("option_buttons");
-        optionsWordList = GameObject.Find("option_buttons").GetComponentsInChildren<WordData>();
-        for (int k = 0; k < optionsWordList.Length; k++)
+        //strings = GameObject.FindGameObjectsWithTag("string");
+        GameObject strings_parent = GameObject.Find("strings");
+        strings = strings_parent.GetComponentsInChildren<SpriteRenderer>();
+        optionintervalList_parent = GameObject.Find("option_buttons");
+        optionintervalList = GameObject.Find("option_buttons").GetComponentsInChildren<interval_option>();
+        for (int k = 0; k < optionintervalList.Length; k++)
         {
-            optionsWordList[k].SetWord2(k);
+            optionintervalList[k].SetValue(k);
         }
     
-
+        //gameover_object=gameObject.GetComponent<gameover>
         questionmode_counter = Random.Range(4, 8);
-
-
-
-
-
-
-        //selectedWordsIndex = new List<int>();   //create a new list at start
+          //selectedWordsIndex = new List<int>();   //create a new list at start
         possibleAnswers = new List<intervalbutton>();
         nextQuestion();
         timer = 10f;
 
-
+        StartCoroutine(CallFunctionEvery5Seconds());
 
     }
 
@@ -147,20 +147,22 @@ public class QuizManager : MonoBehaviour
     void SetQuestion_intervals()
     {
         gameStatus = GameStatus.Playing;
-        intervalquestion_val = Random.Range(0, 11);
+        //intervalquestion_val = Random.Range(0, 11);
+        intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //chooses which intervals to ask depending on settings
+        questioncounter[intervalquestion_val]++; //records the number of times this interval has been asked
 
-
-        intervalquestion_text = intervalname[intervalquestion_val];
+        String intervalquestion_text = intervalname[intervalquestion_val];
         questionChordFloating.text = intervalquestion_text;  
         possibleAnswers.Clear();
 
-        foreach(GameObject string_ in strings)
+        //resets the color of the strings to blue
+        foreach(SpriteRenderer string_ in strings)
         {
             string_.GetComponent<SpriteRenderer>().color=new Color(0f, 0f, 0.5f,1);
         }
 
-        int a = Random.Range(0, 5);
-        
+        //int a = Random.Range(0, 5);  //chooseing which string to put the root on
+        int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)];  //chooses which strings to ask depending on settings
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
             
@@ -184,34 +186,49 @@ public class QuizManager : MonoBehaviour
             if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue )== (intervalquestion_val - 12))
             {
                 possibleAnswers.Add(intervalbutton_);
-            }            
-            
-              
+               
+               
+            }                      
                 intervalbutton_.interactable = true;
         }
 
-        int b = Random.Range(0, possibleAnswers.Count - 1);
+        int b = Random.Range(0, possibleAnswers.Count);
+        
         highlightedstring = possibleAnswers[b].stringnum;
-
-       
-
-
+        correctnode = possibleAnswers[b];
+        StartCoroutine(highlightedstringcoroutine());
     }
+
+    IEnumerator highlightedstringcoroutine()
+    {
+        while(gameStatus==GameStatus.Playing)
+        {
+            strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
+            yield return null;
+
+        }
+    }
+
 
     void SetQuestion_intervals_guessmode()
     {
-        gameStatus = GameStatus.Playing;       
-        intervalquestion_val = Random.Range(0, 11);
+        gameStatus = GameStatus.Playing;
+        // intervalquestion_val = Random.Range(0, 11);
+        intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //choses which intervals to ask depending on the settings
+        questioncounter[intervalquestion_val]++; //records the number of times this interval has been asked
 
-
-        intervalquestion_text = intervalname[intervalquestion_val];    
+        String intervalquestion_text = intervalname[intervalquestion_val];    
         questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
+        //resets the color of the strings to blue
+        foreach (SpriteRenderer string_ in strings)
+        {
+            string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
+        }
 
-
-        int a = Random.Range(0, 5);
-
+        // int a = Random.Range(0, 5);
+        int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)]; //chooses which string to put the root on depending on the settings
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
 
@@ -222,6 +239,7 @@ public class QuizManager : MonoBehaviour
                 intervalbutton_.isroot = 1;
                 intervalbutton_.colors = RootButton;
                 currentrootnode = intervalbutton_;
+                intervalbutton_.interactable = true;  //this ensures red color is seen
 
             }
             else
@@ -238,17 +256,18 @@ public class QuizManager : MonoBehaviour
             }
 
            
-            intervalbutton_.interactable = true;
+            //intervalbutton_.interactable = true;  
         }
 
         int b = Random.Range(0, possibleAnswers.Count - 1);   
         possibleAnswers[b].colors = CorrectButton;
-        
+        possibleAnswers[b].interactable = true;    //this ensures blue color is seen
+
 
 
 
     }
-
+    int temp_highlight = 0;
     public void Update()
     {
         if(gameStatus== GameStatus.Playing)
@@ -261,24 +280,70 @@ public class QuizManager : MonoBehaviour
         {
             timer = 10f;
         }
-
-        if (questionMode == QuestionMode.PressTheInterval)
+        if (correctanswer == true && togglesound == true)
         {
-            strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
-           // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
+            correctanswer_audio.Play();
+            togglesound = false;
         }
+        else if(correctanswer ==false && togglesound==true)
+        {
+            wronganswer_audio.Play();
+            togglesound = false;
+        }
+
+        // else
+        // wronganswer_audio.Play();
+       
+      //  if (questionMode == QuestionMode.PressTheInterval)
+       // {
+         //   ;
+            
+           // strings[temp_highlight].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
+            // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
+            // Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+            
+        //}
 
         if (time <= 0 || lives==0)
             gameStatus = GameStatus.Gameover;
-
+        
         if(gameStatus==GameStatus.Gameover)
         {
             GameoverPanel.gameObject.SetActive(true);
+            
+            GameoverPanel.GetComponent<gameover>().loadGame();
+          
+            GameoverPanel.GetComponent<gameover>().saveGame();
+            
+           
 
+        }
+
+
+       
+    }
+   
+    IEnumerator CallFunctionEvery5Seconds()
+    {
+        while (true)
+        {
+            //coroutine_toggle = false;
+            // Call the function
+            //Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+            if (questionMode == QuestionMode.PressTheInterval)
+            {
+                debughighlightedstring();
+                temp_highlight = highlightedstring;
+            }
+                // Wait for 5 seconds before calling the function again
+                yield return new WaitForSeconds(5.0f);
         }
     }
 
-    
+    void debughighlightedstring()
+    {
+        Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+    }
     /// <summary>
     /// When we click on any options button this method is called
     /// </summary>
@@ -288,7 +353,7 @@ public class QuizManager : MonoBehaviour
     /// 
     public void nextQuestion()
     {
-        if(questionmode_counter==0)
+        if(questionmode_counter==0)  //once we exhasuted the list of question in a particular mode, switch the mode
         {
             questionmode_counter = Random.Range(4, 8);
             if (questionMode == QuestionMode.PressTheInterval)
@@ -300,20 +365,21 @@ public class QuizManager : MonoBehaviour
 
         if(questionMode==QuestionMode.PressTheInterval)
         {
-            optionsWordList_parent.gameObject.SetActive(false);
+            optionintervalList_parent.gameObject.SetActive(false);  //hide the interval options panel
             SetQuestion_intervals();
             
             
         }
         else if(questionMode==QuestionMode.GuessTheInterval)
         {
-            optionsWordList_parent.gameObject.SetActive(true);
+            optionintervalList_parent.gameObject.SetActive(true);    //display interval options panel
             SetQuestion_intervals_guessmode();
 
         }
         
         questionmode_counter--;
     }
+    /*
     public void SelectedOption_guessmode(WordData value)
     {
         if (gameStatus == GameStatus.Next || questionMode==QuestionMode.PressTheInterval) return;
@@ -338,6 +404,34 @@ public class QuizManager : MonoBehaviour
         }
 
     }
+    */
+    public void SelectedOption_guessmode(interval_option value)
+    {
+        if (gameStatus == GameStatus.Next || questionMode == QuestionMode.PressTheInterval) return;
+
+        if (value.intervalValue == intervalquestion_val)
+        {
+
+            if (time >= 7)
+                score = score + 10;
+            else if (time > 0 && time < 7)
+                score = score + 5;
+
+            correctanswer_audio.Play();
+            score_text.text = score.ToString();
+            reactiontimes[intervalquestion_val] = reactiontimes[intervalquestion_val]+ (10f - time);
+            accuracies[intervalquestion_val]++;
+            gameStatus = GameStatus.Next;
+            Invoke("nextQuestion", 0.5f);
+        }
+        else
+        {
+            wronganswer_audio.Play();
+            lives--;
+            lives_image[lives].gameObject.SetActive(false);
+        }
+
+    }
 
     private void SetTimer(int value)
     {           
@@ -347,6 +441,7 @@ public class QuizManager : MonoBehaviour
     public void SelectedButton(intervalbutton value)
     {
         if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
+        Debug.Log("the string value is: " + value.stringnum+ "  HL:"+highlightedstring);
         if (value.stringnum == highlightedstring)
 
         {
@@ -361,22 +456,32 @@ public class QuizManager : MonoBehaviour
                 else if (time > 0 && time < 7)
                     score = score + 5;
 
-
+                correctanswer = true;  //for playing audio
+                togglesound = true;
                 score_text.text = score.ToString();
+                reactiontimes[intervalquestion_val] = reactiontimes[intervalquestion_val] + (10f - time);
+                accuracies[intervalquestion_val]++;
                 gameStatus = GameStatus.Next;
                 Invoke("nextQuestion", 0.5f);
             }
             else
             {
+                correctanswer = false;
+                togglesound = true;
+
                 lives--;
                 lives_image[lives].gameObject.SetActive(false);
+                correctnode.colors = CorrectButton;
+
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 2.5f);
             }
 
 
 
         }
         else
-            return;
+            return;   //does nothing to score if you select option in a different string
 
 
     }
