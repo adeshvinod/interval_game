@@ -64,11 +64,12 @@ public class interval_option : MonoBehaviour
         this.isSelected = !this.isSelected;
         //QuizManager.instance.SelectedOption(this);
         scene = SceneManager.GetActiveScene();
-        if (scene.buildIndex == 3) //challenge mode
-            QuizManager.instance.SelectedOption_guessmode(this);
-        else if (scene.buildIndex == 1) //learn mode
+      //  if (scene.buildIndex == 3) //challenge mode
+          if(scene.name=="challenge_mode")
+        QuizManager.instance.SelectedOption_guessmode(this);
+        else if (scene.name == "learn_mode") //learn mode
             learnmode.instance.SelectedOption_learnmode(this);
-        else if (scene.buildIndex == 2)  //challenge settings
+        else if (scene.name == "Pre_challengemode")  //challenge settings
         {
             if (this.isSelected == true)
             {

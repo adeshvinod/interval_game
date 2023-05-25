@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-
+//script for describing each interval button on fretboard
 
 
 public class note_button : Button
@@ -11,6 +11,7 @@ public class note_button : Button
     //[SerializeField] private Text;
     [SerializeField] public Text noteText;
     [SerializeField] public int bio;
+    public Scene scene;
 
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
@@ -159,12 +160,21 @@ public class note_button : Button
         noteText.text = notename_sharp;
         noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 0);
 
+        scene = SceneManager.GetActiveScene();
+
     }
 
     public void buttonselected()
     {
-        note_challenge.instance.SelectedButton(this);
-        noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
+
+        if (scene.name == "notes_challenge")
+            note_challenge.instance.SelectedButton(this);
+        else if (scene.name == "arpeggio_game")
+        {
+            arpeggio_manager.instance.Selected_button(this);
+           
+        }
+            noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
 
     }
 

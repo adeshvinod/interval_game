@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class settings_notechallenge : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class settings_notechallenge : MonoBehaviour
 
     public float startTime;
     public Text timerText;
+
+    Scene scene;
 
     public Dictionary<(int,int), int> Coordinate_system = new Dictionary<(int,int), int>()  //coordinate system of the fretboard
     {   {(0,0),0},
@@ -123,17 +126,22 @@ public class settings_notechallenge : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-       // GameObject x_coordinates_parent = GameObject.Find("x_coordinates");
-       // x_coordinates = x_coordinates_parent.GetComponentsInChildren<Transform>();
+        // GameObject x_coordinates_parent = GameObject.Find("x_coordinates");
+        // x_coordinates = x_coordinates_parent.GetComponentsInChildren<Transform>();
 
 
         //GameObject y_coordinates_parent = GameObject.Find("y_coordinates");
-       // y_coordinates = y_coordinates_parent.GetComponentsInChildren<Transform>();
+        // y_coordinates = y_coordinates_parent.GetComponentsInChildren<Transform>();
 
-        unmask_unit = GameObject.Find("unmask_unit");
-         currentScale = unmask_unit.transform.localScale;
-        current_pos = unmask_unit.transform.localPosition;
+        scene = SceneManager.GetActiveScene();
 
+        if (scene.name == "notes_settings")
+        {
+
+            unmask_unit = GameObject.Find("unmask_unit");
+            currentScale = unmask_unit.transform.localScale;
+            current_pos = unmask_unit.transform.localPosition;
+        } 
         startTime = Time.time;
         questionList = new List<(int, int)>();
 
@@ -233,20 +241,89 @@ public class settings_notechallenge : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float t = Time.time - startTime;
-        string minutes = ((int)t / 60).ToString();
-        string seconds = (t % 60).ToString("f2");
-        timerText.text = minutes + ":" + seconds;
-        questionList.Clear();
 
-        for (int j = current_y_coord; j < current_y_coord + scalefactor_y; j++)
+        
+        //float t = Time.time - startTime;
+        // string minutes = ((int)t / 60).ToString();
+        //string seconds = (t % 60).ToString("f2");
+        //timerText.text = minutes + ":" + seconds;
+        if (scene.buildIndex == 6)
         {
-            for (int i = current_x_coord; i < current_x_coord + scalefactor_x; i++)
-            {
-                questionList.Add((j, i));
+            questionList.Clear();
 
+            for (int j = current_y_coord; j < current_y_coord + scalefactor_y; j++)
+            {
+                for (int i = current_x_coord; i < current_x_coord + scalefactor_x; i++)
+                {
+                    questionList.Add((j, i));
+
+                }
             }
         }
 
+    }
+
+     public void level_select(int level)
+    {
+        questionList.Clear();
+        
+        switch (level)
+        {
+            case 1:
+                for (int i = 4;i<=5;i++)
+                {
+                    for(int j=0;j<=12;j++)
+                    {
+                        questionList.Add((i, j));
+                    }
+
+                }
+                         
+                        break;
+
+            case 2:
+                for (int i = 0; i <= 5; i++)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        questionList.Add((i, j));
+                    }
+
+                }
+
+
+
+                break;
+
+            case 3:
+                for (int i = 0; i <= 5; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        questionList.Add((i, j));
+                    }
+
+                }
+
+
+                break;
+
+            case 4:
+                for (int i = 0; i <= 5; i++)
+                {
+                    for (int j = 0; j <= 12; j++)
+                    {
+                        questionList.Add((i, j));
+                    }
+
+                }
+
+
+
+                break;
+
+            default:   
+                        break;
+        }
     }
 }

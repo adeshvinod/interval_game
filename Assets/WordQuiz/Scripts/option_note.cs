@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+ 
 
+//script for describing the option buttons at the bottom of the fretboard when the user is in 'guess the interval' mode
 public class option_note : MonoBehaviour
 {
     [SerializeField] public Text note_option_text;

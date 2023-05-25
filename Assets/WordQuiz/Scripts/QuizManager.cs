@@ -186,12 +186,14 @@ public class QuizManager : MonoBehaviour
             if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue )== (intervalquestion_val - 12))
             {
                 possibleAnswers.Add(intervalbutton_);
+               
+               
             }                      
                 intervalbutton_.interactable = true;
         }
 
-        int b = Random.Range(0, possibleAnswers.Count - 1);
-       
+        int b = Random.Range(0, possibleAnswers.Count);
+        
         highlightedstring = possibleAnswers[b].stringnum;
         correctnode = possibleAnswers[b];
         StartCoroutine(highlightedstringcoroutine());

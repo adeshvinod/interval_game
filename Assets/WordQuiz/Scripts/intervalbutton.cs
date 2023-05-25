@@ -100,9 +100,11 @@ public class intervalbutton : Button
         // Debug.Log("HIYA BITCH!");
         this.isSelected = !this.isSelected;
         scene = SceneManager.GetActiveScene();
-        if (scene.buildIndex == 3)
-            QuizManager.instance.SelectedButton(this);
-        else if (scene.buildIndex == 1)
+       // if (scene.buildIndex == 3)
+         if(scene.name=="challenge_mode")
+        QuizManager.instance.SelectedButton(this);
+        //else if (scene.buildIndex == 1)
+        else if(scene.name=="learn_mode")
         {
             //Debug.Log("HIYA BITCH! -1");
             learnmode.instance.SelectedButton_learnmode(this);

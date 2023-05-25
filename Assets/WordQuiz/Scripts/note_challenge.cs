@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//script for managing the notes mode of the game-A,A#,B,C etc- equivalent of intervals game quiz manager but for notes
 public class note_challenge : MonoBehaviour
 {
     public static note_challenge instance; //Instance to make is available in other scripts without reference
@@ -200,14 +201,14 @@ public class note_challenge : MonoBehaviour
 
         nextQuestion();
 
-        
 
        
     }
 
     // Update is called once per frame
     void Update()
-    {   
+    {
+       Debug.Log("list of notes"+settings_notechallenge.instance.questionList);
         if (gameStatus == GameStatus.Playing)
         {
             timer -= Time.deltaTime;
@@ -258,6 +259,7 @@ public class note_challenge : MonoBehaviour
 
 
         }
+       
     }
 
     private void SetTimer(int value)
