@@ -77,12 +77,14 @@ public class arpeggio_manager : MonoBehaviour
         notebuttons_ = originalGameObject.GetComponentsInChildren<note_button>();
 
         CorrectButton = ColorBlock.defaultColorBlock;
-        CorrectButton.normalColor = new Color(1, 1, 1, 1);
-        CorrectButton.selectedColor = new Color(1, 1, 1, 1);
+        CorrectButton.normalColor = new Color(0, 255, 0, 255);
+        CorrectButton.selectedColor = new Color(0, 255, 0,255);
+        
+
 
         RegularButton = ColorBlock.defaultColorBlock;
-        RegularButton.normalColor = new Color(0, 0, 1, 0);
-        RegularButton.selectedColor = new Color(1, 0, 0, 1);
+        RegularButton.normalColor = new Color(0,0,0,0);
+        RegularButton.selectedColor = new Color(255, 0, 0, 255 );
 
         chord_formula_index_list = new Dictionary<int, int[]>();
         answer = new List<int>();
@@ -138,18 +140,19 @@ public class arpeggio_manager : MonoBehaviour
           {
               if (value.notevalue == answer[i])
               {
-                //  value.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
+                 // value.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
 
                   value.colors = CorrectButton;
 
                  // value.interactable = true;
 
                   evaluate(value.notevalue,i);
+                break;
               }
           }
           if(i==answer.Count)
           {
-             // value.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
+              //value.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
 
               value.colors = RegularButton;
 

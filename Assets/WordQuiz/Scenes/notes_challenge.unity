@@ -6582,6 +6582,7 @@ GameObject:
   - component: {fileID: 1103140448}
   - component: {fileID: 1103140447}
   - component: {fileID: 1103140450}
+  - component: {fileID: 1103140451}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -6625,7 +6626,7 @@ Camera:
   field of view: 60
   orthographic: 1
   orthographic size: 5
-  m_Depth: -1
+  m_Depth: -1.99
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -6664,6 +6665,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 711eb1eb7e38b4d4997d135f723d2567, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1103140451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103140446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6cabd3bf5c1ee45b69ab94680aa56b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &1119337009
@@ -11528,7 +11541,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 864, y: 480}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 1
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
