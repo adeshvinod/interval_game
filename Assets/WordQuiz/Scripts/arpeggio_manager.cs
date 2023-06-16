@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 public class arpeggio_manager : MonoBehaviour
 {
     public static arpeggio_manager instance;
+   
 
     [SerializeField] private Text questionChordFloating_chordtype;   //the text which shows the question
     [SerializeField] private Text questionChordFloating_note;   //the text which shows the question
@@ -19,10 +20,25 @@ public class arpeggio_manager : MonoBehaviour
     public int[] min7b5 = { 0, 3, 6, 10 };
     public int[] answerchecklist={0,0,0,0,0,0,0,0};
 
+    public GameObject metronome_object;
+
+    private GameObject shadedregion_instance;
+    public int progression_index=0;
+
     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
+    public GameMode gameMode = GameMode.RegionalFretboard;
 
-    public List<int> answer;
+    private int RegionalFretboard_rows = 4;
+    private int RegionalFretboard_columns=7;  //decodes how big the box should be for the restricted fretboard region
+    private int TotalCorrectAnswers_count_RFB = 0;
+    private int CurrentCorrectAnswers_count_RFB = 0; //keeps track of how many any right answers you selected 
 
+
+    private int x_coord_startpoint;
+    private int y_coord_startpoint;
+
+    public List<int> answer;                //list of notevalues present in the chord (calculated wrt Root note according to chord formula
+    public List<int> answer_restrictedFB; //list of the sibling index values when we play in restrictedfretboard mode
     public Dictionary<int, int[]> chord_formula_index_list = new Dictionary<int, int[]>()
     {
         
@@ -73,8 +89,10 @@ public class arpeggio_manager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        shadedregion_instance = GameObject.Find("shaded_region");
         GameObject originalGameObject = GameObject.Find("notebuttons");
         notebuttons_ = originalGameObject.GetComponentsInChildren<note_button>();
+        
 
         CorrectButton = ColorBlock.defaultColorBlock;
         CorrectButton.normalColor = new Color(0, 255, 0, 255);
@@ -96,15 +114,18 @@ public class arpeggio_manager : MonoBehaviour
         chord_formula_index_list.Add(3,min7b5);
 
         next_question();
-
+       
 
     }
 
     public void next_question()
     {
         gameStatus = GameStatus.Playing;
-        question_chordtype = Random.Range(0, 4);
-        question_notevalue = Random.Range(0, 12);
+        // question_chordtype = Random.Range(0, 4);
+        //question_notevalue = Random.Range(0, 12);
+        question_chordtype = settings_arpgame.instance.myProgression[progression_index].chordtype;
+        question_notevalue = settings_arpgame.instance.myProgression[progression_index].note;
+
 
         questionChordFloating_chordtype.text = chord_name_list[question_chordtype];
         questionChordFloating_note.text = notename_flats[question_notevalue];
@@ -123,12 +144,55 @@ public class arpeggio_manager : MonoBehaviour
 
 
             note_button_temp.colors = RegularButton;
-           // note_button_temp.noteText.color = new Color(note_button_temp.noteText.color.r, note_button_temp.noteText.color.g, note_button_temp.noteText.color.b, 0);
+            // note_button_temp.noteText.color = new Color(note_button_temp.noteText.color.r, note_button_temp.noteText.color.g, note_button_temp.noteText.color.b, 0);
 
-           
+            //this is only for gameMode restrictedFretboard
+            note_button_temp.transform.Find("Sprite Mask").gameObject.SetActive(false);
+            note_button_temp.selectedRegion = false;
+
+
             note_button_temp.interactable = true;
 
         }
+
+        if (gameMode == GameMode.RegionalFretboard)
+        {
+            TotalCorrectAnswers_count_RFB = 0;
+            CurrentCorrectAnswers_count_RFB = 0;
+            x_coord_startpoint = Random.Range(0, 13 - RegionalFretboard_columns);
+            y_coord_startpoint = Random.Range(0, 6 - RegionalFretboard_rows);
+            Debug.Log("xcoord:" + x_coord_startpoint + "    ycoord: " + y_coord_startpoint);
+
+
+            foreach (note_button note_button_temp in notebuttons_)
+            {
+                
+                if(note_button_temp.x_coord>=x_coord_startpoint && note_button_temp.x_coord<x_coord_startpoint+RegionalFretboard_columns && note_button_temp.y_coord >= y_coord_startpoint && note_button_temp.y_coord < y_coord_startpoint + RegionalFretboard_rows)
+                {
+                    note_button_temp.transform.Find("Sprite Mask").gameObject.SetActive(true);
+                    note_button_temp.selectedRegion = true;
+                    
+                    foreach(int element in answer)
+                    {
+                        if(note_button_temp.notevalue==element)
+                        {
+                            answer_restrictedFB.Add(note_button_temp.transform.GetSiblingIndex());
+                            TotalCorrectAnswers_count_RFB++;
+                            break;
+
+                        }
+
+                    }
+                    //if note_button_temp.notevalue
+                    
+                }
+
+            }
+        }
+        
+
+    
+
     }
 
     public void Selected_button(note_button value)
@@ -146,7 +210,16 @@ public class arpeggio_manager : MonoBehaviour
 
                  // value.interactable = true;
 
-                  evaluate(value.notevalue,i);
+                if(gameMode==GameMode.TwoOctaveArpeggio)
+                  evaluate_fixedoctaves(value.notevalue,i,2);
+                else if(gameMode==GameMode.OneOctaveArpeggio)
+                {
+                    evaluate_fixedoctaves(value.notevalue, i, 1);
+                }
+                else if(gameMode==GameMode.RegionalFretboard)
+                        {
+                    evaluate_RestrictedFretboard(value.transform.GetSiblingIndex());
+                }
                 break;
               }
           }
@@ -159,17 +232,17 @@ public class arpeggio_manager : MonoBehaviour
              // value.interactable = true;
           }
         
-       // Debug.Log("THE BUTTON IS PRESSED");
+        Debug.Log("The button row and columns is :"+value.x_coord+"  "+value.y_coord);
 
     }
 
-    public void evaluate(int notevalue_,int index)
+    public void evaluate_fixedoctaves(int notevalue_,int index,int no_of_octaves)
     {
         answerchecklist[index]++;
         int j;
         for( j = 0; j < answer.Count;j++)
         {
-            if (answerchecklist[j] < 2)
+            if (answerchecklist[j] < no_of_octaves)
                 break;
         }
         string arrayString = string.Join(", ",answerchecklist);
@@ -183,12 +256,68 @@ public class arpeggio_manager : MonoBehaviour
            
             gameStatus = GameStatus.Next;
             Debug.Log("CORRECT ANSWER!");
+            progression_index = (progression_index + 1) % settings_arpgame.instance.myProgression.Count;
             Invoke("next_question", 3f);
         }
     }
+
+    public void evaluate_RestrictedFretboard(int selected_siblingindex)
+    {
+        int elementToRemove=1000;  //assign to some nuber outside the fretboard range scope
+
+        foreach(int element in answer_restrictedFB)
+        {
+            if(element==selected_siblingindex)
+            {
+                elementToRemove = selected_siblingindex;
+            }
+        }
+        if(elementToRemove<1000)
+        answer_restrictedFB.Remove(elementToRemove);
+
+        if(answer_restrictedFB.Count==0)
+        {
+            gameStatus = GameStatus.Next;
+            Debug.Log("CORRECT ANSWER!");
+            progression_index = (progression_index + 1) % settings_arpgame.instance.myProgression.Count;
+            Invoke("next_question", 3f);
+        }
+
+        Debug.Log("answer_restrictedFB=" + answer_restrictedFB);
+    }
     // Update is called once per frame
+
+    public void SetGameMode(int gameMode_index)
+    {
+        switch(gameMode_index)
+        {
+            case 0:
+                             shadedregion_instance.SetActive(false);
+                            metronome_object.GetComponent<Metronome>().initialize();
+               
+                            gameMode = GameMode.OpenFretboard;
+                            break;
+            case 1: gameMode =  GameMode.RegionalFretboard;
+                shadedregion_instance.SetActive(true);
+                next_question();
+                                break;
+           
+            case 2: gameMode = GameMode.OneOctaveArpeggio;
+                shadedregion_instance.SetActive(true);
+                next_question();
+                                break;
+            
+            case 3: gameMode = GameMode.TwoOctaveArpeggio;
+                shadedregion_instance.SetActive(true);
+                next_question();
+                                break;
+
+            default:break;
+        }
+    }
     void Update()
     {
+      
         
     }
 
@@ -197,5 +326,13 @@ public class arpeggio_manager : MonoBehaviour
         Next,
         Playing,
         Gameover
+    }
+
+    public enum GameMode
+    {
+        OpenFretboard,
+        RegionalFretboard,
+        TwoOctaveArpeggio,
+        OneOctaveArpeggio
     }
 }

@@ -13,6 +13,9 @@ public class note_button : Button
     [SerializeField] public int bio;
     public Scene scene;
 
+    public int x_coord=0;
+    public int y_coord=0;
+
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
         {0,7},
@@ -161,6 +164,12 @@ public class note_button : Button
         noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 0);
 
         scene = SceneManager.GetActiveScene();
+
+        
+        
+            this.x_coord = this.transform.GetSiblingIndex() % 13;
+            this.y_coord = this.transform.GetSiblingIndex() / 13;
+        
 
     }
 
