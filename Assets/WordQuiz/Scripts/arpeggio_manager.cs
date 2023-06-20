@@ -27,6 +27,7 @@ public class arpeggio_manager : MonoBehaviour
 
     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     public GameMode gameMode = GameMode.RegionalFretboard;
+    public QuestionMode questionMode = QuestionMode.RandomQuestions;
 
     private int RegionalFretboard_rows = 4;
     private int RegionalFretboard_columns=7;  //decodes how big the box should be for the restricted fretboard region
@@ -112,7 +113,16 @@ public class arpeggio_manager : MonoBehaviour
         chord_formula_index_list.Add(1,min7);
         chord_formula_index_list.Add(2,dom7);
         chord_formula_index_list.Add(3,min7b5);
-
+        if(settings_arpgame.instance.myProgression.Count>0)
+        {
+            questionMode = QuestionMode.ChordProgressionQuestions;
+            Debug.Log("mode is:chord prog");
+        }
+        else
+        {
+            questionMode = QuestionMode.RandomQuestions;
+            Debug.Log("mode is random Qs");
+        }
         next_question();
        
 
@@ -123,8 +133,16 @@ public class arpeggio_manager : MonoBehaviour
         gameStatus = GameStatus.Playing;
         // question_chordtype = Random.Range(0, 4);
         //question_notevalue = Random.Range(0, 12);
-        question_chordtype = settings_arpgame.instance.myProgression[progression_index].chordtype;
-        question_notevalue = settings_arpgame.instance.myProgression[progression_index].note;
+        if (questionMode == QuestionMode.RandomQuestions)
+        {
+            question_chordtype = settings_arpgame.instance.QuestionList_chordtypes[Random.Range(0, settings_arpgame.instance.QuestionList_chordtypes.Count)];
+            question_notevalue = Random.Range(0, 12);
+        }
+        else if (questionMode == QuestionMode.ChordProgressionQuestions)
+        {
+            question_chordtype = settings_arpgame.instance.myProgression[progression_index].chordtype;
+            question_notevalue = settings_arpgame.instance.myProgression[progression_index].note;
+        }
 
 
         questionChordFloating_chordtype.text = chord_name_list[question_chordtype];
@@ -256,7 +274,8 @@ public class arpeggio_manager : MonoBehaviour
            
             gameStatus = GameStatus.Next;
             Debug.Log("CORRECT ANSWER!");
-            progression_index = (progression_index + 1) % settings_arpgame.instance.myProgression.Count;
+            if (questionMode == QuestionMode.ChordProgressionQuestions)
+                progression_index = (progression_index + 1) % settings_arpgame.instance.myProgression.Count;
             Invoke("next_question", 3f);
         }
     }
@@ -274,11 +293,13 @@ public class arpeggio_manager : MonoBehaviour
         }
         if(elementToRemove<1000)
         answer_restrictedFB.Remove(elementToRemove);
+        Debug.Log("no of elements left: " + answer_restrictedFB.Count);
 
-        if(answer_restrictedFB.Count==0)
+        if (answer_restrictedFB.Count==0)
         {
             gameStatus = GameStatus.Next;
             Debug.Log("CORRECT ANSWER!");
+            if(questionMode==QuestionMode.ChordProgressionQuestions)
             progression_index = (progression_index + 1) % settings_arpgame.instance.myProgression.Count;
             Invoke("next_question", 3f);
         }
@@ -293,8 +314,7 @@ public class arpeggio_manager : MonoBehaviour
         {
             case 0:
                              shadedregion_instance.SetActive(false);
-                            metronome_object.GetComponent<Metronome>().initialize();
-               
+                            metronome_object.GetComponent<Metronome>().initialize();               
                             gameMode = GameMode.OpenFretboard;
                             break;
             case 1: gameMode =  GameMode.RegionalFretboard;
@@ -302,13 +322,15 @@ public class arpeggio_manager : MonoBehaviour
                 next_question();
                                 break;
            
-            case 2: gameMode = GameMode.OneOctaveArpeggio;
-                shadedregion_instance.SetActive(true);
+            case 2:              shadedregion_instance.SetActive(false);
+                gameMode = GameMode.OneOctaveArpeggio;
+               // shadedregion_instance.SetActive(true);
                 next_question();
                                 break;
             
-            case 3: gameMode = GameMode.TwoOctaveArpeggio;
-                shadedregion_instance.SetActive(true);
+            case 3:         shadedregion_instance.SetActive(false);
+                            gameMode =GameMode.TwoOctaveArpeggio;
+              //  shadedregion_instance.SetActive(true);
                 next_question();
                                 break;
 
@@ -334,5 +356,11 @@ public class arpeggio_manager : MonoBehaviour
         RegionalFretboard,
         TwoOctaveArpeggio,
         OneOctaveArpeggio
+    }
+
+    public enum QuestionMode
+    {
+        RandomQuestions,            //ask from the set of chord types user selected in pre game menu. the root notes can be anywhere
+        ChordProgressionQuestions  //ask from a specific chord progression user entered, Root notes and order are fixed 
     }
 }

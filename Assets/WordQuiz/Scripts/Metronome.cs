@@ -49,6 +49,7 @@ public class Metronome : MonoBehaviour
         beat_no = (beat_no + 1) % 4;
         if(beat_no==0 && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.OpenFretboard)
         {
+            if(arpeggio_manager.instance.questionMode==arpeggio_manager.QuestionMode.ChordProgressionQuestions)
            arpeggio_manager.instance.progression_index = (arpeggio_manager.instance.progression_index + 1) % settings_arpgame.instance.myProgression.Count;
             arpeggio_manager.instance.next_question();
             Debug.Log("next question called from metronome.cs");

@@ -12,7 +12,13 @@ public class settings_arpgame : MonoBehaviour
     public TMPro.TMP_Dropdown dropval_note;
     public TMPro.TMP_Dropdown dropval_chordtype;
 
-
+    public Dictionary<int, string> chord_name_list = new Dictionary<int, string>()
+    {
+        {0,"maj7" },
+        {1,"min7" },
+        {2,"dom7" },
+        {3,"min7b5"}
+    };
 
     public class Pair<T1, T2>
     {
@@ -21,6 +27,8 @@ public class settings_arpgame : MonoBehaviour
     }
 
    public List<Pair<int, int>> myProgression = new List<Pair<int, int>>();
+    public List<int> QuestionList_chordtypes = new List<int>();
+    
 
 
     // Start is called before the first frame update
@@ -68,4 +76,6 @@ public class settings_arpgame : MonoBehaviour
     {
         
     }
+
+    
 }
