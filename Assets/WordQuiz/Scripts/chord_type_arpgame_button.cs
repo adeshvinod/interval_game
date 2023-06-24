@@ -10,7 +10,7 @@ public class chord_type_arpgame_button : Button
     {
 
         this.chordtype = this.transform.GetSiblingIndex();
-         this.GetComponentInChildren<Text>().text = settings_arpgame.instance.chord_name_list[this.chordtype]+ "  "+this.chordtype.ToString();
+        this.GetComponentInChildren<Text>().text = settings_arpgame.instance.chord_name_list[this.chordtype]+ "  "+this.chordtype.ToString();
         //this.GetComponentInChildren<Text>().text = settings_arpgame.instance.chord_name_list[3];
     }
 

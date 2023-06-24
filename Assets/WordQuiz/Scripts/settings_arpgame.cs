@@ -14,10 +14,17 @@ public class settings_arpgame : MonoBehaviour
 
     public Dictionary<int, string> chord_name_list = new Dictionary<int, string>()
     {
-        {0,"maj7" },
-        {1,"min7" },
-        {2,"dom7" },
-        {3,"min7b5"}
+        {0,"maj" },
+        {1,"min" },
+        {2,"dim" },
+        {3,"aug" },
+        {4,"maj7" },
+        {5,"min7" },
+        {6,"dom7" },
+        {7,"min7b5"},
+        {8,"majScale" },
+        {9,"harmonicMin"},
+        {10,"melodicMin" }
     };
 
     public class Pair<T1, T2>

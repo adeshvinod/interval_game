@@ -18,7 +18,16 @@ public class arpeggio_manager : MonoBehaviour
     public int[] min7 = { 0, 3, 7, 10 };
     public int[] dom7 = { 0, 4, 7, 10 };
     public int[] min7b5 = { 0, 3, 6, 10 };
+    public int[] maj = { 0, 4, 7 };
+    public int[] min = { 0, 3, 7 };
+    public int[] dim = { 0, 3, 6 };
+    public int[] aug = { 0, 4, 8 };
+    public int[] majScale = { 0, 2, 4, 5, 7, 9, 11 };
+    public int[] harmonicMin = { 0, 2, 3, 5, 7, 8, 11 };
+    public int[] melodicMin = { 0, 2, 3, 5, 7, 9, 11 };
+
     public int[] answerchecklist={0,0,0,0,0,0,0,0};
+
 
     public GameObject metronome_object;
 
@@ -65,10 +74,17 @@ public class arpeggio_manager : MonoBehaviour
 
     public Dictionary<int, string> chord_name_list = new Dictionary<int, string>()
     {
-        {0,"maj7" },
-        {1,"min7" },
-        {2,"dom7" },
-        {3,"min7b5"}
+        {0,"maj" },
+        {1,"min" },
+        {2,"dim" },
+        {3,"aug" },
+        {4,"maj7" },
+        {5,"min7" },
+        {6,"dom7" },
+        {7,"min7b5"},
+        {8,"majScale" },
+        {9,"harmonicMin"},
+        {10,"melodicMin" }
     };
 
     public int question_chordtype;
@@ -93,27 +109,39 @@ public class arpeggio_manager : MonoBehaviour
         shadedregion_instance = GameObject.Find("shaded_region");
         GameObject originalGameObject = GameObject.Find("notebuttons");
         notebuttons_ = originalGameObject.GetComponentsInChildren<note_button>();
-        
+
 
         CorrectButton = ColorBlock.defaultColorBlock;
         CorrectButton.normalColor = new Color(0, 255, 0, 255);
-        CorrectButton.selectedColor = new Color(0, 255, 0,255);
-        
+        CorrectButton.selectedColor = new Color(0, 255, 0, 255);
+
 
 
         RegularButton = ColorBlock.defaultColorBlock;
-        RegularButton.normalColor = new Color(0,0,0,0);
-        RegularButton.selectedColor = new Color(255, 0, 0, 255 );
+        RegularButton.normalColor = new Color(0, 0, 0, 0);
+        RegularButton.selectedColor = new Color(255, 0, 0, 255);
 
         chord_formula_index_list = new Dictionary<int, int[]>();
         answer = new List<int>();
 
         // Add arrays to the dictionary
-        chord_formula_index_list.Add(0,maj7);
-        chord_formula_index_list.Add(1,min7);
-        chord_formula_index_list.Add(2,dom7);
-        chord_formula_index_list.Add(3,min7b5);
-        if(settings_arpgame.instance.myProgression.Count>0)
+
+        
+        
+        chord_formula_index_list.Add(4, maj7);
+        chord_formula_index_list.Add(5, min7);
+        chord_formula_index_list.Add(6, dom7);
+        chord_formula_index_list.Add(7, min7b5);
+
+        chord_formula_index_list.Add(0, maj);
+        chord_formula_index_list.Add(1, min);
+        chord_formula_index_list.Add(2,dim);
+        chord_formula_index_list.Add(3,aug);
+        chord_formula_index_list.Add(8, majScale);
+        chord_formula_index_list.Add(9, harmonicMin);
+        chord_formula_index_list.Add(10, melodicMin);
+
+        if (settings_arpgame.instance.myProgression.Count>0)
         {
             questionMode = QuestionMode.ChordProgressionQuestions;
             Debug.Log("mode is:chord prog");
