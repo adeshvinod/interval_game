@@ -21,6 +21,7 @@ public class challenge_settings : MonoBehaviour
     private int[] level2_intervals = new int[] { 0, 7,3,4 };
     private int[] level3_intervals = new int[] { 0, 7,3,4,1,2,10,11 };
     private int[] level4_intervals = new int[] { 0, 7, 3, 4, 1, 2, 10, 11,5,6,8,9};
+    public Level current_level=Level.CUSTOM;
 
     private int[] allstring_array = new int[] { 0, 1, 2, 3, 4, 5 };
 
@@ -70,25 +71,28 @@ public class challenge_settings : MonoBehaviour
         stringList.Clear();
         switch (level)
         {
-            case 1:     
+            case 1:     current_level = Level.level1;
                         questionList.AddRange(level1_intervals);
                          stringList.AddRange(allstring_array);
                         break;
 
-            case 2:     
+            case 2:
+                          current_level = Level.level2;
                         questionList.AddRange(level2_intervals);
                          stringList.AddRange(allstring_array);
 
                          break;
 
-            case 3:     
+            case 3:
+                         current_level = Level.level3;
                         questionList.AddRange(level3_intervals);
                         stringList.AddRange(allstring_array);
 
                           break;
 
-            case 4:     
-                        questionList.AddRange(level4_intervals);
+            case 4:
+                             current_level = Level.level4;
+                questionList.AddRange(level4_intervals);
                         stringList.AddRange(allstring_array);
 
                           break;
@@ -123,6 +127,15 @@ public class challenge_settings : MonoBehaviour
         }
         stringList.Add(stringnum);
         Debug.Log(ListToText(stringList)+"scene index: "+scene.buildIndex);
+    }
+
+    public enum Level
+    {
+        level1,
+        level2,
+        level3,
+        level4,
+        CUSTOM
     }
 }
         

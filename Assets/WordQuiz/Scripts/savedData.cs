@@ -5,27 +5,44 @@ using UnityEngine.UI;
 
 [System.Serializable]
 public class savedData
-{  
-    public int HighScore=0;
+{
+    public int HighScore = 0;
 
     public float[] ReactionTimes;
     public float[] Acurracies;
-   
-   
-    public savedData(gameover Gameover_)
+
+    public int l1_intervals_highscore = 0;
+    public int l2_intervals_highscore = 0;
+    public int l3_intervals_highscore = 0;
+    public int l4_intervals_highscore = 0;
+
+    public int l1_notes_highscore = 0;
+    public int l2_notes_highscore = 0;
+    public int l3_notes_highscore = 0;
+    public int l4_notes_highscore = 0;
+
+    public List<settings_arpgame.chord_Progression> savedProgressions;
+
+
+
+
+
+    public savedData(savedData _modifieddata)
     {
-        HighScore = Gameover_.HighScore;
+        HighScore = _modifieddata.HighScore;
+
+        l1_intervals_highscore = _modifieddata.l1_intervals_highscore;
+        l2_intervals_highscore = _modifieddata.l2_intervals_highscore;
+        l3_intervals_highscore = _modifieddata.l3_intervals_highscore;
+        l4_intervals_highscore = _modifieddata.l4_intervals_highscore;
+
+        savedProgressions = _modifieddata.savedProgressions;
     }
-    
-    //public void LoadgameData()
-    //{
-        
-      //  SaveSystem.Loaddata();
-     //   if (QuizManager.instance.gameStatus == GameStatus.Gameover)
-       // { if(QuizManager.instance.score > HighScore)
-      //      HighScore = QuizManager.instance.score;
-          
-      //  }
-   // }
-    
+
+   
+
+    public void start()
+    {
+
+    }
 }

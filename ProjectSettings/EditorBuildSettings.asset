@@ -41,4 +41,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/WordQuiz/Scenes/arpeggio_game.unity
     guid: 91f552c806e46f344bbcc5f3771cdb8b
+  - enabled: 1
+    path: Assets/WordQuiz/Scenes/pre-arpeggio.unity
+    guid: 2c765bb401a34c844bd50a1fceb57a76
   m_configObjects: {}

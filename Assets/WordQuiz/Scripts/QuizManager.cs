@@ -318,9 +318,10 @@ public class QuizManager : MonoBehaviour
            
 
         }
+       // Debug.Log(Application.persistentDataPath);
 
 
-       
+
     }
    
     IEnumerator CallFunctionEvery5Seconds()
@@ -623,6 +624,7 @@ public enum GameStatus
    Playing,
    Gameover
 }
+
 
 public enum QuestionMode
 {

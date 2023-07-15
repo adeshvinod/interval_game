@@ -17,6 +17,8 @@ public class gameover : MonoBehaviour
     public int currentscore;
     public DateTime currentTime;
 
+    public savedData modifiedData;
+
 
 
     private float[] avg_rxntime=new float[12];
@@ -57,7 +59,7 @@ public class gameover : MonoBehaviour
 
     public void saveGame()
     {
-        SaveSystem.SavePlayer(this);
+        SaveSystem.SavePlayer(modifiedData);
     }
 
     public void loadGame()
@@ -68,10 +70,58 @@ public class gameover : MonoBehaviour
         if (File.Exists(path))
         {
             savedData Data = SaveSystem.Loaddata();
-            HighScore = Data.HighScore;
+            modifiedData = Data;
+            switch (challenge_settings.instance.current_level)
+      {
+         case challenge_settings.Level.level1:  HighScore =
+                        
+                        Data.l1_intervals_highscore;
+                    if (currentscore > HighScore)
+                    {
+                        HighScore = currentscore;
+                        modifiedData.l1_intervals_highscore = currentscore;
+                    }
+                    break;
+
+         case challenge_settings.Level.level2: HighScore =
+                        
+                        Data.l2_intervals_highscore;
+                    if (currentscore > HighScore)
+                    {
+                        HighScore = currentscore;
+                        modifiedData.l2_intervals_highscore = currentscore;
+                    }
+                    break;
+
+         case challenge_settings.Level.level3: 
+
+                    HighScore = Data.l3_intervals_highscore;
+                    if (currentscore > HighScore)
+                    {
+                        HighScore = currentscore;
+                        modifiedData.l3_intervals_highscore = currentscore;
+                    }
+                    break;
+
+         case challenge_settings.Level.level4: HighScore =
+                        Data.l4_intervals_highscore;
+                    if (currentscore > HighScore)
+                    {
+                        HighScore = currentscore;
+                        modifiedData.l4_intervals_highscore = currentscore;
+                    }
+                    break;
+
+            }
+
+           // HighScore = Data.HighScore;
         }
-            if (currentscore> HighScore)
+        /*
+        if (currentscore > HighScore)
+        {
             HighScore = currentscore;
-        Debug.Log(path);
+            modifiedData.HighScore = currentscore;
+        }
+        Debug.Log(path);*/
     }
 }
