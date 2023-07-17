@@ -2645,6 +2645,23 @@ MonoBehaviour:
     l2_notes_highscore: 0
     l3_notes_highscore: 0
     l4_notes_highscore: 0
+    savedProgression_names:
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    totalProgressions: 0
   askRandom_Panel: {fileID: 1134856203}
   QuestionList_chordtypes: 
 --- !u!4 &763968108

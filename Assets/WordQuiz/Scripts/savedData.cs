@@ -21,8 +21,11 @@ public class savedData
     public int l3_notes_highscore = 0;
     public int l4_notes_highscore = 0;
 
-    public List<settings_arpgame.chord_Progression> savedProgressions;
-
+    // public List<settings_arpgame.chord_Progression> savedProgressions;
+    public int[,] savedProgressions_tonics;    
+    public int[,] savedProgressions_chordtypes;
+    public string[] savedProgression_names;
+    public int totalProgressions = 0;
 
 
 
@@ -36,9 +39,19 @@ public class savedData
         l3_intervals_highscore = _modifieddata.l3_intervals_highscore;
         l4_intervals_highscore = _modifieddata.l4_intervals_highscore;
 
-        savedProgressions = _modifieddata.savedProgressions;
+        savedProgressions_tonics = _modifieddata.savedProgressions_tonics;
+        savedProgressions_chordtypes = _modifieddata.savedProgressions_chordtypes;
+        savedProgression_names = _modifieddata.savedProgression_names;
+        totalProgressions = _modifieddata.totalProgressions;
     }
 
+    public savedData()
+    {
+         savedProgressions_tonics = new int[15, 40];
+    savedProgressions_chordtypes = new int[15, 40];
+     savedProgression_names = new string[15];
+    Debug.Log("saved data constructor called)+ "+savedProgressions_tonics[0,0]);
+    }
    
 
     public void start()
