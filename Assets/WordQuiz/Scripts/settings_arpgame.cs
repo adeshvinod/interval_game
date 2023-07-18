@@ -58,12 +58,13 @@ public class settings_arpgame : MonoBehaviour
 
     public class chord_Progression
     {
-        public List<Pair> myProgression;
+        public List<Pair> Progression;
         public string name;
 
         public chord_Progression(List<Pair> _myprogression,string _name)
         {
-            myProgression = _myprogression;
+            Progression = new List<Pair>();
+            Progression.AddRange(_myprogression);
             name = _name;
 
         }
@@ -105,8 +106,8 @@ public class settings_arpgame : MonoBehaviour
     public void HandleProgressionDropdown(int value)
     {
         myProgression.Clear();
-        Debug.Log("im here "+value+" "+List_of_progressions[0].myProgression[0].chordtype);
-        myProgression.AddRange(List_of_progressions[value].myProgression);
+        Debug.Log("im here "+value+" "+List_of_progressions[value].Progression.Count);
+        myProgression.AddRange(List_of_progressions[value].Progression);
         Debug.Log("after selecting dropdown " + myProgression[0].chordtype + " " + myProgression[1].chordtype + " "+myProgression[2].chordtype);
     }
     public void addChord()
@@ -221,7 +222,7 @@ public class settings_arpgame : MonoBehaviour
                 modifiedData.savedProgression_names = new string[15];
                 Debug.Log("modifieddata.savedprogressions_names was null");
             }
-            Debug.Log("modified data info: " + modifiedData.savedProgressions_chordtypes[0,0]);
+            Debug.Log("modified data info: " + modifiedData.savedProgressions_chordtypes[0,1]+" "+ modifiedData.savedProgressions_chordtypes[0, 2]+" "+ modifiedData.savedProgressions_chordtypes[1, 1]+" "+ modifiedData.savedProgressions_chordtypes[1, 2]+" "+ modifiedData.savedProgressions_chordtypes[2, 1]+" "+ modifiedData.savedProgressions_chordtypes[2, 2]);
 
             /*
             Pair newPair = new Pair();
@@ -280,7 +281,7 @@ public class settings_arpgame : MonoBehaviour
             chord_Progression savedProgression = new chord_Progression(myProgression, value);
             List_of_progressions.Add(savedProgression);
             Debug.Log("reached save progression");
-            ConvertProgressionintoSerializable(List_of_progressions);
+            ConvertProgressionintoSerializable();
             Debug.Log("hi"+modifiedData.savedProgressions_chordtypes[0, 0]+" "+ modifiedData.savedProgressions_chordtypes[0, 1]+" "+ modifiedData.savedProgressions_chordtypes[0, 2]+" "+ modifiedData.savedProgressions_chordtypes[0, 3] + " " + modifiedData.savedProgressions_chordtypes[0, 4]);
 
             //Debug.Log(savedProgression.name);
@@ -299,22 +300,22 @@ public class settings_arpgame : MonoBehaviour
         }
     }
     
-    public void ConvertProgressionintoSerializable(List<chord_Progression> _list_of_progressions )
+    public void ConvertProgressionintoSerializable()
     {
         Debug.Log("reached convertprogressionintoserializable");
-        int no_of_progressions = _list_of_progressions.Count;
+        int no_of_progressions = List_of_progressions.Count;
         for(int i=0;i<no_of_progressions;i++)
         {
             Debug.Log("reached convertprogressionintoserializable 2");
-            modifiedData.savedProgressions_chordtypes[i, 0] = _list_of_progressions[i].myProgression.Count;
-            modifiedData.savedProgressions_tonics[i, 0] = _list_of_progressions[i].myProgression.Count;
+            modifiedData.savedProgressions_chordtypes[i, 0] = List_of_progressions[i].Progression.Count;
+            modifiedData.savedProgressions_tonics[i, 0] = List_of_progressions[i].Progression.Count;
             Debug.Log("reached convertprogressionintoserializable 3");
-            for (int j=1;j<=_list_of_progressions[i].myProgression.Count;j++)
+            for (int j=1;j<= List_of_progressions[i].Progression.Count;j++)
             {
                 Debug.Log("reached convertprogressionintoserializable 4");
-                modifiedData.savedProgressions_tonics[i, j] = _list_of_progressions[i].myProgression[j-1].note;
-                modifiedData.savedProgressions_chordtypes[i, j] = _list_of_progressions[i].myProgression[j-1].chordtype;
-                modifiedData.savedProgression_names[i]= _list_of_progressions[i].name; 
+                modifiedData.savedProgressions_tonics[i, j] = List_of_progressions[i].Progression[j-1].note;
+                modifiedData.savedProgressions_chordtypes[i, j] = List_of_progressions[i].Progression[j-1].chordtype;
+                modifiedData.savedProgression_names[i]= List_of_progressions[i].name;
             }
             Debug.Log("reached convertprogressionintoserializable 5");
         }
@@ -346,6 +347,7 @@ public class settings_arpgame : MonoBehaviour
             List_of_progressions.Add(savedProgression);
         }
         myProgression.Clear();  //in the special case where all 15 menu options are filled, we want to clear out myprogression to make room for user inputed chord progs
+        Debug.Log("List of progressions:"+List_of_progressions.Count+" "+List_of_progressions[0].Progression[0].chordtype);
     }
-
+   
 }

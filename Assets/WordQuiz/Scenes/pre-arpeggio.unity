@@ -2628,6 +2628,7 @@ MonoBehaviour:
   dropval_note: {fileID: 1530238213}
   dropval_chordtype: {fileID: 76905002}
   dropmenu_loaded_progressions: {fileID: 873399006}
+  progressionDropdown: {fileID: 873399006}
   progressionNameInput: {fileID: 736562495}
   chord_prog_display: {fileID: 1028139034874213908, guid: 9e8dcd4c893d52742849f4db43d08241,
     type: 3}
