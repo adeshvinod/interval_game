@@ -12,17 +12,17 @@ using Random = UnityEngine.Random;
 
 public class QuizManager : MonoBehaviour
 {
-   
+
 
     public static QuizManager instance; //Instance to make is available in other scripts without reference
 
     [SerializeField] private GameObject gameComplete;
     [SerializeField] private Text questionChordFloating;   //the text which shows the question
-  
+
     [SerializeField] private interval_option[] optionintervalList;    //list of interval options in the game (R,b2,M2,b3 etc)
     private GameObject optionintervalList_parent;
 
-     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
+    public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     private QuestionMode questionMode = QuestionMode.PressTheInterval;
 
     //bool coroutine_toggle = true;
@@ -46,17 +46,33 @@ public class QuizManager : MonoBehaviour
     private List<intervalbutton> possibleAnswers;
     private int highlightedstring;
 
-    public int score=0;
+    public int score = 0;
     public Text score_text;
     public int lives = 3;
     [SerializeField] public List<Image> lives_image;
-    public float timer=10;
+    public float timer = 10;
     public int time; //int form of time
-    [SerializeField]  public Text timer_text;
+    [SerializeField] public Text timer_text;
 
-    public float[] accuracies=new float[12];
-    public float[] reactiontimes=new float[12];
+    public float[] accuracies = new float[12];
+    public float[] reactiontimes = new float[12];
     public int[] questioncounter = new int[12]; //count how many times each interval question has been asked, used to calculate average reaction times and accuracies for individual intervals
+
+    public float[,] questionHistory_accuracy = new float[6, 42];   //creates a record of each question answer pair, initializes to -1 but changes to >=0 if that pair is invoked during the game
+    public float[,] questionHistory_rxntimes = new float[6, 42];
+    public float[,] questionHistory_Counter = new float[6, 42];
+
+
+
+    private float[,] avg_rxntimes = new float[6, 42];
+    private float[,] avg_accuracies = new float[6, 42]; //computed at the end after gameover
+
+    private List<(int, int)> wrongPairs = new List<(int, int)>();
+    private int wrongPairs_index = 0;
+
+    public int currentQuestion_Question_node; //global variables to keep track of the question snode and answer sibling index so that we can record these pair in questionHistory variables
+    public int currentQuestion_Answer_node;
+
 
     private int questionmode_counter;  //variable to countdown the number of questions in a particular mode( press interval, guess interval).each mode will have a series of 4-8 questions at a go
 
@@ -74,15 +90,19 @@ public class QuizManager : MonoBehaviour
             {9, "M6"},
             {10, "b7"},
             {11, "M7"},
+
           };
     public List<int> questionList;
     public GameObject GameoverPanel;  //panel displays highscore and current score
+    public GameObject GameRunningPanel;
+    public bool gameover_function_flag = false;
+
     //public gameover gameover_object;
 
     //set of audio sounds
     public AudioSource correctanswer_audio;
     public AudioSource wronganswer_audio;
-    private bool correctanswer=false;
+    private bool correctanswer = false;
     private bool togglesound = false;
 
     private void Awake()
@@ -111,13 +131,13 @@ public class QuizManager : MonoBehaviour
         RegularButton.normalColor = new Color(0, 0, 1, 0);
         RegularButton.selectedColor = new Color(1, 1, 0, 1);
 
-        debugButton= ColorBlock.defaultColorBlock; ;
+        debugButton = ColorBlock.defaultColorBlock; ;
         debugButton.normalColor = new Color(1, 1, 1, 1);
 
-        
 
 
 
+        InitializeQuestionHistoryArray();
         //nullbutton = GameObject.Find("nullbutton");
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
@@ -131,10 +151,10 @@ public class QuizManager : MonoBehaviour
         {
             optionintervalList[k].SetValue(k);
         }
-    
+
         //gameover_object=gameObject.GetComponent<gameover>
         questionmode_counter = Random.Range(4, 8);
-          //selectedWordsIndex = new List<int>();   //create a new list at start
+        //selectedWordsIndex = new List<int>(); //create a new list at start
         possibleAnswers = new List<intervalbutton>();
         nextQuestion();
         timer = 10f;
@@ -143,81 +163,111 @@ public class QuizManager : MonoBehaviour
 
     }
 
-   
+
     void SetQuestion_intervals()
     {
+
         gameStatus = GameStatus.Playing;
         //intervalquestion_val = Random.Range(0, 11);
         intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //chooses which intervals to ask depending on settings
         questioncounter[intervalquestion_val]++; //records the number of times this interval has been asked
 
         String intervalquestion_text = intervalname[intervalquestion_val];
-        questionChordFloating.text = intervalquestion_text;  
+        questionChordFloating.gameObject.SetActive(true);
+        questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
         //resets the color of the strings to blue
-        foreach(SpriteRenderer string_ in strings)
+        foreach (SpriteRenderer string_ in strings)
         {
-            string_.GetComponent<SpriteRenderer>().color=new Color(0f, 0f, 0.5f,1);
+            string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
         }
 
         //int a = Random.Range(0, 5);  //chooseing which string to put the root on
         int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)];  //chooses which strings to ask depending on settings
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
-            
+
             intervalbutton_.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
-         
+
             if (intervalbutton_.transform.GetSiblingIndex() == rootoptions[a])
             {
                 intervalbutton_.isroot = 1;
                 intervalbutton_.colors = RootButton;
                 currentrootnode = intervalbutton_;
-       
             }
+
             else
             {
                 intervalbutton_.isroot = 0;
                 intervalbutton_.colors = RegularButton;
-              
-
             }
 
-            if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue )== (intervalquestion_val - 12))
+            if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == (intervalquestion_val - 12))
             {
                 possibleAnswers.Add(intervalbutton_);
-               
-               
-            }                      
-                intervalbutton_.interactable = true;
+
+            }
+            intervalbutton_.interactable = true;
         }
 
         int b = Random.Range(0, possibleAnswers.Count);
-        
+
         highlightedstring = possibleAnswers[b].stringnum;
         correctnode = possibleAnswers[b];
+
+        currentQuestion_Answer_node = correctnode.transform.GetSiblingIndex();
+        currentQuestion_Question_node = a;
+        if (questionHistory_accuracy[currentQuestion_Question_node, currentQuestion_Answer_node] == -1)
+        {
+            questionHistory_accuracy[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+            questionHistory_rxntimes[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+        }
+        questionHistory_Counter[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+
         StartCoroutine(highlightedstringcoroutine());
     }
 
     IEnumerator highlightedstringcoroutine()
     {
-        while(gameStatus==GameStatus.Playing)
+        while (gameStatus == GameStatus.Playing)
         {
             strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
             yield return null;
 
         }
     }
+    public void InitializeQuestionHistoryArray()
+    {
+
+
+        for (int i = 0; i < questionHistory_accuracy.GetLength(0); i++)
+        {
+
+            for (int j = 0; j < questionHistory_accuracy.GetLength(1); j++)
+            {
+                // Set the value at current row and column to -1 to indicate that pair has not been evoked
+                questionHistory_accuracy[i, j] = -1;
+                questionHistory_rxntimes[i, j] = -1;
+                questionHistory_Counter[i, j] = 0;
+                avg_accuracies[i, j] = -1;
+                avg_rxntimes[i, j] = -1;
+            }
+        }
+
+
+    }
 
 
     void SetQuestion_intervals_guessmode()
     {
+        questionChordFloating.gameObject.SetActive(false);
         gameStatus = GameStatus.Playing;
         // intervalquestion_val = Random.Range(0, 11);
         intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //choses which intervals to ask depending on the settings
         questioncounter[intervalquestion_val]++; //records the number of times this interval has been asked
 
-        String intervalquestion_text = intervalname[intervalquestion_val];    
+        String intervalquestion_text = intervalname[intervalquestion_val];
         questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
@@ -246,8 +296,6 @@ public class QuizManager : MonoBehaviour
             {
                 intervalbutton_.isroot = 0;
                 intervalbutton_.colors = RegularButton;
-
-
             }
 
             if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == (intervalquestion_val - 12))
@@ -255,13 +303,24 @@ public class QuizManager : MonoBehaviour
                 possibleAnswers.Add(intervalbutton_);
             }
 
-           
+
             //intervalbutton_.interactable = true;  
         }
 
-        int b = Random.Range(0, possibleAnswers.Count - 1);   
+        int b = Random.Range(0, possibleAnswers.Count - 1);
         possibleAnswers[b].colors = CorrectButton;
         possibleAnswers[b].interactable = true;    //this ensures blue color is seen
+
+        correctnode = possibleAnswers[b];
+        currentQuestion_Answer_node = correctnode.transform.GetSiblingIndex();
+        currentQuestion_Question_node = a;
+        if (questionHistory_accuracy[currentQuestion_Question_node, currentQuestion_Answer_node] == -1)
+        {
+            questionHistory_accuracy[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+            questionHistory_rxntimes[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+        }
+        questionHistory_Counter[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+
 
 
 
@@ -270,13 +329,13 @@ public class QuizManager : MonoBehaviour
     int temp_highlight = 0;
     public void Update()
     {
-        if(gameStatus== GameStatus.Playing)
+        if (gameStatus == GameStatus.Playing)
         {
             timer -= Time.deltaTime;
-            time = (int) timer;
+            time = (int)timer;
             SetTimer(time);
         }
-        else if(gameStatus == GameStatus.Next)
+        else if (gameStatus == GameStatus.Next)
         {
             timer = 10f;
         }
@@ -285,45 +344,113 @@ public class QuizManager : MonoBehaviour
             correctanswer_audio.Play();
             togglesound = false;
         }
-        else if(correctanswer ==false && togglesound==true)
+        else if (correctanswer == false && togglesound == true)
         {
             wronganswer_audio.Play();
             togglesound = false;
         }
 
-        // else
-        // wronganswer_audio.Play();
-       
-      //  if (questionMode == QuestionMode.PressTheInterval)
-       // {
-         //   ;
-            
-           // strings[temp_highlight].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
-            // Debug.Log(strings[highlightedstring].GetComponent<SpriteRenderer>().color.r);
-            // Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
-            
-        //}
 
-        if (time <= 0 || lives==0)
-            gameStatus = GameStatus.Gameover;
-        
-        if(gameStatus==GameStatus.Gameover)
+
+        if (time <= 0 || lives == 0)
         {
-            GameoverPanel.gameObject.SetActive(true);
-            
-            GameoverPanel.GetComponent<gameover>().loadGame();
-          
-            GameoverPanel.GetComponent<gameover>().saveGame();
-            
-           
-
+            gameStatus = GameStatus.Gameover;
+            if (gameover_function_flag == false)
+            {
+                gameover_function();
+                gameover_function_flag = true;
+            }
         }
-       // Debug.Log(Application.persistentDataPath);
+        if (gameStatus == GameStatus.Gameover)
+        {
+
+            GameRunningPanel.gameObject.SetActive(false);
+            GameoverPanel.gameObject.SetActive(true);
+
+            GameoverPanel.GetComponent<gameover>().loadGame();
+
+            GameoverPanel.GetComponent<gameover>().saveGame();
+        }
+    }
+
+
+    public void showWrongPairs()               //A function which iterates through the pairs that were either wrong or took to much time to answer
+    {
+
+
+
+        foreach (intervalbutton intervalbutton_ in intervalbuttons_)
+        {
+            intervalbutton_.interactable = false;
+            intervalbutton_.colors = RegularButton;
+            intervalbutton_.interactable = true;
+        }
+
+
+        Debug.Log("number of wrong pairs: " + wrongPairs.Count);
+
+
+
+        wrongPairs_index = (wrongPairs_index + 1) % wrongPairs.Count;
+        Debug.Log("item 1:" + wrongPairs[wrongPairs_index].Item1 + "   item2:" + wrongPairs[wrongPairs_index].Item2);
+
+
+        intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].colors = RootButton;
+        intervalbuttons_[wrongPairs[wrongPairs_index].Item2].colors = CorrectButton;
 
 
 
     }
-   
+
+    public void gameover_function()
+    {
+        foreach (SpriteRenderer string_ in strings)
+        {
+            string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
+        }
+
+
+
+        foreach (intervalbutton intervalbutton_ in intervalbuttons_)
+        {
+            intervalbutton_.interactable = false;
+            intervalbutton_.colors = RegularButton;
+            intervalbutton_.interactable = true;
+        }
+
+
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 42; j++)
+            {
+                if (questionHistory_Counter[i, j] == 0)
+                    continue;
+                if (i == currentQuestion_Question_node && j == currentQuestion_Answer_node && time <= 0)
+                    avg_rxntimes[i, j] = questionHistory_rxntimes[i, j] / (questionHistory_Counter[i, j] - 1);
+
+                else
+                    avg_rxntimes[i, j] = questionHistory_rxntimes[i, j] / questionHistory_Counter[i, j];
+
+
+                avg_accuracies[i, j] = questionHistory_accuracy[i, j] / questionHistory_Counter[i, j];
+
+
+            }
+        }
+
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 42; j++)
+            {
+                // if (avg_rxntimes[i, j] > 5)
+                //   wrongPairs.Add((i, j));
+
+                if ((avg_accuracies[i, j] > -1 && avg_accuracies[i, j] < 1) || avg_rxntimes[i, j] > 5)
+                    wrongPairs.Add((i, j));
+            }
+        }
+        Debug.Log("number of wrong pairs: " + wrongPairs.Count);
+    }
     IEnumerator CallFunctionEvery5Seconds()
     {
         while (true)
@@ -336,8 +463,8 @@ public class QuizManager : MonoBehaviour
                 debughighlightedstring();
                 temp_highlight = highlightedstring;
             }
-                // Wait for 5 seconds before calling the function again
-                yield return new WaitForSeconds(5.0f);
+            // Wait for 5 seconds before calling the function again
+            yield return new WaitForSeconds(5.0f);
         }
     }
 
@@ -354,7 +481,7 @@ public class QuizManager : MonoBehaviour
     /// 
     public void nextQuestion()
     {
-        if(questionmode_counter==0)  //once we exhasuted the list of question in a particular mode, switch the mode
+        if (questionmode_counter == 0)  //once we exhasuted the list of question in a particular mode, switch the mode
         {
             questionmode_counter = Random.Range(4, 8);
             if (questionMode == QuestionMode.PressTheInterval)
@@ -364,48 +491,23 @@ public class QuizManager : MonoBehaviour
 
         }
 
-        if(questionMode==QuestionMode.PressTheInterval)
+        if (questionMode == QuestionMode.PressTheInterval)
         {
             optionintervalList_parent.gameObject.SetActive(false);  //hide the interval options panel
             SetQuestion_intervals();
-            
-            
+
+
         }
-        else if(questionMode==QuestionMode.GuessTheInterval)
+        else if (questionMode == QuestionMode.GuessTheInterval)
         {
             optionintervalList_parent.gameObject.SetActive(true);    //display interval options panel
             SetQuestion_intervals_guessmode();
 
         }
-        
+
         questionmode_counter--;
     }
-    /*
-    public void SelectedOption_guessmode(WordData value)
-    {
-        if (gameStatus == GameStatus.Next || questionMode==QuestionMode.PressTheInterval) return;
 
-        if(value.wordValue2==intervalquestion_val)
-        {
-
-            if (time >= 7)
-                score = score + 10;
-            else if (time > 0 && time < 7)
-                score = score + 5;
-
-
-            score_text.text = score.ToString();
-            gameStatus = GameStatus.Next;
-            Invoke("nextQuestion", 0.5f);
-        }
-        else
-        {
-            lives--;
-            lives_image[lives].gameObject.SetActive(false);
-        }
-
-    }
-    */
     public void SelectedOption_guessmode(interval_option value)
     {
         if (gameStatus == GameStatus.Next || questionMode == QuestionMode.PressTheInterval) return;
@@ -420,35 +522,51 @@ public class QuizManager : MonoBehaviour
 
             correctanswer_audio.Play();
             score_text.text = score.ToString();
-            reactiontimes[intervalquestion_val] = reactiontimes[intervalquestion_val]+ (10f - time);
+
+            reactiontimes[intervalquestion_val] = reactiontimes[intervalquestion_val] + (10f - time);
             accuracies[intervalquestion_val]++;
+
+            questionHistory_accuracy[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+            questionHistory_rxntimes[currentQuestion_Question_node, currentQuestion_Answer_node] = questionHistory_rxntimes[currentQuestion_Question_node, currentQuestion_Answer_node] + (10f - time);
+
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
         }
+
         else
         {
             wronganswer_audio.Play();
             lives--;
             lives_image[lives].gameObject.SetActive(false);
+
+            if (lives == 0)
+            {
+                gameStatus = GameStatus.Gameover;
+            }
+            else
+            {
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 2.5f);
+            }
         }
 
     }
 
     private void SetTimer(int value)
-    {           
-         timer_text.text = "Time:" + value.ToString();   
+    {
+        timer_text.text = "Time:" + value.ToString();
     }
 
     public void SelectedButton(intervalbutton value)
     {
         if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
-        Debug.Log("the string value is: " + value.stringnum+ "  HL:"+highlightedstring);
+        Debug.Log("the string value is: " + value.stringnum + "  HL:" + highlightedstring);
         if (value.stringnum == highlightedstring)
 
         {
             if ((value.notevalue - currentrootnode.notevalue) == intervalquestion_val || (value.notevalue - currentrootnode.notevalue) == (intervalquestion_val - 12))
             {
-               
+
                 value.colors = CorrectButton;
                 Debug.Log("Correct Answer");
 
@@ -462,6 +580,10 @@ public class QuizManager : MonoBehaviour
                 score_text.text = score.ToString();
                 reactiontimes[intervalquestion_val] = reactiontimes[intervalquestion_val] + (10f - time);
                 accuracies[intervalquestion_val]++;
+
+                questionHistory_accuracy[currentQuestion_Question_node, currentQuestion_Answer_node]++;
+                questionHistory_rxntimes[currentQuestion_Question_node, currentQuestion_Answer_node] = questionHistory_rxntimes[currentQuestion_Question_node, currentQuestion_Answer_node] + (10f - time);
+
                 gameStatus = GameStatus.Next;
                 Invoke("nextQuestion", 0.5f);
             }
@@ -474,8 +596,16 @@ public class QuizManager : MonoBehaviour
                 lives_image[lives].gameObject.SetActive(false);
                 correctnode.colors = CorrectButton;
 
-                gameStatus = GameStatus.Next;
-                Invoke("nextQuestion", 2.5f);
+                if (lives == 0)
+                {
+                    gameStatus = GameStatus.Gameover;
+                }
+                else
+                {
+                    gameStatus = GameStatus.Next;
+                    Invoke("nextQuestion", 2.5f);
+                }
+
             }
 
 
@@ -620,11 +750,10 @@ public class QuestionData
 
 public enum GameStatus
 {
-   Next,
-   Playing,
-   Gameover
+    Next,
+    Playing,
+    Gameover
 }
-
 
 public enum QuestionMode
 {
