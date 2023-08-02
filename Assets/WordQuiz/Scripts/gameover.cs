@@ -21,6 +21,9 @@ public class gameover : MonoBehaviour
 
     private float[] avg_rxntime=new float[12];
     private string[] avg_accuracy=new string[12];
+
+    private float[,] avg_rxntimes = new float[6, 42];
+    private float[,] avg_accuracies = new float[6, 42];
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +33,7 @@ public class gameover : MonoBehaviour
         currentTime = DateTime.Now;
 
         // highscore_floating.text = HighScore.ToString();
+        /*
         for (int i=0;i<12;i++)
         {
             if (QuizManager.instance.questioncounter[i] == 0)
@@ -38,8 +42,13 @@ public class gameover : MonoBehaviour
                 avg_rxntime[i] = QuizManager.instance.reactiontimes[i] / (QuizManager.instance.questioncounter[i] - 1);
             else
                 avg_rxntime[i] = QuizManager.instance.reactiontimes[i] / QuizManager.instance.questioncounter[i];
+           
+            
             avg_accuracy[i] = QuizManager.instance.accuracies[i].ToString() + "/" + QuizManager.instance.questioncounter[i].ToString() ;
         }
+        */
+
+       
     }
 
     // Update is called once per frame
