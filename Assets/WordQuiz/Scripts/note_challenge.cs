@@ -164,6 +164,18 @@ public class note_challenge : MonoBehaviour
 
     private GameObject option_notes_panel;
     [SerializeField] public GameObject gameover_panel;
+    public GameObject GameRunningPanel;
+    private bool gameover_function_flag = false;
+
+    public float[] questionHistory_accuracy = new float[78];   //creates a record of each question answer pair, initializes to -1 but changes to >=0 if that pair is invoked during the game
+    public float[] questionHistory_rxntimes = new float[78];
+    public float[] questionHistory_Counter = new float[78];
+    private float[] avg_rxntimes = new float[78];
+    private float[] avg_accuracies = new float[78]; //computed at the end after gameover
+
+    private List<int> missedAnswers = new List<int>();
+    public int currentQuestion_Answer_node;
+
 
     public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     // Start is called before the first frame update
@@ -179,7 +191,7 @@ public class note_challenge : MonoBehaviour
         RegularButton.normalColor = new Color(0, 0, 1, 0);
         RegularButton.selectedColor = new Color(1, 0, 0, 1);
 
-     
+        InitializeQuestionHistoryArray();
 
         GameObject originalGameObject = GameObject.Find("notebuttons");
         notebuttons_ = originalGameObject.GetComponentsInChildren<note_button>();
@@ -208,7 +220,7 @@ public class note_challenge : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       Debug.Log("list of notes"+settings_notechallenge.instance.questionList);
+       //Debug.Log("list of notes"+settings_notechallenge.instance.questionList);
         if (gameStatus == GameStatus.Playing)
         {
             timer -= Time.deltaTime;
@@ -219,7 +231,7 @@ public class note_challenge : MonoBehaviour
         {
             timer = 10f;
         }
-       
+
         /*
         if (correctanswer == true && togglesound == true)
         {
@@ -246,15 +258,25 @@ public class note_challenge : MonoBehaviour
         //}
 
         if (time <= 0 || lives == 0)
+        {
             gameStatus = GameStatus.Gameover;
+            if (gameover_function_flag == false)
+            {
+                gameover_function();
+                gameover_function_flag = true;
+            }
+        }
+
+       
 
         if (gameStatus == GameStatus.Gameover)
         {
+            GameRunningPanel.gameObject.SetActive(false);
             gameover_panel.gameObject.SetActive(true);
 
-           // GameoverPanel.GetComponent<gameover>().loadGame();
+            gameover_panel.GetComponent<gameover_notes>().loadGame();
 
-          //  GameoverPanel.GetComponent<gameover>().saveGame();
+            gameover_panel.GetComponent<gameover_notes>().saveGame();
 
 
 
@@ -262,6 +284,87 @@ public class note_challenge : MonoBehaviour
        
     }
 
+    public void showMissedNotes()               //A function which iterates through the pairs that were either wrong or took to much time to answer
+    {
+
+
+
+      
+
+
+        Debug.Log("number of wrong pairs: " + missedAnswers.Count);
+
+        foreach (int missednote_index in missedAnswers)
+        {
+          
+            notebuttons_[missednote_index].colors = CorrectButton;
+        }
+
+
+
+    }
+
+    public void gameover_function()
+    {
+
+
+
+
+        foreach (note_button note_button_temp in notebuttons_)
+        {
+            note_button_temp.interactable = false;
+            note_button_temp.colors = RegularButton;
+            note_button_temp.interactable = true;
+        }
+
+
+      
+        
+            for (int j = 0; j < 78; j++)
+            {
+                if (questionHistory_Counter[j] == 0)
+                    continue;
+                if (j == currentQuestion_Answer_node && time <= 0)
+                    avg_rxntimes[j] = questionHistory_rxntimes[j] / (questionHistory_Counter[j] - 1);
+
+                else
+                    avg_rxntimes[j] = questionHistory_rxntimes[j] / questionHistory_Counter[j];
+
+
+                avg_accuracies[j] = questionHistory_accuracy[j] / questionHistory_Counter[j];
+
+
+            }
+        
+
+       
+            for (int j = 0; j < 78; j++)
+            {
+                // if (avg_rxntimes[i, j] > 5)
+                //   wrongPairs.Add((i, j));
+
+                if ((avg_accuracies[j] > -1 && avg_accuracies[j] < 1) || avg_rxntimes[j] > 5)
+                    missedAnswers.Add(j);
+            }
+
+        // Debug.Log("number of wrong pairs: " + wrongPairs.Count);
+        showMissedNotes();
+
+     }
+
+    void InitializeQuestionHistoryArray()
+    {
+            for (int j = 0; j < questionHistory_accuracy.GetLength(0); j++)
+            {
+                // Set the value at current row and column to -1 to indicate that pair has not been evoked
+                questionHistory_accuracy[j] = -1;
+                questionHistory_rxntimes[j] = -1;
+                questionHistory_Counter[j] = 0;
+                avg_accuracies[j] = -1;
+                avg_rxntimes[j] = -1;
+            }
+        
+    }
     private void SetTimer(int value)
     {
         timer_text.text = "Time:" + value.ToString();
@@ -326,7 +429,16 @@ public class note_challenge : MonoBehaviour
         }
         int b = Random.Range(0, possibleAnswers.Count - 1);
         possibleAnswers[b].colors = CorrectButton;
+        currentQuestion_Answer_node = possibleAnswers[b].gameObject.transform.GetSiblingIndex();
         possibleAnswers[b].interactable = true;    //this ensures blue color is seen
+
+        if (questionHistory_accuracy[currentQuestion_Answer_node] == -1)
+        {
+            questionHistory_accuracy[currentQuestion_Answer_node]++;
+            questionHistory_rxntimes[currentQuestion_Answer_node]++;
+        }
+        questionHistory_Counter[currentQuestion_Answer_node]++;
+
     }
     private void setquestion_notes()
     {
@@ -372,9 +484,15 @@ public class note_challenge : MonoBehaviour
             lives_image[lives].gameObject.SetActive(false);
             // correctnode.colors = CorrectButton;
 
-            gameStatus = GameStatus.Next;
-            Invoke("nextQuestion", 2.5f);
-        }
+            if (lives == 0)
+                gameStatus = GameStatus.Gameover;
+            else
+            {
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 2.5f);
+            }
+            
+          }
 
     }
 
@@ -391,6 +509,9 @@ public class note_challenge : MonoBehaviour
                 score = score + 5;
             score_text.text = score.ToString();
 
+            questionHistory_accuracy[currentQuestion_Answer_node]++;
+            questionHistory_rxntimes[currentQuestion_Answer_node] = questionHistory_rxntimes[currentQuestion_Answer_node] + (10f - time);
+
             gameStatus = GameStatus.Next;
            Invoke("nextQuestion", 0.5f);
         }
@@ -399,10 +520,15 @@ public class note_challenge : MonoBehaviour
 
             lives--;
             lives_image[lives].gameObject.SetActive(false);
-           // correctnode.colors = CorrectButton;
+            // correctnode.colors = CorrectButton;
 
-            gameStatus = GameStatus.Next;
-            Invoke("nextQuestion", 2.5f);
+            if (lives == 0)
+                gameStatus = GameStatus.Gameover;
+            else
+            {
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 2.5f);
+            }
         }
   
     }

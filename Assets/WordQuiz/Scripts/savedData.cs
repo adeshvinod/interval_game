@@ -39,6 +39,14 @@ public class savedData
         l3_intervals_highscore = _modifieddata.l3_intervals_highscore;
         l4_intervals_highscore = _modifieddata.l4_intervals_highscore;
 
+        l1_notes_highscore = _modifieddata.l1_notes_highscore;
+        l2_notes_highscore = _modifieddata.l2_notes_highscore;
+        l3_notes_highscore = _modifieddata.l3_notes_highscore;
+        l4_notes_highscore = _modifieddata.l4_notes_highscore;
+
+
+
+
         savedProgressions_tonics = _modifieddata.savedProgressions_tonics;
         savedProgressions_chordtypes = _modifieddata.savedProgressions_chordtypes;
         savedProgression_names = _modifieddata.savedProgression_names;

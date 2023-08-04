@@ -22,6 +22,8 @@ public class settings_notechallenge : MonoBehaviour
     public float startTime;
     public Text timerText;
 
+    public int current_level;
+
     Scene scene;
 
     public Dictionary<(int,int), int> Coordinate_system = new Dictionary<(int,int), int>()  //coordinate system of the fretboard
@@ -270,6 +272,7 @@ public class settings_notechallenge : MonoBehaviour
         switch (level)
         {
             case 1:
+                current_level = 1;
                 for (int i = 4;i<=5;i++)
                 {
                     for(int j=0;j<=12;j++)
@@ -282,6 +285,7 @@ public class settings_notechallenge : MonoBehaviour
                         break;
 
             case 2:
+                current_level = 2;
                 for (int i = 0; i <= 5; i++)
                 {
                     for (int j = 0; j < 5; j++)
@@ -296,6 +300,7 @@ public class settings_notechallenge : MonoBehaviour
                 break;
 
             case 3:
+                current_level = 3;
                 for (int i = 0; i <= 5; i++)
                 {
                     for (int j = 0; j < 8; j++)
@@ -309,6 +314,7 @@ public class settings_notechallenge : MonoBehaviour
                 break;
 
             case 4:
+                current_level = 4;
                 for (int i = 0; i <= 5; i++)
                 {
                     for (int j = 0; j <= 12; j++)
