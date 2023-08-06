@@ -72,7 +72,7 @@ public class settings_arpgame : MonoBehaviour
     }
 
     public List<chord_Progression> List_of_progressions= new List<chord_Progression>(); //a list of all the labelled chord progressions the user saved before
-
+    public int current_index_List_of_progressions=-1;
 
 
 
@@ -105,10 +105,57 @@ public class settings_arpgame : MonoBehaviour
 
     public void HandleProgressionDropdown(int value)
     {
+        reset_chordprogression();
+        current_index_List_of_progressions = value;
         myProgression.Clear();
         Debug.Log("im here "+value+" "+List_of_progressions[value].Progression.Count);
         myProgression.AddRange(List_of_progressions[value].Progression);
-        Debug.Log("after selecting dropdown " + myProgression[0].chordtype + " " + myProgression[1].chordtype + " "+myProgression[2].chordtype);
+        // Debug.Log("after selecting dropdown " + myProgression[0].chordtype + " " + myProgression[1].chordtype + " "+myProgression[2].chordtype);
+        Debug.Log("on clicking drop, listofprog.count " + List_of_progressions.Count);
+
+        display_progression();
+       
+
+
+
+    }
+
+    public void display_progression()
+    {
+
+        for (int i = 0; i < myProgression.Count; i++)
+        {
+            GameObject newBox = Instantiate(chord_prog_display, chord_prog_container.transform);
+            newBox.transform.localPosition = new Vector3(chord_count * 2, 0, 0);
+
+            RectTransform rectTransform = newBox.GetComponent<RectTransform>();
+
+            // Get the size of the new box
+            Vector2 size = rectTransform.sizeDelta;
+            float width = size.x;
+            float height = size.y;
+
+            newBox.transform.localPosition = new Vector3(((chord_count % 4) * width) - 300, (height * (chord_count / 4) * -1) - 70, 0);
+            // chord_name.text= dropmenu_note.ToString()+" "+dropval_chordtype.ToString();
+
+
+
+            // Access the TextMeshPro component of the new box
+            TextMeshProUGUI textMesh = newBox.GetComponentInChildren<TextMeshProUGUI>();
+
+            if (textMesh != null)
+            {
+                // Access and modify properties of the TextMeshPro component
+                textMesh.text = dropval_note.options[myProgression[i].note].text.ToString() + " " + dropval_chordtype.options[myProgression[i].chordtype].text.ToString();
+                textMesh.fontSize = 20;
+                // ... other operations with the textMesh
+            }
+
+
+
+            chord_count++;
+
+        }
     }
     public void addChord()
     {
@@ -150,6 +197,40 @@ public class settings_arpgame : MonoBehaviour
 
     }
 
+    public void deleteLastChord()
+    {
+        int index = myProgression.Count - 1;
+        myProgression.RemoveAt(index);
+
+        int childCount = chord_prog_container.transform.childCount;
+       
+            GameObject child = chord_prog_container.transform.GetChild(childCount-1).gameObject;
+            // Destroy the child object
+            Destroy(child);
+        chord_count--;
+
+    }
+
+    public void removeWholeProgression()
+    {
+        //function to delete the current progression from the list of progressions in saved data database
+        List_of_progressions.RemoveAt(current_index_List_of_progressions);
+        ConvertProgressionintoSerializable();
+        SaveSystem.SavePlayer(modifiedData);
+        Debug.Log("after removing list_of_prog.count= " + List_of_progressions.Count);
+
+    }
+
+    public void saveEditedProgression()
+    {
+        List_of_progressions[current_index_List_of_progressions].Progression = myProgression;
+        ConvertProgressionintoSerializable();
+        SaveSystem.SavePlayer(modifiedData);
+
+    }
+
+
+
     public void reset_chordprogression()
     {
         int childCount = chord_prog_container.transform.childCount;
@@ -189,6 +270,9 @@ public class settings_arpgame : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+        
+          
         
     }
 
@@ -302,7 +386,22 @@ public class settings_arpgame : MonoBehaviour
     
     public void ConvertProgressionintoSerializable()
     {
-        Debug.Log("reached convertprogressionintoserializable");
+
+        //reset the modified datavalues before reassigning them
+        int rows = modifiedData.savedProgressions_tonics.GetLength(0);
+        int columns = modifiedData.savedProgressions_tonics.GetLength(1);
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                modifiedData.savedProgressions_tonics[i, j] = 0;
+                modifiedData.savedProgressions_chordtypes[i, j] = 0;
+                modifiedData.savedProgression_names[i] = null;
+            }
+        }
+
+        Debug.Log("reached convertprogressionintoserializable and list of progression");
         int no_of_progressions = List_of_progressions.Count;
         for(int i=0;i<no_of_progressions;i++)
         {
