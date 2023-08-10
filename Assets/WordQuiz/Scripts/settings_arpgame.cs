@@ -139,7 +139,7 @@ public class settings_arpgame : MonoBehaviour
 
     public void display_progression()
     {
-
+        chord_count = 0;
         for (int i = 0; i < myProgression.Count; i++)
         {
             GameObject newBox = Instantiate(chord_prog_display, chord_prog_container.transform);
@@ -227,6 +227,40 @@ public class settings_arpgame : MonoBehaviour
         chord_count--;
 
     }
+    public void transpose_progression(int a)
+    {
+        List<Pair> transposedProgression = new List<Pair>();
+
+        //clear the progression dispay booxes with old values
+        int childCount = chord_prog_container.transform.childCount;
+        for (int i = childCount - 1; i >= 0; i--)
+        {
+            GameObject child = chord_prog_container.transform.GetChild(i).gameObject;
+            // Destroy the child object
+            Destroy(child);
+        }
+
+        if (a == 1)
+        {
+            for (int i = 0; i < myProgression.Count; i++)
+            {
+                Pair newPair = new Pair();
+                newPair.note = (myProgression[i].note + 1) % 12;
+                newPair.chordtype = myProgression[i].chordtype;
+                transposedProgression.Add(newPair);
+            
+            }
+
+            myProgression.Clear();
+            myProgression = transposedProgression;
+            display_progression();
+
+
+        }
+        else
+            return;
+    }
+
 
     public void removeWholeProgression()
     {
@@ -250,6 +284,8 @@ public class settings_arpgame : MonoBehaviour
 
 
 
+
+
     public void reset_chordprogression()
     {
         int childCount = chord_prog_container.transform.childCount;
@@ -260,6 +296,8 @@ public class settings_arpgame : MonoBehaviour
             Destroy(child);
         }
         myProgression.Clear();
+        current_index_List_of_progressions = -1;
+        chord_count = 0;   
         progressionDropdown.value = 0;
     }
 

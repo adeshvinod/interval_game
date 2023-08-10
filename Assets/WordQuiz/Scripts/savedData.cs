@@ -22,7 +22,7 @@ public class savedData
     public int l4_notes_highscore = 0;
 
     // public List<settings_arpgame.chord_Progression> savedProgressions;
-    public int[,] savedProgressions_tonics;    
+    public int[,] savedProgressions_tonics;   //tonics here does not refer to the key centres but rather just the Root notes of the chords  
     public int[,] savedProgressions_chordtypes;
     public string[] savedProgression_names;
     public int totalProgressions = 0;
