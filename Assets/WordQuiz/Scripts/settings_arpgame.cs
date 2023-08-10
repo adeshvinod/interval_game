@@ -20,6 +20,12 @@ public class settings_arpgame : MonoBehaviour
     public InputField progressionNameInput;
 
 
+    public GameObject layout1;  //layout to choose between asking random chords vs asking custom progression
+    public GameObject layout2;  //layout when user clicks custom progression, gives choice to create new progression vs use existing progression
+    public GameObject layout3;  //layout when user creates new custom progression
+    public GameObject layout4;  //layout when user edits old progression- contains just the edit tools
+    public GameObject layout5;  //layout when user saves chord progression
+
 
     public GameObject chord_prog_display;
     public GameObject chord_prog_container;
@@ -79,16 +85,25 @@ public class settings_arpgame : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        layoutSwitcher(1);
 
-        progressionNameInput.onEndEdit.AddListener(save_progression);
+
+        // progressionNameInput.onEndEdit.AddListener(save_progression);
+
         // Assign an event listener using a lambda expression
+     
+      
+        // Add an empty option to the Dropdown.
+
+   
         progressionDropdown.onValueChanged.AddListener((value) => HandleProgressionDropdown(value));
 
 
         load_data();
          PopulateDropdown();
         Debug.Log("reached  here");
-       
+        //myProgression.AddRange(List_of_progressions[0].Progression);
+
 
 
     }
@@ -105,16 +120,18 @@ public class settings_arpgame : MonoBehaviour
 
     public void HandleProgressionDropdown(int value)
     {
+        if (value == 0) return;
+        layoutSwitcher(3);
         reset_chordprogression();
-        current_index_List_of_progressions = value;
+        current_index_List_of_progressions = value-1;
         myProgression.Clear();
-        Debug.Log("im here "+value+" "+List_of_progressions[value].Progression.Count);
-        myProgression.AddRange(List_of_progressions[value].Progression);
+        Debug.Log("im here "+(value-1)+" "+List_of_progressions[value-1].Progression.Count);
+        myProgression.AddRange(List_of_progressions[value-1].Progression);
         // Debug.Log("after selecting dropdown " + myProgression[0].chordtype + " " + myProgression[1].chordtype + " "+myProgression[2].chordtype);
         Debug.Log("on clicking drop, listofprog.count " + List_of_progressions.Count);
-
+        chord_name.text = List_of_progressions[current_index_List_of_progressions].name;
         display_progression();
-       
+        
 
 
 
@@ -218,6 +235,8 @@ public class settings_arpgame : MonoBehaviour
         ConvertProgressionintoSerializable();
         SaveSystem.SavePlayer(modifiedData);
         Debug.Log("after removing list_of_prog.count= " + List_of_progressions.Count);
+        reset_chordprogression();
+        PopulateDropdown();
 
     }
 
@@ -241,7 +260,7 @@ public class settings_arpgame : MonoBehaviour
             Destroy(child);
         }
         myProgression.Clear();
-        chord_count = 0;
+        progressionDropdown.value = 0;
     }
 
     public void askrandom()
@@ -332,8 +351,17 @@ public class settings_arpgame : MonoBehaviour
     private void PopulateDropdown()
     {
         dropmenu_loaded_progressions.ClearOptions();
-       // Debug.Log("im here populatedopdown  " + List_of_progressions[0].myProgression[0].chordtype);
+        // Debug.Log("im here populatedopdown  " + List_of_progressions[0].myProgression[0].chordtype);
+        progressionDropdown.value = -1;
         List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
+
+        // Add an empty option to the Dropdown.
+
+        // Create a new TMP_Dropdown.OptionData instance for the placeholder option.
+        TMP_Dropdown.OptionData placeholderOption = new TMP_Dropdown.OptionData("Choose an option");
+
+        // Insert the placeholder option at the beginning of the dropdown options.
+        progressionDropdown.options.Insert(0, placeholderOption);
         if (List_of_progressions != null)
         {
             foreach (chord_Progression chord_prog_temp in List_of_progressions)
@@ -347,9 +375,9 @@ public class settings_arpgame : MonoBehaviour
             Debug.Log("list is null");
      }
 
-    public void save_progression(string value)
+    public void save_progression()
     {
-
+        string value = progressionNameInput.text;
         if (string.IsNullOrEmpty(value))
         {
             // Display an error message in the debug console
@@ -381,6 +409,8 @@ public class settings_arpgame : MonoBehaviour
 
             // Clear the input field
             progressionNameInput.text = string.Empty;
+            current_index_List_of_progressions = List_of_progressions.Count - 1;   //to allow for deletion of entire progression after saving the progression
+            PopulateDropdown();
         }
     }
     
@@ -447,6 +477,42 @@ public class settings_arpgame : MonoBehaviour
         }
         myProgression.Clear();  //in the special case where all 15 menu options are filled, we want to clear out myprogression to make room for user inputed chord progs
         Debug.Log("List of progressions:"+List_of_progressions.Count+" "+List_of_progressions[0].Progression[0].chordtype);
+    }
+
+    public void layoutSwitcher(int layoutNumber)
+    {
+        layout1.gameObject.SetActive(false);
+        layout2.gameObject.SetActive(false);
+        layout3.gameObject.SetActive(false);
+        layout4.gameObject.SetActive(false);
+        layout5.gameObject.SetActive(false);
+        
+        switch(layoutNumber)
+        {
+            case 1: layout1.gameObject.SetActive(true);
+                break;
+
+            case 2:
+                layout2.gameObject.SetActive(true);
+                break;
+
+            case 3:
+                layout3.gameObject.SetActive(true);
+                break;
+
+            case 4:                
+                layout3.gameObject.SetActive(true);  //general layout of progression disply
+                layout4.gameObject.SetActive(true);  //the edit tools
+                break;
+
+            case 5:
+                layout5.gameObject.SetActive(true);
+                break;
+
+            default:break;
+
+
+        }
     }
    
 }
