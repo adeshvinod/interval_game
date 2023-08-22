@@ -15,6 +15,7 @@ public class settings_arpgame : MonoBehaviour
     private int dropmenu_chordtype;
     public TMPro.TMP_Dropdown dropval_note;
     public TMPro.TMP_Dropdown dropval_chordtype;
+    public TMPro.TMP_Dropdown dropval_chordtype_askrandom; //dropdown menu when user selects random mode, still has the same values as progression chordtypes dropdown
     public TMPro.TMP_Dropdown dropmenu_loaded_progressions;
     public TMPro.TMP_Dropdown progressionDropdown;
     public InputField progressionNameInput;
@@ -25,10 +26,12 @@ public class settings_arpgame : MonoBehaviour
     public GameObject layout3;  //layout when user creates new custom progression
     public GameObject layout4;  //layout when user edits old progression- contains just the edit tools
     public GameObject layout5;  //layout when user saves chord progression
+    public GameObject layout6; //layout when user selects random chordtypes button
 
 
     public GameObject chord_prog_display;
     public GameObject chord_prog_container;
+    public GameObject RandomQuestions_list_container;
     public TextMeshProUGUI chord_name;
     int chord_count = 0;
 
@@ -214,6 +217,46 @@ public class settings_arpgame : MonoBehaviour
 
     }
 
+    public void askRandom_AddChordType()
+    {
+        //this function handles the dropdown menu values in the askRandom chords panel
+        dropmenu_chordtype = dropval_chordtype_askrandom.value;
+        QuestionList_chordtypes.Add(dropmenu_chordtype);
+
+        GameObject newBox = Instantiate(chord_prog_display, RandomQuestions_list_container.transform);
+        newBox.transform.localPosition = new Vector3(chord_count * 2, 0, 0);
+
+        RectTransform rectTransform = newBox.GetComponent<RectTransform>();
+
+        // Get the size of the new box
+        Vector2 size = rectTransform.sizeDelta;
+        float width = size.x;
+        float height = size.y;
+
+        newBox.transform.localPosition = new Vector3(((chord_count % 4) * width) - 300, (height * (chord_count / 4) * -1) - 70, 0);
+        // chord_name.text= dropmenu_note.ToString()+" "+dropval_chordtype.ToString();
+
+
+
+        // Access the TextMeshPro component of the new box
+        TextMeshProUGUI textMesh = newBox.GetComponentInChildren<TextMeshProUGUI>();
+
+        if (textMesh != null)
+        {
+            // Access and modify properties of the TextMeshPro component
+            textMesh.text = dropval_chordtype_askrandom.options[dropval_chordtype_askrandom.value].text.ToString();
+            textMesh.fontSize = 20;
+            // ... other operations with the textMesh
+        }
+
+
+
+        chord_count++;
+
+
+
+    }
+
     public void deleteLastChord()
     {
         int index = myProgression.Count - 1;
@@ -226,6 +269,19 @@ public class settings_arpgame : MonoBehaviour
             Destroy(child);
         chord_count--;
 
+    }
+
+    public void deleteLastChord_askRandomPanel()
+    {
+        int index = QuestionList_chordtypes.Count - 1;
+        QuestionList_chordtypes.RemoveAt(index);
+
+        int childCount = RandomQuestions_list_container.transform.childCount;
+
+        GameObject child = RandomQuestions_list_container.transform.GetChild(childCount - 1).gameObject;
+        // Destroy the child object
+        Destroy(child);
+        chord_count--;
     }
     public void transpose_progression(int a)
     {
@@ -299,6 +355,7 @@ public class settings_arpgame : MonoBehaviour
         current_index_List_of_progressions = -1;
         chord_count = 0;   
         progressionDropdown.value = 0;
+        QuestionList_chordtypes.Clear();
     }
 
     public void askrandom()
@@ -524,6 +581,7 @@ public class settings_arpgame : MonoBehaviour
         layout3.gameObject.SetActive(false);
         layout4.gameObject.SetActive(false);
         layout5.gameObject.SetActive(false);
+        layout6.gameObject.SetActive(false);
         
         switch(layoutNumber)
         {
@@ -545,6 +603,9 @@ public class settings_arpgame : MonoBehaviour
 
             case 5:
                 layout5.gameObject.SetActive(true);
+                break;
+
+            case 6: layout6.gameObject.SetActive(true);
                 break;
 
             default:break;
