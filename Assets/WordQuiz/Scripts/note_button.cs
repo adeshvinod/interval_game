@@ -15,6 +15,7 @@ public class note_button : Button
 
     public int x_coord=0;
     public int y_coord=0;
+    public int note_siblingindex;
 
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
@@ -159,9 +160,12 @@ public class note_button : Button
         notevalue = notevalue_dict[this.transform.GetSiblingIndex()];
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
-        
-        noteText.text = notename_sharp;
-        noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 0);
+        note_siblingindex = this.transform.GetSiblingIndex();
+
+
+       //   noteText.text = notename_sharp;
+        noteText.text = note_siblingindex.ToString()+"/"+notevalue.ToString();
+        noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
 
         scene = SceneManager.GetActiveScene();
 

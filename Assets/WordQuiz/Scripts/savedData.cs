@@ -27,7 +27,9 @@ public class savedData
     public string[] savedProgression_names;
     public int totalProgressions = 0;
 
-
+    public int[,] savedCustomChordTypes;
+    public string[] savedCustomChord_names;
+    public int totalCustomChordtypes = 0;
 
 
     public savedData(savedData _modifieddata)
@@ -51,15 +53,49 @@ public class savedData
         savedProgressions_chordtypes = _modifieddata.savedProgressions_chordtypes;
         savedProgression_names = _modifieddata.savedProgression_names;
         totalProgressions = _modifieddata.totalProgressions;
-    }
 
+        savedCustomChordTypes=_modifieddata.savedCustomChordTypes;
+        savedCustomChord_names=_modifieddata.savedCustomChord_names;
+        totalCustomChordtypes = _modifieddata.totalCustomChordtypes;
+}
+
+    
     public savedData()
     {
-         savedProgressions_tonics = new int[15, 40];
-    savedProgressions_chordtypes = new int[15, 40];
-     savedProgression_names = new string[15];
+        int maximum_progressions = 15;
+        int maximum_chords_in_prog = 40;
+         savedProgressions_tonics = new int[maximum_progressions, maximum_chords_in_prog];
+    savedProgressions_chordtypes = new int[maximum_progressions, maximum_chords_in_prog];
+     savedProgression_names = new string[maximum_progressions];
     Debug.Log("saved data constructor called)+ "+savedProgressions_tonics[0,0]);
-    }
+        
+        int maximum_custom_chords = 20;
+     savedCustomChordTypes=new int[maximum_custom_chords,12];
+    savedCustomChord_names=new string[maximum_custom_chords];
+
+        for(int i=0;i<maximum_progressions;i++)
+        {
+            for(int j=0;j<maximum_chords_in_prog;j++)
+            {
+                savedProgressions_chordtypes[i,j] = 0;
+                savedProgressions_tonics[i, j] = 0;
+                
+
+            }
+            savedProgression_names[i] = null;
+        }
+
+        for(int i=0;i<maximum_custom_chords;i++)
+        {
+            for(int j=0;j<12;j++)
+            {
+                savedCustomChordTypes[i, j] = -1;
+            }
+            savedCustomChord_names[i] = null;
+        }
+        
+    
+}
    
 
     public void start()

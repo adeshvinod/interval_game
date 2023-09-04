@@ -109,6 +109,7 @@ public class intervalbutton : Button
             //Debug.Log("HIYA BITCH! -1");
             learnmode.instance.SelectedButton_learnmode(this);
         }
+        
        // Debug.Log(this.stringnum + "   " + this.fretnum);
     }
 

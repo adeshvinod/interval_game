@@ -55,6 +55,7 @@ public class interval_option : MonoBehaviour
             interval_option_Text.text = intervalname[value];
 
         intervalValue = value;
+       // Debug.Log("value set");
 
 
     }
@@ -81,6 +82,21 @@ public class interval_option : MonoBehaviour
                 Debug.Log(intervalValue + "removed");
             }
 
+        }
+        else if (scene.name == "pre-arpeggio")
+        {
+            if (this.isSelected == true)
+            {
+                // settings_arpgame.instance.myCustomChord.intervals.Add(intervalValue);
+                settings_arpgame.instance.myCustomChord_intervalList.Add(intervalValue);
+                Debug.Log(intervalValue + "added");
+            }
+            else
+            {
+                // settings_arpgame.instance.myCustomChord.intervals.Remove(intervalValue);
+                settings_arpgame.instance.myCustomChord_intervalList.Remove(intervalValue);
+                Debug.Log(intervalValue + "removed");
+            }
         }
     }
 

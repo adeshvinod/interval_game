@@ -27,6 +27,7 @@ public class settings_arpgame : MonoBehaviour
     public GameObject layout4;  //layout when user edits old progression- contains just the edit tools
     public GameObject layout5;  //layout when user saves chord progression
     public GameObject layout6; //layout when user selects random chordtypes button
+    public GameObject layout7; //layout when user inputs new custom chord type
 
 
     public GameObject chord_prog_display;
@@ -63,7 +64,12 @@ public class settings_arpgame : MonoBehaviour
 
    
     public List<Pair> myProgression = new List<Pair>();  //a list of the chords in the current progression created by user
-    public List<int> QuestionList_chordtypes = new List<int>();
+    public List<int> QuestionList_chordtypes = new List<int>();  //a list of the indexe referenceing the chordtypes you want to be asked, NOT FOR CUSTOM CHORDS
+    public List<int> QuestionList_customchords = new List<int>(); //a list of indices of of thecustom chords
+
+
+    [SerializeField] private interval_option[] optionintervalList;    //list of interval options in the game (R,b2,M2,b3 etc)
+    private GameObject optionintervalList_parent;
 
     public class chord_Progression
     {
@@ -80,14 +86,41 @@ public class settings_arpgame : MonoBehaviour
 
     }
 
-    public List<chord_Progression> List_of_progressions= new List<chord_Progression>(); //a list of all the labelled chord progressions the user saved before
-    public int current_index_List_of_progressions=-1;
+    public class CustomChordType
+    {
+        public int chordType_index;  //an int value used to reference this particular chord 
+        public List<int> intervals;
+        public string name;
 
+        public CustomChordType(List<int> _intervals,string _name)
+        {
+            intervals = new List<int>();
+            intervals.AddRange(_intervals);
+            name = _name;
+        }
+    }
+
+    public List<chord_Progression> List_of_progressions= new List<chord_Progression>(); //a list of all the labelled chord progressions the user saved before
+    public int current_index_List_of_progressions=-1;  //index tht passes through list of progressions when you're dealing with editing/deleting/displaying particular progression from list of progressions
+
+    public List<CustomChordType> List_of_CustomChords = new List<CustomChordType>();
+    public int current_index_list_of_customchords=-1;
+    public CustomChordType myCustomChord;
+    public List<int> myCustomChord_intervalList=new List<int>();
+    public InputField CustomChordInput;
+    public TMPro.TMP_Dropdown customChordDropdown;
 
 
     // Start is called before the first frame update
     void Start()
     {
+        optionintervalList_parent = GameObject.Find("option_buttons");
+        optionintervalList = GameObject.Find("option_buttons").GetComponentsInChildren<interval_option>();
+        for (int k = 0; k < optionintervalList.Length; k++)
+        {
+            optionintervalList[k].SetValue(k);
+        }
+
         layoutSwitcher(1);
 
 
@@ -100,6 +133,7 @@ public class settings_arpgame : MonoBehaviour
 
    
         progressionDropdown.onValueChanged.AddListener((value) => HandleProgressionDropdown(value));
+        customChordDropdown.onValueChanged.AddListener((value) => HandleCCdropdown(value));
 
 
         load_data();
@@ -138,6 +172,44 @@ public class settings_arpgame : MonoBehaviour
 
 
 
+    }
+
+    public void HandleCCdropdown(int value)
+    {
+        if (value == 0) return;
+        dropmenu_chordtype = customChordDropdown.value - 1;
+        
+        QuestionList_customchords.Add(dropmenu_chordtype);
+
+        GameObject newBox = Instantiate(chord_prog_display, RandomQuestions_list_container.transform);
+        newBox.transform.localPosition = new Vector3(chord_count * 2, 0, 0);
+
+        RectTransform rectTransform = newBox.GetComponent<RectTransform>();
+
+        // Get the size of the new box
+        Vector2 size = rectTransform.sizeDelta;
+        float width = size.x;
+        float height = size.y;
+
+        newBox.transform.localPosition = new Vector3(((chord_count % 4) * width) - 300, (height * (chord_count / 4) * -1) - 70, 0);
+        // chord_name.text= dropmenu_note.ToString()+" "+dropval_chordtype.ToString();
+
+
+
+        // Access the TextMeshPro component of the new box
+        TextMeshProUGUI textMesh = newBox.GetComponentInChildren<TextMeshProUGUI>();
+
+        if (textMesh != null)
+        {
+            // Access and modify properties of the TextMeshPro component
+            textMesh.text = customChordDropdown.options[customChordDropdown.value].text.ToString();
+            textMesh.fontSize = 20;
+            // ... other operations with the textMesh
+        }
+
+
+
+        chord_count++;
     }
 
     public void display_progression()
@@ -420,6 +492,18 @@ public class settings_arpgame : MonoBehaviour
                 modifiedData.savedProgression_names = new string[15];
                 Debug.Log("modifieddata.savedprogressions_names was null");
             }
+            if(modifiedData.savedCustomChordTypes == null)
+            {
+                modifiedData.savedCustomChordTypes = new int[20,12];
+                Debug.Log("modifieddata.savedcustomchordtypes was null");
+            }
+            if(modifiedData.savedCustomChord_names==null)
+            {
+                modifiedData.savedCustomChord_names = new string[20];
+                Debug.Log("modifieddata.savedcustomchordnames was null");
+            }
+            
+            
             Debug.Log("modified data info: " + modifiedData.savedProgressions_chordtypes[0,1]+" "+ modifiedData.savedProgressions_chordtypes[0, 2]+" "+ modifiedData.savedProgressions_chordtypes[1, 1]+" "+ modifiedData.savedProgressions_chordtypes[1, 2]+" "+ modifiedData.savedProgressions_chordtypes[2, 1]+" "+ modifiedData.savedProgressions_chordtypes[2, 2]);
 
             /*
@@ -431,7 +515,9 @@ public class settings_arpgame : MonoBehaviour
             chord_Progression savedProgression = new chord_Progression(myProgression, "hey babe");
             List_of_progressions.Add(savedProgression);
             */
+            ConvertSerializedCustomChordsIntoUsableData();
             ConvertSerializedProgressionToUsableDatatype();  //converts the binary serial data into List_of_progressions data type
+           
         }
      else
         {
@@ -445,6 +531,26 @@ public class settings_arpgame : MonoBehaviour
 
     private void PopulateDropdown()
     {
+        //lets just handle custom chordtypes first
+        customChordDropdown.ClearOptions();
+        customChordDropdown.value = -1;
+        List<TMP_Dropdown.OptionData> CC_options = new List<TMP_Dropdown.OptionData>();
+        TMP_Dropdown.OptionData CC_placeholderOption = new TMP_Dropdown.OptionData("Choose an option"); //CC stands for custom chord
+        customChordDropdown.options.Insert(0, CC_placeholderOption);
+        if(List_of_CustomChords!=null)
+        {
+            foreach(CustomChordType CC_temp in List_of_CustomChords)
+            {
+                CC_options.Add(new TMP_Dropdown.OptionData(CC_temp.name));
+            }
+            customChordDropdown.AddOptions(CC_options);
+        }
+        else
+        {
+            Debug.Log("Custom chord list os null");
+
+        }
+
         dropmenu_loaded_progressions.ClearOptions();
         // Debug.Log("im here populatedopdown  " + List_of_progressions[0].myProgression[0].chordtype);
         progressionDropdown.value = -1;
@@ -508,7 +614,65 @@ public class settings_arpgame : MonoBehaviour
             PopulateDropdown();
         }
     }
-    
+
+    public void save_chordType()
+    {
+        Debug.Log("list of custom chords in savechordtypefunction:" + List_of_CustomChords.Count);
+       // myCustomChord_intervalList.Clear();
+        // QuestionList_chordtypes.Add(myCustomChord.intervals);
+        string value = CustomChordInput.text;
+        if (string.IsNullOrEmpty(value))
+        {
+            // Display an error message in the debug console
+            Debug.LogError("Input field is empty!");
+
+            // Clear the input field
+            CustomChordInput.text = string.Empty;
+        }
+        else
+        {
+            CustomChordType savedChordType = new CustomChordType(myCustomChord_intervalList, value);
+            List_of_CustomChords.Add(savedChordType);
+            ConvertCustomChordtypeToSerializable();
+
+
+            SaveSystem.SavePlayer(modifiedData);
+            current_index_list_of_customchords = List_of_CustomChords.Count - 1;
+            PopulateDropdown();
+
+         
+        }
+           // QuestionList_customchords.Add(0);
+        //myCustomChord = new CustomChordType(myCustomChord_intervalList, "customchord");
+
+    }
+    public void ConvertCustomChordtypeToSerializable()
+    {
+        Debug.Log("reached convertSerCUSTOMCHORD 0");
+        int rows = modifiedData.savedCustomChordTypes.GetLength(0);
+        int columns = modifiedData.savedCustomChordTypes.GetLength(1);
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                modifiedData.savedCustomChordTypes[i, j] = -1;
+                modifiedData.savedCustomChord_names[i] = null;
+            }
+        }
+        Debug.Log("reached convertcustomchordseriazable!  listofcustomchords" + List_of_CustomChords[0].intervals.Count);
+        for(int i=0;i<List_of_CustomChords.Count;i++)
+        {
+            for(int j=0;j<List_of_CustomChords[i].intervals.Count;j++)
+            {
+                modifiedData.savedCustomChordTypes[i, j] = List_of_CustomChords[i].intervals[j];
+                modifiedData.savedCustomChord_names[i] = List_of_CustomChords[i].name;
+            }
+
+        }
+        Debug.Log("convertcustomchordtoseriazable modifieddata.savedcustomchordtype=" + modifiedData.savedCustomChordTypes[0,1]);
+     
+    }
     public void ConvertProgressionintoSerializable()
     {
 
@@ -539,22 +703,53 @@ public class settings_arpgame : MonoBehaviour
                 Debug.Log("reached convertprogressionintoserializable 4");
                 modifiedData.savedProgressions_tonics[i, j] = List_of_progressions[i].Progression[j-1].note;
                 modifiedData.savedProgressions_chordtypes[i, j] = List_of_progressions[i].Progression[j-1].chordtype;
-                modifiedData.savedProgression_names[i]= List_of_progressions[i].name;
+                modifiedData.savedProgression_names[i] = List_of_progressions[i].name;
             }
             Debug.Log("reached convertprogressionintoserializable 5");
         }
         Debug.Log("reached convertprogressionintoserializable 6");
     }
 
+    public void ConvertSerializedCustomChordsIntoUsableData()
+    {
+        Debug.Log(" reached convSerCUSTOMCHORD 0)"+ modifiedData.savedCustomChordTypes.GetLength(1)+" "+ modifiedData.savedCustomChordTypes[0,0]);
+        for(int i=0;i<20;i++)
+        {
+            myCustomChord_intervalList.Clear();
+            for(int j=0;j<modifiedData.savedCustomChordTypes.GetLength(1);j++)
+            {
+                int temp= modifiedData.savedCustomChordTypes[i,j];
+                if (temp != -1)
+                {
+                    myCustomChord_intervalList.Add(temp);
+                    Debug.Log(temp + "added");
+                }
+                else
+                    break;
+            }
+           
+            if (myCustomChord_intervalList.Count!=0)
+            {
+                Debug.Log("reached convertserCUSTOMCHORD 2");
+                CustomChordType myCC = new CustomChordType(myCustomChord_intervalList, modifiedData.savedCustomChord_names[i]);
+
+                List_of_CustomChords.Add(myCC);
+                Debug.Log("first element of listofcustomchords" + List_of_CustomChords[i].intervals[0]+" "+List_of_CustomChords[i].intervals[1]+" "+ List_of_CustomChords[i].intervals[2]);
+            }
+        }
+        myCustomChord_intervalList.Clear();
+        Debug.Log("hi reached convertserialCUSTOMCHORD 3");
+    }
 
     public void ConvertSerializedProgressionToUsableDatatype()
     {
-        
 
+        Debug.Log("reached convertserprogUsable() 1");
         for (int i = 0;i< 15;i++)
         {
             myProgression.Clear();
             int progressionLength = modifiedData.savedProgressions_chordtypes[i, 0];
+            Debug.Log("reached convertserprogUsable() 2 progressionlength="+progressionLength);
             if (progressionLength == 0)
                 break;
             for(int j=1;j<=progressionLength;j++)
@@ -571,7 +766,8 @@ public class settings_arpgame : MonoBehaviour
             List_of_progressions.Add(savedProgression);
         }
         myProgression.Clear();  //in the special case where all 15 menu options are filled, we want to clear out myprogression to make room for user inputed chord progs
-        Debug.Log("List of progressions:"+List_of_progressions.Count+" "+List_of_progressions[0].Progression[0].chordtype);
+        Debug.Log("reached convertserprogUsable() 3");
+      //  Debug.Log("List of progressions:"+List_of_progressions.Count+" "+List_of_progressions[0].Progression[0].chordtype);
     }
 
     public void layoutSwitcher(int layoutNumber)
@@ -582,6 +778,7 @@ public class settings_arpgame : MonoBehaviour
         layout4.gameObject.SetActive(false);
         layout5.gameObject.SetActive(false);
         layout6.gameObject.SetActive(false);
+        layout7.gameObject.SetActive(false);
         
         switch(layoutNumber)
         {
@@ -607,6 +804,10 @@ public class settings_arpgame : MonoBehaviour
 
             case 6: layout6.gameObject.SetActive(true);
                 break;
+
+            case 7: layout7.gameObject.SetActive(true);
+                break;
+
 
             default:break;
 

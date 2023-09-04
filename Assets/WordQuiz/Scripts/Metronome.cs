@@ -44,7 +44,7 @@ public class Metronome : MonoBehaviour
     // Just an example OnTick here
     void OnTick()
     {
-        Debug.Log("Tick  beat no:"+beat_no);
+       // Debug.Log("Tick  beat no:"+beat_no);
         
         beat_no = (beat_no + 1) % 4;
         if(beat_no==0 && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.OpenFretboard)
