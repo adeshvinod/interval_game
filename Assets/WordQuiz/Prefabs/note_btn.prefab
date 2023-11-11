@@ -230,7 +230,7 @@ MonoBehaviour:
   m_Color: {r: 0.7264151, g: 0.29125133, b: 0.29125133, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
+  m_Maskable: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -334,6 +334,11 @@ MonoBehaviour:
       m_Calls: []
   noteText: {fileID: 1819221563615078349}
   bio: 0
+  scene:
+    m_Handle: 0
+  x_coord: 0
+  y_coord: 0
+  note_siblingindex: 0
   buttonComponent: {fileID: -5603537602412218649}
   notevalue: 7
   selectedRegion: 0

@@ -4544,6 +4544,28 @@ MonoBehaviour:
     - 
     - 
     totalProgressions: 0
+    savedCustomChord_names:
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    totalCustomChordtypes: 0
 --- !u!222 &815327962
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6625,7 +6647,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.0047169924, g: 0.7661264, b: 1, a: 0}
+  m_BackGroundColor: {r: 0, g: 0.18013673, b: 0.23584908, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -11366,7 +11388,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -13412,6 +13434,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 230045541}
     m_Modifications:
+    - target: {fileID: 93292528384109486, guid: 16b179640f61a3242921459a87c386b3,
+        type: 3}
+      propertyPath: m_Maskable
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2207904707385054894, guid: 16b179640f61a3242921459a87c386b3,
         type: 3}
       propertyPath: m_Pivot.x
