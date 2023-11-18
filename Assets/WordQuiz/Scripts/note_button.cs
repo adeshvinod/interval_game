@@ -16,6 +16,7 @@ public class note_button : Button
     public int x_coord=0;
     public int y_coord=0;
     public int note_siblingindex;
+    public int stringnum;
 
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
@@ -104,6 +105,7 @@ public class note_button : Button
         {77,7}
     };
 
+
     Dictionary<int, string> notename_sharps = new Dictionary<int, string>()
      {
          {0,"A" },
@@ -140,6 +142,18 @@ public class note_button : Button
 
      };
 
+
+    Dictionary<int, int> transposed_notes_dict = new Dictionary<int, int>() //for alternate tunings
+           {
+            {0, -1},
+            {1, -1},
+            {2, 0},
+            {3, 0},
+            {4, 0},
+            {5, 0}
+
+           };
+
     public Button buttonComponent;
     public int notevalue;
     string notename_sharp;
@@ -156,8 +170,12 @@ public class note_button : Button
 
         }
 
+        stringnum = this.transform.GetSiblingIndex() / 13; //there are 13 nodes on 1 string      
+
+
         noteText = GetComponentInChildren<Text>();
-        notevalue = notevalue_dict[this.transform.GetSiblingIndex()];
+        getNoteValue(this.transform.GetSiblingIndex());
+        //notevalue = notevalue_dict[this.transform.GetSiblingIndex()];
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
         note_siblingindex = this.transform.GetSiblingIndex();
@@ -174,6 +192,25 @@ public class note_button : Button
             this.x_coord = this.transform.GetSiblingIndex() % 13;
             this.y_coord = this.transform.GetSiblingIndex() / 13;
         
+
+    }
+
+    private void getNoteValue(int sibling_index)
+    {
+        int transposed_mathematical_value; //value after transposing, includes negative numbers
+
+        transposed_mathematical_value = notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum];
+
+        //turn the negative numbers into positive number mapped to the corresponding note
+        while (transposed_mathematical_value < 0)
+        {
+            transposed_mathematical_value = 11 + transposed_mathematical_value;
+        }
+
+
+        notevalue = (notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum]) % 12;
+
+
 
     }
 

@@ -12,6 +12,7 @@ public class intervalbutton : Button
 
 
     //lets imagine the fretboard starts from the 5th fret of the guitar and accordingle assign notes to each button. the notes A to G# is indexed from 0 to 11
+    
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
          {
             {0, 0},
@@ -63,6 +64,19 @@ public class intervalbutton : Button
             {41, 6},
            
           };
+    
+   
+
+    Dictionary<int, int> transposed_notes_dict = new Dictionary<int, int>() //for alternate tunings
+           {
+            {0, 1},
+            {1, 1},
+            {2, 0},
+            {3, 0},
+            {4, 0},
+            {5, 0}
+            
+           };
 
 
     [HideInInspector]
@@ -84,12 +98,47 @@ public class intervalbutton : Button
              buttonComponent.onClick.AddListener(() => buttonselected());
             
          }
-        
-        notevalue = notevalue_dict[this.transform.GetSiblingIndex()];
+      
+         stringnum = this.transform.GetSiblingIndex()/ 7; //the 6 strings are numbered from 0 to 5       
+       
+
+        Debug.Log("sibling indec" + this.transform.GetSiblingIndex() + "   note value:" + notevalue);
+        getNoteValue(this.transform.GetSiblingIndex());
         intervalText.text = notevalue.ToString();
-        stringnum = this.transform.GetSiblingIndex()/ 7; //the 6 strings are numbered from 0 to 5
+        
         fretnum = this.transform.GetSiblingIndex() % 7;  //the 7 frets are numbered from 0 to 6
         
+
+    }
+    /*
+
+    private void initialize_notevalue_dict()
+    {
+        
+
+        for (int i = 0; i < 42; i++)
+        {
+            notevalue_dict[i] = i % 12;  // Looping from 0 to 11
+        }
+    }
+    */
+
+    private void getNoteValue(int sibling_index)
+    {
+        int transposed_mathematical_value; //value after transposing, includes negative numbers
+
+        transposed_mathematical_value = notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum];
+
+        //turn the negative numbers into positive number mapped to the corresponding note
+        while (transposed_mathematical_value<0)
+        {
+            transposed_mathematical_value = 11 + transposed_mathematical_value;
+        }
+
+
+        notevalue = (notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum]) % 12;
+
+
 
     }
 
