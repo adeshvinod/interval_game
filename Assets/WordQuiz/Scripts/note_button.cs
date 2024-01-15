@@ -119,7 +119,7 @@ public class note_button : Button
          {8,"F" },
          {9,"F#" },
          {10,"G" },
-         {11,"G#" },
+         {11,"G#" }
          
 
      };
@@ -137,22 +137,25 @@ public class note_button : Button
          {8,"F" },
          {9,"Gb" },
          {10,"G" },
-         {11,"Ab" },
+         {11,"Ab" }
 
 
      };
 
+    
 
     Dictionary<int, int> transposed_notes_dict = new Dictionary<int, int>() //for alternate tunings
            {
-            {0, -1},
-            {1, -1},
+            {0, 0},
+            {1, 0},
             {2, 0},
             {3, 0},
             {4, 0},
             {5, 0}
 
            };
+    
+
 
     public Button buttonComponent;
     public int notevalue;
@@ -197,6 +200,15 @@ public class note_button : Button
 
     private void getNoteValue(int sibling_index)
     {
+
+        if (global_settings.instance.transposed_notes_dict != null)  //to check if we entered global settings and created an instance of the modified  global transposed array. if not we just gonna use the transposed arrays created in this script
+        {
+            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
+
+            //Debug.Log("transposed value array: " + global_settings.instance.transposed_notes_dict[0] + " " + global_settings.instance.transposed_notes_dict[1] + " " + global_settings.instance.transposed_notes_dict[2] + " " + global_settings.instance.transposed_notes_dict[3] + " " + global_settings.instance.transposed_notes_dict[4] + " ");
+            Debug.Log("transposed value array at get noteval: " + transposed_notes_dict[0] + " " + transposed_notes_dict[1] + " " + transposed_notes_dict[2] + " " + transposed_notes_dict[3] + " " + transposed_notes_dict[4] + " ");
+        }
+
         int transposed_mathematical_value; //value after transposing, includes negative numbers
 
         transposed_mathematical_value = notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum];
@@ -226,6 +238,14 @@ public class note_button : Button
         }
             noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
 
+    }
+
+    protected override void Start()
+    {
+       if (global_settings.instance.transposed_notes_dict!=null)
+        {
+            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
+        }
     }
 
     // Update is called once per frame

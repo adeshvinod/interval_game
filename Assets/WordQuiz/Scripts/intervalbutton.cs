@@ -64,19 +64,21 @@ public class intervalbutton : Button
             {41, 6},
            
           };
-    
-   
+
+
 
     Dictionary<int, int> transposed_notes_dict = new Dictionary<int, int>() //for alternate tunings
-           {
-            {0, 1},
-            {1, 1},
+           
+    { 
+            {0, 0},    //DO NOT USE NEGATIVE VALUES. if E needs to be transposed to Eb , make sure the digit is 11 and not -1
+            {1, 0},
             {2, 0},
             {3, 0},
             {4, 0},
             {5, 0}
-            
+               
            };
+    
 
 
     [HideInInspector]
@@ -110,6 +112,11 @@ public class intervalbutton : Button
         
 
     }
+
+    protected override void Start()
+    {
+       
+    }
     /*
 
     private void initialize_notevalue_dict()
@@ -125,6 +132,16 @@ public class intervalbutton : Button
 
     private void getNoteValue(int sibling_index)
     {
+       
+       
+        if (global_settings.instance.transposed_notes_dict != null)  //to check if we entered global settings and created an instance of the modified  global transposed array. if not we just gonna use the transposed arrays created in this script
+        {
+            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
+
+            //Debug.Log("transposed value array: " + global_settings.instance.transposed_notes_dict[0] + " " + global_settings.instance.transposed_notes_dict[1] + " " + global_settings.instance.transposed_notes_dict[2] + " " + global_settings.instance.transposed_notes_dict[3] + " " + global_settings.instance.transposed_notes_dict[4] + " ");
+            Debug.Log("transposed value array at get noteval: " + transposed_notes_dict[0] + " " + transposed_notes_dict[1] + " " + transposed_notes_dict[2] + " " + transposed_notes_dict[3] + " " + transposed_notes_dict[4] + " ");
+        }
+
         int transposed_mathematical_value; //value after transposing, includes negative numbers
 
         transposed_mathematical_value = notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum];
@@ -137,6 +154,7 @@ public class intervalbutton : Button
 
 
         notevalue = (notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum]) % 12;
+
 
 
 
