@@ -5,9 +5,12 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/WordQuiz/Scenes/mainmenu.unity
     guid: 8f49bd18745b37e4d85e7ff75753fcd4
+  - enabled: 1
+    path: Assets/WordQuiz/Scenes/notes-intervals-menu.unity
+    guid: 55ef4629c362c9044b6959ee08aa7985
   - enabled: 1
     path: Assets/WordQuiz/Scenes/learn_mode.unity
     guid: 6c4ac77dbffeff344bc51173ef67bcae
@@ -20,7 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/WordQuiz/Scenes/chord_game.unity
     guid: 5f3010a3193a2024195d1194c43f08f5
-  - enabled: 1
+  - enabled: 0
     path: Assets/WordQuiz/Scenes/challenge2.unity
     guid: b2ae3feee8fb17f46a79923144295713
   - enabled: 1
@@ -36,15 +39,12 @@ EditorBuildSettings:
     path: Assets/WordQuiz/Scenes/notes_levels.unity
     guid: 54fcc6e641f559543ab2ffef439da8b0
   - enabled: 1
-    path: Assets/WordQuiz/Scenes/notes-intervals-menu.unity
-    guid: 55ef4629c362c9044b6959ee08aa7985
-  - enabled: 1
     path: Assets/WordQuiz/Scenes/arpeggio_game.unity
     guid: 91f552c806e46f344bbcc5f3771cdb8b
   - enabled: 1
     path: Assets/WordQuiz/Scenes/pre-arpeggio.unity
     guid: 2c765bb401a34c844bd50a1fceb57a76
-  - enabled: 1
-    path: Assets/WordQuiz/Scenes/Global_settings.unity
-    guid: ad615278e9c55864183432fad54422e4
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   m_configObjects: {}
