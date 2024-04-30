@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: ddd4cc4b42398d44b861a868c0644308
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - FONTSPRING DEMO - Core Sans AR 45 Regular
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 23e148212d6769943a119ba1adc13531, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

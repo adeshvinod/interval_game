@@ -180,7 +180,7 @@ public class QuizManager : MonoBehaviour
         //resets the color of the strings to blue
         foreach (SpriteRenderer string_ in strings)
         {
-            string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
+            string_.GetComponent<SpriteRenderer>().color = new Color(0.498f, 0.780f, 0.8235f, 1);
         }
 
         //int a = Random.Range(0, 5);  //chooseing which string to put the root on
@@ -194,6 +194,7 @@ public class QuizManager : MonoBehaviour
             {
                 intervalbutton_.isroot = 1;
                 intervalbutton_.colors = RootButton;
+                intervalbutton_.intervalText.text = "R";
                 currentrootnode = intervalbutton_;
             }
 
@@ -201,6 +202,7 @@ public class QuizManager : MonoBehaviour
             {
                 intervalbutton_.isroot = 0;
                 intervalbutton_.colors = RegularButton;
+                intervalbutton_.intervalText.text = "\0";
             }
 
             if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == (intervalquestion_val - 12))
@@ -232,8 +234,9 @@ public class QuizManager : MonoBehaviour
     {
         while (gameStatus == GameStatus.Playing)
         {
-            strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
-            yield return null;
+            //strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
+            strings[highlightedstring].GetComponent<SpriteRenderer>().color = Color.HSVToRGB(0.498f, (Mathf.Sin(Time.time * 8) + 1) / 2, 1f); 
+           yield return null;
 
         }
     }
@@ -274,7 +277,7 @@ public class QuizManager : MonoBehaviour
         //resets the color of the strings to blue
         foreach (SpriteRenderer string_ in strings)
         {
-            string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
+            string_.GetComponent<SpriteRenderer>().color = new Color(0.498f, 0.780f, 0.8235f, 1);
         }
 
         // int a = Random.Range(0, 5);
@@ -288,14 +291,16 @@ public class QuizManager : MonoBehaviour
             {
                 intervalbutton_.isroot = 1;
                 intervalbutton_.colors = RootButton;
+                intervalbutton_.intervalText.text = "R";
                 currentrootnode = intervalbutton_;
-                intervalbutton_.interactable = true;  //this ensures red color is seen
+               // intervalbutton_.interactable = true;  //this ensures Root node color is seen
 
             }
             else
             {
                 intervalbutton_.isroot = 0;
                 intervalbutton_.colors = RegularButton;
+                intervalbutton_.intervalText.text = "\0";
             }
 
             if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == (intervalquestion_val - 12))
@@ -304,7 +309,7 @@ public class QuizManager : MonoBehaviour
             }
 
 
-            //intervalbutton_.interactable = true;  
+            intervalbutton_.interactable = true;  
         }
 
         int b = Random.Range(0, possibleAnswers.Count - 1);
@@ -383,6 +388,7 @@ public class QuizManager : MonoBehaviour
         {
             intervalbutton_.interactable = false;
             intervalbutton_.colors = RegularButton;
+            intervalbutton_.intervalText.text = "\0";
             intervalbutton_.interactable = true;
         }
 
@@ -396,7 +402,10 @@ public class QuizManager : MonoBehaviour
 
 
         intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].colors = RootButton;
+        intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].intervalText.text = "R";
         intervalbuttons_[wrongPairs[wrongPairs_index].Item2].colors = CorrectButton;
+        int computed_wrongpair_interval =intervalbuttons_[wrongPairs[wrongPairs_index].Item2].notevalue - intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].notevalue;
+        intervalbuttons_[wrongPairs[wrongPairs_index].Item2].intervalText.text = (computed_wrongpair_interval<0)? intervalname[12+computed_wrongpair_interval]:intervalname[computed_wrongpair_interval] ;
 
 
 
@@ -406,7 +415,7 @@ public class QuizManager : MonoBehaviour
     {
         foreach (SpriteRenderer string_ in strings)
         {
-            string_.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0.5f, 1);
+            string_.GetComponent<SpriteRenderer>().color = new Color(0.498f, 0.780f, 0.8235f, 1);
         }
 
 
@@ -561,6 +570,20 @@ public class QuizManager : MonoBehaviour
     {
         if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
         Debug.Log("the string value is: " + value.stringnum + "  HL:" + highlightedstring);
+
+        int selected_intervalvalue = value.notevalue - currentrootnode.notevalue;
+        string interval_displaytext="a";
+        if (selected_intervalvalue < 0)
+        {
+            interval_displaytext = intervalname[12 + selected_intervalvalue];
+        }
+        else
+        {
+            interval_displaytext = intervalname[selected_intervalvalue];
+        }
+
+        value.intervalText.text = interval_displaytext;
+
         if (value.stringnum == highlightedstring)
 
         {

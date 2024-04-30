@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 4e2a17a49fec23947ab58fd8842eb315
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - FONTSPRING DEMO - Core Sans AR 55 Medium
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: ca7cfac74cad0b8439130c6a1a5910ed, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

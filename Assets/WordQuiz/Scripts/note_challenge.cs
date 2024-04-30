@@ -201,6 +201,8 @@ public class note_challenge : MonoBehaviour
         possibleAnswers = new List<note_button>();
         questionmode_counter = Random.Range(4, 8);
 
+        Debug.Log(settings_notechallenge.instance.questionList);
+
         foreach ((int, int) question in settings_notechallenge.instance.questionList)
         {
             Question_button_list.Add(notebuttons_[settings_notechallenge.instance.Coordinate_system[question]]);

@@ -752,11 +752,11 @@ PlayerSettings:
     m_VersionName: 
   apiCompatibilityLevel: 6
   activeInputHandler: 0
-  cloudProjectId: 
+  cloudProjectId: 0d8b3905-2b82-4578-b734-25bab5fa07cb
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: interval_game
+  organizationId: adeshvinod
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   virtualTexturingSupportEnabled: 0

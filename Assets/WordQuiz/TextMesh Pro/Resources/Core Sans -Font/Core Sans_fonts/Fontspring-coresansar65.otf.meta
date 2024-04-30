@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 2b6fa624a4ca91f43aba54115883bbeb
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - FONTSPRING DEMO - Core Sans AR 65 Bold
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: e4f6254e278c16d40b352f9bb3fbdc5d, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

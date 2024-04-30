@@ -244,12 +244,12 @@ public class settings_notechallenge : MonoBehaviour
     void Update()
     {
 
-        
+
         //float t = Time.time - startTime;
         // string minutes = ((int)t / 60).ToString();
         //string seconds = (t % 60).ToString("f2");
         //timerText.text = minutes + ":" + seconds;
-        if (scene.buildIndex == 6)
+        if (scene.name == "notes_settings")
         {
             questionList.Clear();
 

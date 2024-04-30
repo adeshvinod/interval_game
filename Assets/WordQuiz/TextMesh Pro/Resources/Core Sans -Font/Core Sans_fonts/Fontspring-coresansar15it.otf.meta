@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 087f92ef84e248d4c8c6725efa687a08
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - FONTSPRING DEMO - Core Sans AR 15 Thin
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 523701827c27ba6479fc1e4e3b1f6708, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

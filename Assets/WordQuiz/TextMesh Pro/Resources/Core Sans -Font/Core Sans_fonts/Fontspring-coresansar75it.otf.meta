@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 2ac23c15a82448d41ad5a18649198c75
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - FONTSPRING DEMO - Core Sans AR 75 ExtraBold
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 8253e5202ccb32b40bc59c793fe0a81b, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

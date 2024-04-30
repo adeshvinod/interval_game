@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: b8b5d5ce6d4310e4ba9010d5500f9fdd
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - FONTSPRING DEMO - Core Sans AR 35 Light
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 11fcd0c7ef6e8ee49881b5dd48b7d37b, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

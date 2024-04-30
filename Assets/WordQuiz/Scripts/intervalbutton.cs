@@ -106,8 +106,10 @@ public class intervalbutton : Button
 
         Debug.Log("sibling indec" + this.transform.GetSiblingIndex() + "   note value:" + notevalue);
         getNoteValue(this.transform.GetSiblingIndex());
-        intervalText.text = notevalue.ToString();
-        
+       // intervalText.text = notevalue.ToString();
+        intervalText.text = "";
+
+
         fretnum = this.transform.GetSiblingIndex() % 7;  //the 7 frets are numbered from 0 to 6
         
 
