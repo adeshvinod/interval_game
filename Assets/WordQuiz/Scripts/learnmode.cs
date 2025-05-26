@@ -30,7 +30,7 @@ public class learnmode : MonoBehaviour
             {5, "P4"},
             {6, "b5"},
             {7, "P5"},
-            {8, "m6"},
+            {8, "b6"},
             {9, "M6"},
             {10, "b7"},
             {11, "M7"},

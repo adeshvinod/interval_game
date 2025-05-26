@@ -2,10 +2,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class interval_option : MonoBehaviour
 {
-    [SerializeField] private Text interval_option_Text;
+    [SerializeField] private TextMeshProUGUI interval_option_Text;
     Scene scene; //this needs to be in game settings static instance
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
@@ -18,7 +19,7 @@ public class interval_option : MonoBehaviour
             {5, "P4"},
             {6, "b5"},
             {7, "P5"},
-            {8, "m6"},
+            {8, "b6"},
             {9, "M6"},
             {10, "b7"},
             {11, "M7"},

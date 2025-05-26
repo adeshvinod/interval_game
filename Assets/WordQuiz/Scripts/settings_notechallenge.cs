@@ -117,6 +117,11 @@ public class settings_notechallenge : MonoBehaviour
 
     private GameObject unmask_unit;
 
+    private int last_x_coord = -1;
+    private int last_y_coord = -1;
+    private int last_scale_x = -1;
+    private int last_scale_y = -1;
+
     private void Awake()
     {
         if (instance == null)
@@ -243,46 +248,53 @@ public class settings_notechallenge : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-
-        //float t = Time.time - startTime;
-        // string minutes = ((int)t / 60).ToString();
-        //string seconds = (t % 60).ToString("f2");
-        //timerText.text = minutes + ":" + seconds;
         if (scene.name == "notes_settings")
         {
-            questionList.Clear();
-
-            for (int j = current_y_coord; j < current_y_coord + scalefactor_y; j++)
+            // Only update if the selection has changed
+            if (current_x_coord != last_x_coord || 
+                current_y_coord != last_y_coord || 
+                scalefactor_x != last_scale_x || 
+                scalefactor_y != last_scale_y)
             {
-                for (int i = current_x_coord; i < current_x_coord + scalefactor_x; i++)
-                {
-                    questionList.Add((j, i));
+                questionList.Clear();
 
+                for (int j = current_y_coord; j < current_y_coord + scalefactor_y; j++)
+                {
+                    for (int i = current_x_coord; i < current_x_coord + scalefactor_x; i++)
+                    {
+                        questionList.Add((j, i));
+                    }
                 }
+
+                // Update last known values
+                last_x_coord = current_x_coord;
+                last_y_coord = current_y_coord;
+                last_scale_x = scalefactor_x;
+                last_scale_y = scalefactor_y;
             }
         }
-
     }
 
      public void level_select(int level)
     {
         questionList.Clear();
+        Debug.Log($"Level {level} selected");
         
         switch (level)
         {
             case 1:
                 current_level = 1;
-                for (int i = 4;i<=5;i++)
+                Debug.Log("Setting up Level 1 - strings 4-5, all frets");
+                for (int i = 4; i <= 5; i++)
                 {
-                    for(int j=0;j<=12;j++)
+                    for(int j = 0; j <= 12; j++)
                     {
                         questionList.Add((i, j));
+                        Debug.Log($"Added coordinates ({i}, {j}) to questionList");
                     }
-
                 }
-                         
-                        break;
+                Debug.Log($"Total coordinates added for Level 1: {questionList.Count}");
+                break;
 
             case 2:
                 current_level = 2;

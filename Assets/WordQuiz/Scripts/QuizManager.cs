@@ -1,23 +1,26 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.EventSystems;
 using Random = UnityEngine.Random;
 
 
 
-//'WORDS' AND 'CHARACTERS' ARE USED INTERCHANGABLY IN THESE SCRIPT COMMENTS AND VARIABLEES
+//'WORDS' AND 'CHARACTERS' ARE USED INTERCHANGLY IN THESE SCRIPT COMMENTS AND VARIABLEES
 
-public class QuizManager : MonoBehaviour
+public class QuizManager : MonoBehaviour, IPointerClickHandler
 {
 
 
     public static QuizManager instance; //Instance to make is available in other scripts without reference
 
+    [SerializeField] private materialController materialController; // Reference set in inspector
     [SerializeField] private GameObject gameComplete;
-    [SerializeField] private Text questionChordFloating;   //the text which shows the question
+    [SerializeField] private TextMeshProUGUI questionChordFloating;   //the text which shows the question
 
     [SerializeField] private interval_option[] optionintervalList;    //list of interval options in the game (R,b2,M2,b3 etc)
     private GameObject optionintervalList_parent;
@@ -47,12 +50,12 @@ public class QuizManager : MonoBehaviour
     private int highlightedstring;
 
     public int score = 0;
-    public Text score_text;
+    public TextMeshProUGUI score_text;
     public int lives = 3;
     [SerializeField] public List<Image> lives_image;
     public float timer = 10;
     public int time; //int form of time
-    [SerializeField] public Text timer_text;
+    [SerializeField] public TextMeshProUGUI timer_text;
 
     public float[] accuracies = new float[12];
     public float[] reactiontimes = new float[12];
@@ -86,7 +89,7 @@ public class QuizManager : MonoBehaviour
             {5, "P4"},
             {6, "b5"},
             {7, "P5"},
-            {8, "m6"},
+            {8, "b6"},
             {9, "M6"},
             {10, "b7"},
             {11, "M7"},
@@ -120,18 +123,23 @@ public class QuizManager : MonoBehaviour
     {
 
         RootButton = ColorBlock.defaultColorBlock;
-        RootButton.normalColor = new Color(1, 0, 0, 1);
+        RootButton.normalColor = new Color(0.976f, 0.459f, 0.294f, 1f);  // F9754B, always visible
+        RootButton.selectedColor = new Color(0.976f, 0.459f, 0.294f, 1f);  // Same color when selected
+        RootButton.highlightedColor = new Color(0.976f, 0.459f, 0.294f, 0f);  // Same color when selected
 
         CorrectButton = ColorBlock.defaultColorBlock;
         CorrectButton.normalColor = new Color(0, 1, 0, 1);
-        CorrectButton.selectedColor = new Color(0, 1, 0, 1);
-
+        //CorrectButton.selectedColor = new Color(0, 1, 0, 1);
+        CorrectButton.selectedColor = new Color(0.773f, 0.784f, 0.263f, 1f);  // C5C843, fully visible when selected
+        CorrectButton.highlightedColor = new Color(0.773f, 0.784f, 0.263f, 0f);  // C5C843, fully visible when selected
 
         RegularButton = ColorBlock.defaultColorBlock;
-        RegularButton.normalColor = new Color(0, 0, 1, 0);
-        RegularButton.selectedColor = new Color(1, 1, 0, 1);
+        RegularButton.normalColor = new Color(1, 1, 1, 0f);
+        //RegularButton.selectedColor = new Color(1, 1, 0, 1);
+        RegularButton.selectedColor = new Color(0.988f, 0.196f, 0.196f, 1f);  // FC3232, fully visible when selected
+        RegularButton.highlightedColor = new Color(0.988f, 0.196f, 0.196f, 0f);  // FC3232, fully visible when selected         
 
-        debugButton = ColorBlock.defaultColorBlock; ;
+        debugButton = ColorBlock.defaultColorBlock;
         debugButton.normalColor = new Color(1, 1, 1, 1);
 
 
@@ -159,35 +167,28 @@ public class QuizManager : MonoBehaviour
         nextQuestion();
         timer = 10f;
 
-        StartCoroutine(CallFunctionEvery5Seconds());
+        //StartCoroutine(CallFunctionEvery5Seconds());
 
     }
 
 
     void SetQuestion_intervals()
     {
-
         gameStatus = GameStatus.Playing;
-        //intervalquestion_val = Random.Range(0, 11);
-        intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)]; //chooses which intervals to ask depending on settings
-        questioncounter[intervalquestion_val]++; //records the number of times this interval has been asked
+        intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)];
+        questioncounter[intervalquestion_val]++;
 
         String intervalquestion_text = intervalname[intervalquestion_val];
         questionChordFloating.gameObject.SetActive(true);
         questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
-        //resets the color of the strings to blue
-        foreach (SpriteRenderer string_ in strings)
-        {
-            string_.GetComponent<SpriteRenderer>().color = new Color(0.498f, 0.780f, 0.8235f, 1);
-        }
+        // Reset all strings to base intensity
+        materialController.ResetAllStringsToBaseIntensity();
 
-        //int a = Random.Range(0, 5);  //chooseing which string to put the root on
-        int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)];  //chooses which strings to ask depending on settings
+        int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)];
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
-
             intervalbutton_.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
 
             if (intervalbutton_.transform.GetSiblingIndex() == rootoptions[a])
@@ -208,13 +209,11 @@ public class QuizManager : MonoBehaviour
             if ((intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == intervalquestion_val || (intervalbutton_.notevalue - intervalbuttons_[rootoptions[a]].notevalue) == (intervalquestion_val - 12))
             {
                 possibleAnswers.Add(intervalbutton_);
-
             }
             intervalbutton_.interactable = true;
         }
 
         int b = Random.Range(0, possibleAnswers.Count);
-
         highlightedstring = possibleAnswers[b].stringnum;
         correctnode = possibleAnswers[b];
 
@@ -234,10 +233,8 @@ public class QuizManager : MonoBehaviour
     {
         while (gameStatus == GameStatus.Playing)
         {
-            //strings[highlightedstring].GetComponent<SpriteRenderer>().color = new Color((Mathf.Sin(Time.time * 8) + 1) / 2, (Mathf.Sin(Time.time * 8) + 1) / 2, 0.5f, 1f);
-            strings[highlightedstring].GetComponent<SpriteRenderer>().color = Color.HSVToRGB(0.498f, (Mathf.Sin(Time.time * 8) + 1) / 2, 1f); 
-           yield return null;
-
+            materialController.PulseStringIntensity(highlightedstring);
+            yield return null;
         }
     }
     public void InitializeQuestionHistoryArray()
@@ -274,12 +271,16 @@ public class QuizManager : MonoBehaviour
         questionChordFloating.text = intervalquestion_text;
         possibleAnswers.Clear();
 
+         materialController.ResetAllStringsToBaseIntensity();
+
+         /*
+
         //resets the color of the strings to blue
         foreach (SpriteRenderer string_ in strings)
         {
             string_.GetComponent<SpriteRenderer>().color = new Color(0.498f, 0.780f, 0.8235f, 1);
         }
-
+*/
         // int a = Random.Range(0, 5);
         int a = challenge_settings.instance.stringList[Random.Range(0, challenge_settings.instance.stringList.Count)]; //chooses which string to put the root on depending on the settings
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
@@ -334,6 +335,12 @@ public class QuizManager : MonoBehaviour
     int temp_highlight = 0;
     public void Update()
     {
+        // Add touch detection at the start of Update
+        if (Input.GetMouseButtonDown(0))  // This detects both mouse clicks and touch
+        {
+            Debug.Log("Canvas touched at position: " + Input.mousePosition);
+        }
+
         if (gameStatus == GameStatus.Playing)
         {
             timer -= Time.deltaTime;
@@ -379,10 +386,9 @@ public class QuizManager : MonoBehaviour
     }
 
 
-    public void showWrongPairs()               //A function which iterates through the pairs that were either wrong or took to much time to answer
+    public void showWrongPairs(int direction)               //A function which iterates through the pairs that were either wrong or took to much time to answer
     {
-
-
+        if (wrongPairs.Count == 0) return;  // Guard against empty list
 
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
@@ -392,31 +398,35 @@ public class QuizManager : MonoBehaviour
             intervalbutton_.interactable = true;
         }
 
-
         Debug.Log("number of wrong pairs: " + wrongPairs.Count);
 
+        // Update index based on direction, handling wrapping
+        if (direction > 0)
+        {
+            wrongPairs_index = (wrongPairs_index + 1) % wrongPairs.Count;
+        }
+        else if (direction < 0)
+        {
+            wrongPairs_index = (wrongPairs_index - 1 + wrongPairs.Count) % wrongPairs.Count;
+        }
 
-
-        wrongPairs_index = (wrongPairs_index + 1) % wrongPairs.Count;
         Debug.Log("item 1:" + wrongPairs[wrongPairs_index].Item1 + "   item2:" + wrongPairs[wrongPairs_index].Item2);
-
 
         intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].colors = RootButton;
         intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].intervalText.text = "R";
         intervalbuttons_[wrongPairs[wrongPairs_index].Item2].colors = CorrectButton;
-        int computed_wrongpair_interval =intervalbuttons_[wrongPairs[wrongPairs_index].Item2].notevalue - intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].notevalue;
-        intervalbuttons_[wrongPairs[wrongPairs_index].Item2].intervalText.text = (computed_wrongpair_interval<0)? intervalname[12+computed_wrongpair_interval]:intervalname[computed_wrongpair_interval] ;
-
-
-
+        int computed_wrongpair_interval = intervalbuttons_[wrongPairs[wrongPairs_index].Item2].notevalue - intervalbuttons_[rootoptions[wrongPairs[wrongPairs_index].Item1]].notevalue;
+        intervalbuttons_[wrongPairs[wrongPairs_index].Item2].intervalText.text = (computed_wrongpair_interval < 0) ? intervalname[12 + computed_wrongpair_interval] : intervalname[computed_wrongpair_interval];
     }
 
     public void gameover_function()
-    {
+    {/*
         foreach (SpriteRenderer string_ in strings)
         {
             string_.GetComponent<SpriteRenderer>().color = new Color(0.498f, 0.780f, 0.8235f, 1);
         }
+        */
+         materialController.ResetAllStringsToBaseIntensity();
 
 
 
@@ -469,7 +479,7 @@ public class QuizManager : MonoBehaviour
             //Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
             if (questionMode == QuestionMode.PressTheInterval)
             {
-                debughighlightedstring();
+               debughighlightedstring();
                 temp_highlight = highlightedstring;
             }
             // Wait for 5 seconds before calling the function again
@@ -563,12 +573,23 @@ public class QuizManager : MonoBehaviour
 
     private void SetTimer(int value)
     {
-        timer_text.text = "Time:" + value.ToString();
+        timer_text.text = value.ToString();
     }
 
     public void SelectedButton(intervalbutton value)
     {
         if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
+        
+        // Add debug logging for clicked element
+        if (value != null)
+        {
+            Debug.Log($"Element clicked - String: {value.stringnum}, Fret: {value.fretnum}, Note Value: {value.notevalue}");
+        }
+        else
+        {
+            Debug.Log("No particular element touched");
+        }
+
         Debug.Log("the string value is: " + value.stringnum + "  HL:" + highlightedstring);
 
         int selected_intervalvalue = value.notevalue - currentrootnode.notevalue;
@@ -760,6 +781,80 @@ public class QuizManager : MonoBehaviour
 
    }
    */
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        // Debug the raw event data
+        Debug.Log($"Click detected at position: {eventData.position}");
+        
+        // Get the GameObject that was clicked
+        GameObject clickedObject = eventData.pointerCurrentRaycast.gameObject;
+        
+        if (clickedObject == null)
+        {
+            Debug.Log("User clicked on empty space or no collider detected");
+            return;
+        }
+
+        // Log the full hierarchy of the clicked object
+        Debug.Log($"Clicked object hierarchy: {GetGameObjectPath(clickedObject)}");
+
+        // Check what type of UI element was clicked
+        if (clickedObject.GetComponent<intervalbutton>() != null)
+        {
+            Debug.Log($"User clicked on fretboard button - String: {clickedObject.GetComponent<intervalbutton>().stringnum}, Fret: {clickedObject.GetComponent<intervalbutton>().fretnum}");
+        }
+        else if (clickedObject.GetComponent<TextMeshProUGUI>() != null)
+        {
+            if (clickedObject.GetComponent<TextMeshProUGUI>() == score_text)
+            {
+                Debug.Log("User clicked on score text");
+            }
+            else if (clickedObject.GetComponent<TextMeshProUGUI>() == timer_text)
+            {
+                Debug.Log("User clicked on timer text");
+            }
+            else if (clickedObject.GetComponent<TextMeshProUGUI>() == questionChordFloating)
+            {
+                Debug.Log("User clicked on question text");
+            }
+            else
+            {
+                Debug.Log($"User clicked on text element: {clickedObject.name}");
+            }
+        }
+        else if (clickedObject.GetComponent<Image>() != null)
+        {
+            // Check if it's a life image
+            if (lives_image.Contains(clickedObject.GetComponent<Image>()))
+            {
+                Debug.Log("User clicked on life element");
+            }
+            else
+            {
+                Debug.Log($"User clicked on image element: {clickedObject.name}");
+            }
+        }
+        else
+        {
+            Debug.Log($"User clicked on: {clickedObject.name}");
+        }
+    }
+
+    // Helper method to get the full hierarchy path of a GameObject
+    private string GetGameObjectPath(GameObject obj)
+    {
+        string path = obj.name;
+        Transform parent = obj.transform.parent;
+        
+        while (parent != null)
+        {
+            path = parent.name + "/" + path;
+            parent = parent.parent;
+        }
+        
+        return path;
+    }
 }
 
 [System.Serializable]

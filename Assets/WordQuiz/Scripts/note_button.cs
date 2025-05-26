@@ -165,37 +165,43 @@ public class note_button : Button
     // Start is called before the first frame update
     protected override void Awake()
     {
-
         buttonComponent = GetComponent<note_button>();
         if (buttonComponent)
         {
             buttonComponent.onClick.AddListener(() => buttonselected());
-
         }
 
-        stringnum = this.transform.GetSiblingIndex() / 13; //there are 13 nodes on 1 string      
+        // Extract button number from GameObject name
+        string buttonName = this.gameObject.name;
+        int buttonNumber;
+        
+        if (buttonName == "Button")
+        {
+            buttonNumber = 0;
+        }
+        else
+        {
+            // Extract number from names like "Button (1)", "Button (2)", etc.
+            string numberStr = buttonName.Replace("Button (", "").Replace(")", "");
+            buttonNumber = int.Parse(numberStr);
+        }
 
+        stringnum = buttonNumber / 13; //there are 13 nodes on 1 string      
 
         noteText = GetComponentInChildren<Text>();
-        getNoteValue(this.transform.GetSiblingIndex());
-        //notevalue = notevalue_dict[this.transform.GetSiblingIndex()];
+        getNoteValue(buttonNumber);
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
-        note_siblingindex = this.transform.GetSiblingIndex();
+        note_siblingindex = buttonNumber;
 
-
-       //   noteText.text = notename_sharp;
-        noteText.text = note_siblingindex.ToString()+"/"+notevalue.ToString();
+        // Set initial text to be transparent
+        noteText.text = notename_sharp;
         noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
 
         scene = SceneManager.GetActiveScene();
-
         
-        
-            this.x_coord = this.transform.GetSiblingIndex() % 13;
-            this.y_coord = this.transform.GetSiblingIndex() / 13;
-        
-
+        this.x_coord = buttonNumber % 13;
+        this.y_coord = buttonNumber / 13;
     }
 
     private void getNoteValue(int sibling_index)
@@ -204,14 +210,27 @@ public class note_button : Button
         if (global_settings.instance.transposed_notes_dict != null)  //to check if we entered global settings and created an instance of the modified  global transposed array. if not we just gonna use the transposed arrays created in this script
         {
             transposed_notes_dict = global_settings.instance.transposed_notes_dict;
-
-            //Debug.Log("transposed value array: " + global_settings.instance.transposed_notes_dict[0] + " " + global_settings.instance.transposed_notes_dict[1] + " " + global_settings.instance.transposed_notes_dict[2] + " " + global_settings.instance.transposed_notes_dict[3] + " " + global_settings.instance.transposed_notes_dict[4] + " ");
             Debug.Log("transposed value array at get noteval: " + transposed_notes_dict[0] + " " + transposed_notes_dict[1] + " " + transposed_notes_dict[2] + " " + transposed_notes_dict[3] + " " + transposed_notes_dict[4] + " ");
         }
 
-        int transposed_mathematical_value; //value after transposing, includes negative numbers
+        // Extract button number from GameObject name
+        string buttonName = this.gameObject.name;
+        int buttonNumber;
+        
+        if (buttonName == "Button")
+        {
+            buttonNumber = 0;
+        }
+        else
+        {
+            // Extract number from names like "Button (1)", "Button (2)", etc.
+            string numberStr = buttonName.Replace("Button (", "").Replace(")", "");
+            buttonNumber = int.Parse(numberStr);
+        }
 
-        transposed_mathematical_value = notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum];
+        int transposed_mathematical_value;
+
+        transposed_mathematical_value = notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum];
 
         //turn the negative numbers into positive number mapped to the corresponding note
         while (transposed_mathematical_value < 0)
@@ -219,25 +238,27 @@ public class note_button : Button
             transposed_mathematical_value = 11 + transposed_mathematical_value;
         }
 
-
-        notevalue = (notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum]) % 12;
-
-
-
+        notevalue = (notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum]) % 12;
     }
 
     public void buttonselected()
     {
+        // Return early if button is not in selected region
+        if (!selectedRegion)
+        {
+            return;
+        }
 
         if (scene.name == "notes_challenge")
+        {
             note_challenge.instance.SelectedButton(this);
+            noteText.text = notename_sharp;
+        }
         else if (scene.name == "arpeggio_game")
         {
             arpeggio_manager.instance.Selected_button(this);
-           
         }
-            noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
-
+        noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
     }
 
     protected override void Start()
@@ -253,4 +274,11 @@ public class note_button : Button
     {
         
     }
+
+    // Add method to update text visibility based on button state
+    public void UpdateTextVisibility(bool visible)
+    {
+        noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, visible ? 1 : 0);
+    }
 }
+

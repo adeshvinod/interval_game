@@ -1,0 +1,371 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class prog_button : MonoBehaviour
+{
+    private Button button;
+    
+    [SerializeField]
+    private List<GameObject> circleImages = new List<GameObject>();
+    public int circleIndex;
+
+    [SerializeField]
+    private float scaleDuration = 0.2f; // Duration of the scale animation
+    private Vector3 originalScale = Vector3.zero;
+    private Vector3 targetScale = Vector3.one ; // Twice the original size
+    private Coroutine scaleCoroutine;
+    public TMPro.TextMeshProUGUI text;
+    private int stringnum;
+
+     public int notevalue;
+    string notename_sharp;
+    string notename_flat;
+    public bool selectedRegion = false; //to check if the button is in the user selected region of the fretboard defined in settings 
+    // Start is called before the first frame update
+
+       Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
+    {
+        {0,7},
+        {1,8},
+        {2,9},
+        {3,10},
+        {4,11},
+        {5,0},
+        {6,1},
+        {7,2},
+        {8,3},
+        {9,4},
+        {10,5},
+        {11,6},
+        {12,7},
+
+        {13,2},
+        {14,3},
+        {15,4},
+        {16,5},
+        {17,6},
+        {18,7},
+        {19,8},
+        {20,9},
+        {21,10},
+        {22,11},
+        {23,0},
+        {24,1},
+        {25,2},
+
+        {26,10},
+        {27,11},
+        {28,0},
+        {29,1},
+        {30,2},
+        {31,3},
+        {32,4},
+        {33,5},
+        {34,6},
+        {35,7},
+        {36,8},
+        {37,9},
+        {38,10},
+
+         {39,5},
+        {40,6},
+        {41,7},
+        {42,8},
+        {43,9},
+        {44,10},
+        {45,11},
+        {46,0},
+        {47,1},
+        {48,2},
+        {49,3},
+        {50,4},
+        {51,5},
+
+        {52,0},
+        {53,1},
+        {54,2},
+        {55,3},
+        {56,4},
+        {57,5},
+        {58,6},
+        {59,7},
+        {60,8},
+        {61,9},
+        {62,10},
+        {63,11},
+        {64,0},
+
+        {65,7},
+        {66,8},
+        {67,9},
+        {68,10},
+        {69,11},
+        {70,0},
+        {71,1},
+        {72,2},
+        {73,3},
+        {74,4},
+        {75,5},
+        {76,6},
+        {77,7}
+    };
+
+
+    Dictionary<int, string> notename_sharps = new Dictionary<int, string>()
+     {
+         {0,"A" },
+         {1,"A#" },
+         {2,"B" },
+         {3,"C" },
+         {4,"C#" },
+         {5,"D" },
+         {6,"D#" },
+         {7,"E" },
+         {8,"F" },
+         {9,"F#" },
+         {10,"G" },
+         {11,"G#" }
+         
+
+     };
+
+    Dictionary<int, string> notename_flats = new Dictionary<int, string>()
+     {
+         {0,"A" },
+         {1,"Bb" },
+         {2,"B" },
+         {3,"C" },
+         {4,"Db" },
+         {5,"D" },
+         {6,"Eb" },
+         {7,"E" },
+         {8,"F" },
+         {9,"Gb" },
+         {10,"G" },
+         {11,"Ab" }
+
+
+     };
+
+    
+
+    Dictionary<int, int> transposed_notes_dict = new Dictionary<int, int>() //for alternate tunings
+           {
+            {0, 0},
+            {1, 0},
+            {2, 0},
+            {3, 0},
+            {4, 0},
+            {5, 0}
+
+           };  
+    
+    // Awake is called when the script instance is being loaded
+    void Awake()
+    {
+        // Get the Button component
+        button = GetComponent<Button>();
+        if (button == null)
+        {
+            Debug.LogError("Button component not found on " + gameObject.name);
+            return;
+        }
+        else
+        {
+            Debug.Log("Button found on " + gameObject.name);
+        }
+
+        // Validate circle images
+        if (circleImages.Count == 0)
+        {
+            Debug.LogError("No circle images assigned in the Inspector for " + gameObject.name);
+        }
+        else
+        {
+            Debug.Log($"Found {circleImages.Count} circle images assigned");
+        }
+
+        // Add click event listener
+        button.onClick.AddListener(ButtonSelected);
+        Debug.Log("Click listener added to button");
+
+        // Initially set all circles to inactive
+        foreach (GameObject circle in circleImages)
+        {
+            if (circle != null)
+            {
+                circle.SetActive(false);
+            }
+        }
+
+        // Set text to transparent initially
+        if (text != null)
+        {
+            Color textColor = text.color;
+            textColor.a = 0f;
+            text.color = textColor;
+        }
+        
+        // Extract button number from GameObject name
+        string buttonName = this.gameObject.name;
+        int buttonNumber;
+        
+        if (buttonName == "Prog_button")
+        {
+            buttonNumber = 0;
+        }
+        else
+        {
+            // Extract number from names like "Prog_button (1)", "Prog_button (2)", etc.
+            string numberStr = buttonName.Replace("Prog_button (", "").Replace(")", "");
+            buttonNumber = int.Parse(numberStr);
+        }
+
+        getNoteValue(buttonNumber);
+        notename_sharp = notename_sharps[notevalue];
+        notename_flat = notename_flats[notevalue];
+
+        stringnum = buttonNumber / 13; //there are 13 nodes on 1 string   
+        Debug.Log("button number: " + buttonNumber + " string number: " + stringnum + " notevalue: " + notevalue + " notename_sharp: " + notename_sharp + " notename_flat: " + notename_flat);   
+        text.text = notename_sharp;
+    }
+
+    // Public function that can be called from other scripts
+    public void SetActiveCircle(int circleIndex)
+    {
+        Debug.Log($"Attempting to set active circle: {circleIndex}");
+        
+        // Validate the index
+        if (circleIndex < 0 || circleIndex >= circleImages.Count)
+        {
+            Debug.LogWarning($"Invalid circle index: {circleIndex}. Must be between 0 and {circleImages.Count - 1}");
+            return;
+        }
+
+        // Deactivate all circles first
+        foreach (GameObject circle in circleImages)
+        {
+            if (circle != null)
+            {
+                circle.SetActive(false);
+                // Reset scale of all circles
+                circle.transform.localScale = originalScale;
+            }
+            else
+            {
+                Debug.LogWarning("Null reference found in circleImages list");
+            }
+        }
+
+        // Activate the selected circle
+        if (circleImages[circleIndex] != null)
+        {
+            circleImages[circleIndex].SetActive(true);
+            // Start scaling animation
+            if (scaleCoroutine != null)
+            {
+                StopCoroutine(scaleCoroutine);
+            }
+            scaleCoroutine = StartCoroutine(ScaleCircle(circleImages[circleIndex]));
+            Debug.Log($"Activated circle at index {circleIndex}");
+        }
+        else
+        {
+            Debug.LogError($"Circle at index {circleIndex} is null");
+        }
+    }
+
+    private IEnumerator ScaleCircle(GameObject circle)
+    {
+        float elapsedTime = 0f;
+        Vector3 startScale = originalScale;
+        Vector3 endScale = targetScale;
+
+        // Start with text fully transparent
+        if (text != null)
+        {
+            Color textColor = text.color;
+            textColor.a = 0f;
+            text.color = textColor;
+        }
+
+        while (elapsedTime < scaleDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / scaleDuration);
+            circle.transform.localScale = Vector3.Lerp(startScale, endScale, t);
+            // Scale and fade in the text
+            if (text != null)
+            {
+                text.transform.localScale = Vector3.Lerp(startScale, endScale, t);
+                Color textColor = text.color;
+                textColor.a = t; // Fade in the text
+                text.color = textColor;
+            }
+            yield return null;
+        }
+
+        // Ensure we end exactly at the target scale and full opacity
+        circle.transform.localScale = endScale;
+        if (text != null)
+        {
+            text.transform.localScale = endScale;
+            Color textColor = text.color;
+            textColor.a = 1f;
+            text.color = textColor;
+        }
+    }
+
+    void ButtonSelected()
+    {
+        Debug.Log("Button selected on " + gameObject.name);
+        SetActiveCircle(circleIndex);
+    }
+
+    void OnDestroy()
+    {
+        // Remove the event listener when the object is destroyed
+        if (button != null)
+        {
+            button.onClick.RemoveListener(ButtonSelected);
+            Debug.Log("Click listener removed from button");
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+       private void getNoteValue(int buttonNumber)
+    {
+        // Check if global_settings instance exists
+        global_settings settingsInstance = FindObjectOfType<global_settings>();
+        
+        if (settingsInstance != null && settingsInstance.transposed_notes_dict != null)
+        {
+            transposed_notes_dict = settingsInstance.transposed_notes_dict;
+            Debug.Log("Using global transposed notes dictionary");
+        }
+        else
+        {
+            Debug.Log("Global settings not found, using local transposed notes dictionary");
+        }
+
+        int transposed_mathematical_value;
+
+        transposed_mathematical_value = notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum];
+
+        //turn the negative numbers into positive number mapped to the corresponding note
+        while (transposed_mathematical_value < 0)
+        {
+            transposed_mathematical_value = 11 + transposed_mathematical_value;
+        }
+
+        notevalue = (notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum]) % 12;
+    }
+}

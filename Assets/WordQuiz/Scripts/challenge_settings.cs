@@ -57,12 +57,14 @@ public class challenge_settings : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (scene.name=="challenge_settings")  //challenge settings
+        if (scene.name=="Pre_challengemode")
         {
+            string textToDisplay = "SELECTED STRINGS:" + ListToText(stringList);
+            Debug.Log("Updating string list text to: " + textToDisplay);
             questionListFloating.text = "SELECTED INTERVALS:" + ListToText(questionList);
-            stringListfloating.text = "SELECTED STRINGS:" + ListToText(stringList);
+            stringListfloating.text = textToDisplay;
         }
-        Debug.Log("scene buld no: " + scene.buildIndex);
+        Debug.Log("Current scene name: " + scene.name);
     }
 
     public void level_select(int level)
