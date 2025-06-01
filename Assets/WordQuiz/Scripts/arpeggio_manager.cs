@@ -100,6 +100,8 @@ public class arpeggio_manager : MonoBehaviour
     ColorBlock RegularButton = new ColorBlock();
 
     public note_button[] notebuttons_;
+    public prog_button[] progbuttons_; // New field for prog buttons
+
     private void Awake()
     {
         if (instance == null)
@@ -133,9 +135,24 @@ public class arpeggio_manager : MonoBehaviour
         }
         Debug.Log("reached here-1");
         shadedregion_instance = GameObject.Find("shaded_region");
+        
+        // Comment out old note button initialization
+        /*
         GameObject originalGameObject = GameObject.Find("notebuttons");
         notebuttons_ = originalGameObject.GetComponentsInChildren<note_button>();
+        */
 
+        // Initialize prog buttons
+        GameObject progButtonsObject = GameObject.Find("Prog_buttons");
+        if (progButtonsObject != null)
+        {
+            progbuttons_ = progButtonsObject.GetComponentsInChildren<prog_button>();
+            Debug.Log($"Found {progbuttons_.Length} prog buttons");
+        }
+        else
+        {
+            Debug.LogWarning("Prog_buttons GameObject not found in scene");
+        }
 
         CorrectButton = ColorBlock.defaultColorBlock;
         CorrectButton.normalColor = new Color(0, 255, 0, 255);
@@ -208,7 +225,8 @@ public class arpeggio_manager : MonoBehaviour
         //question_notevalue = Random.Range(0, 12);
        // Debug.Log("reached here-1");
         if (questionMode == QuestionMode.RandomQuestions)
-        { randomindex = Random.Range(0, settings_arpgame.instance.QuestionList_chordtypes.Count + settings_arpgame.instance.QuestionList_customchords.Count);
+        { 
+            randomindex = Random.Range(0, settings_arpgame.instance.QuestionList_chordtypes.Count + settings_arpgame.instance.QuestionList_customchords.Count);
 
             Debug.Log("reached here 0    questionlist_chordtypes.count="+ settings_arpgame.instance.QuestionList_chordtypes.Count+" customchords= "+ settings_arpgame.instance.QuestionList_customchords.Count +" randomindex ="+randomindex);
             if (randomindex < settings_arpgame.instance.QuestionList_chordtypes.Count)
@@ -225,13 +243,10 @@ public class arpeggio_manager : MonoBehaviour
             question_notevalue = settings_arpgame.instance.myProgression[progression_index].note;
         }
 
-
-        
         questionChordFloating_note.text = notename_flats[question_notevalue];
 
         answer.Clear();
         Array.Clear(answerchecklist, 0, answerchecklist.Length);
-
 
         if (randomindex< settings_arpgame.instance.QuestionList_chordtypes.Count)
         {
@@ -253,30 +268,35 @@ public class arpeggio_manager : MonoBehaviour
                 if (temp != -1) //since custom chords arrays are initized to -1, we dont want to consider those -1 values
                 {
                     answer.Add((question_notevalue + temp)%12);
-                   
                 }
-                
             }
             Debug.Log("reached here 3 answer count is"+answer.Count);
-
         }
 
-            foreach (note_button note_button_temp in notebuttons_)
+        // Comment out old note button initialization
+        /*
+        foreach (note_button note_button_temp in notebuttons_)
         {
             note_button_temp.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
-
-
-
             note_button_temp.colors = RegularButton;
             // note_button_temp.noteText.color = new Color(note_button_temp.noteText.color.r, note_button_temp.noteText.color.g, note_button_temp.noteText.color.b, 0);
 
             //this is only for gameMode restrictedFretboard
             note_button_temp.transform.Find("Sprite Mask").gameObject.SetActive(false);
             note_button_temp.selectedRegion = false;
-
-
             note_button_temp.interactable = true;
+        }
+        */
 
+        // Initialize prog buttons
+        if (progbuttons_ != null)
+        {
+            foreach (prog_button prog_button_temp in progbuttons_)
+            {
+                prog_button_temp.SetActiveCircle(0); // Set to transparent initially
+                prog_button_temp.transform.Find("Sprite Mask").gameObject.SetActive(false);
+                prog_button_temp.selectedRegion = false;
+            }
         }
 
         if (gameMode == GameMode.RegionalFretboard)
@@ -285,7 +305,7 @@ public class arpeggio_manager : MonoBehaviour
             TotalCorrectAnswers_count_RFB = 0;
             CurrentCorrectAnswers_count_RFB = 0;
             x_coord_startpoint = Random.Range(0, 13 - RegionalFretboard_columns);
-            y_coord_startpoint = Random.Range(0, 6 - RegionalFretboard_rows);
+            y_coord_startpoint = Random.Range(0, 7 - RegionalFretboard_rows);
             Debug.Log("xcoord:" + x_coord_startpoint + "    ycoord: " + y_coord_startpoint);
 
             foreach (int element in answer)
@@ -294,9 +314,10 @@ public class arpeggio_manager : MonoBehaviour
             }
             Debug.Log("reached here3");
 
+            // Comment out old note button logic for restricted fretboard
+            /*
             foreach (note_button note_button_temp in notebuttons_)
             {
-                
                 if(note_button_temp.x_coord>=x_coord_startpoint && note_button_temp.x_coord<x_coord_startpoint+RegionalFretboard_columns && note_button_temp.y_coord >= y_coord_startpoint && note_button_temp.y_coord < y_coord_startpoint + RegionalFretboard_rows)
                 {
                     note_button_temp.transform.Find("Sprite Mask").gameObject.SetActive(true);
@@ -309,14 +330,36 @@ public class arpeggio_manager : MonoBehaviour
                             answer_restrictedFB.Add(note_button_temp.transform.GetSiblingIndex());
                             TotalCorrectAnswers_count_RFB++;
                             break;
-
                         }
-
                     }
                     //if note_button_temp.notevalue
                     
                 }
+            }
+            */
 
+            // Add new prog button logic for restricted fretboard
+            if (progbuttons_ != null)
+            {
+                foreach (prog_button prog_button_temp in progbuttons_)
+                {
+                    if(prog_button_temp.x_coord>=x_coord_startpoint && prog_button_temp.x_coord<x_coord_startpoint+RegionalFretboard_columns && 
+                       prog_button_temp.y_coord >= y_coord_startpoint && prog_button_temp.y_coord < y_coord_startpoint + RegionalFretboard_rows)
+                    {
+                        prog_button_temp.transform.Find("Sprite Mask").gameObject.SetActive(true);
+                        prog_button_temp.selectedRegion = true;
+                        
+                        foreach(int element in answer)
+                        {
+                            if(prog_button_temp.notevalue==element)
+                            {
+                                answer_restrictedFB.Add(prog_button_temp.transform.GetSiblingIndex());
+                                TotalCorrectAnswers_count_RFB++;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
             foreach(int element in answer_restrictedFB)
@@ -324,16 +367,14 @@ public class arpeggio_manager : MonoBehaviour
                 Debug.Log("answer restricted fretboard element" + element);
             }
         }
-        
-
-    
-
     }
 
+    // Comment out old Selected_button method
+    /*
     public void Selected_button(note_button value)
     {
         if (gameStatus == GameStatus.Next) return;
-          int i;
+        int i;
         Debug.Log("answer count: " + answer.Count+" selected button note:"+value.notevalue);
           for( i=0;i<answer.Count;i++)
           {
@@ -346,13 +387,13 @@ public class arpeggio_manager : MonoBehaviour
                  // value.interactable = true;
 
                 if(gameMode==GameMode.TwoOctaveArpeggio)
-                  evaluate_fixedoctaves(value.notevalue,i,2);
+                    evaluate_fixedoctaves(value.notevalue,i,2);
                 else if(gameMode==GameMode.OneOctaveArpeggio)
                 {
                     evaluate_fixedoctaves(value.notevalue, i, 1);
                 }
                 else if(gameMode==GameMode.RegionalFretboard)
-                        {
+                {
                     evaluate_RestrictedFretboard(value.transform.GetSiblingIndex());
                 }
                 break;
@@ -364,12 +405,49 @@ public class arpeggio_manager : MonoBehaviour
 
               value.colors = RegularButton;
             Debug.Log("just a regular button");
-
-             // value.interactable = true;
-          }
+        }
         
         Debug.Log("The button row and columns is :"+value.x_coord+"  "+value.y_coord);
+    }
+    */
 
+
+
+    // Add new method for prog button selection
+    public void Selected_prog_button(prog_button value)
+    {
+        if (gameStatus == GameStatus.Next) return;
+        if (!value.selectedRegion) return; // Only process if button is in selected region
+
+        int i;
+        Debug.Log("answer count: " + answer.Count + " selected prog button note:" + value.notevalue);
+        
+        for (i = 0; i < answer.Count; i++)
+        {
+            if (value.notevalue == answer[i])
+            {
+                value.SetActiveCircle(1); // Set to green when correct
+
+                if (gameMode == GameMode.TwoOctaveArpeggio)
+                    evaluate_fixedoctaves(value.notevalue, i, 2);
+                else if (gameMode == GameMode.OneOctaveArpeggio)
+                {
+                    evaluate_fixedoctaves(value.notevalue, i, 1);
+                }
+                else if (gameMode == GameMode.RegionalFretboard)
+                {
+                    evaluate_RestrictedFretboard(value.transform.GetSiblingIndex());
+                }
+                break;
+            }
+        }
+        if (i == answer.Count)
+        {
+            value.SetActiveCircle(2); // Set to faded green when incorrect
+            Debug.Log("just a regular prog button");
+        }
+        
+        Debug.Log("The prog button coordinates are: " + value.x_coord + "  " + value.y_coord);
     }
 
     public void evaluate_fixedoctaves(int notevalue_,int index,int no_of_octaves)

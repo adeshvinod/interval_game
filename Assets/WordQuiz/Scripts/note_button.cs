@@ -256,7 +256,7 @@ public class note_button : Button
         }
         else if (scene.name == "arpeggio_game")
         {
-            arpeggio_manager.instance.Selected_button(this);
+          //  arpeggio_manager.instance.Selected_button(this);
         }
         noteText.color = new Color(noteText.color.r, noteText.color.g, noteText.color.b, 1);
     }

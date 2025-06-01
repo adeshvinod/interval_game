@@ -3,9 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum LearningMode
+{
+    Intervals,
+    Notes,
+    Progressions
+}
+
 public class global_settings : MonoBehaviour
 {
     public static global_settings instance;
+    public static LearningMode currentLearningMode = LearningMode.Intervals;
+
+    public void SetLearningMode(int modeIndex)
+    {
+        currentLearningMode = (LearningMode)modeIndex;
+        Debug.Log("Learning mode set to: " + currentLearningMode);
+    }
+
     Dictionary<int, string> notename_sharps = new Dictionary<int, string>()
      {
          {0,"A" },

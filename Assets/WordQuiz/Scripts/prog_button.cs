@@ -26,6 +26,11 @@ public class prog_button : MonoBehaviour
     public bool selectedRegion = false; //to check if the button is in the user selected region of the fretboard defined in settings 
     // Start is called before the first frame update
 
+    public int x_coord;
+    public int y_coord; 
+    public int buttonNumber;    
+
+
        Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
         {0,7},
@@ -175,7 +180,7 @@ public class prog_button : MonoBehaviour
         }
         else
         {
-            Debug.Log("Button found on " + gameObject.name);
+           // Debug.Log("Button found on " + gameObject.name);
         }
 
         // Validate circle images
@@ -201,17 +206,30 @@ public class prog_button : MonoBehaviour
             }
         }
 
-        // Set text to transparent initially
+        // Set text to transparent initially and ensure it stays transparent
         if (text != null)
         {
             Color textColor = text.color;
             textColor.a = 0f;
             text.color = textColor;
+            text.alpha = 0f;  // Set TextMeshPro's alpha directly
+        }
+
+        if (global_settings.instance.transposed_notes_dict!=null)
+        {
+
+            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
+             Debug.Log("transposed_notes_dict found from global settings singletonl");
+             
+
+        }
+        else
+        {
+            Debug.Log("transposed_notes_dict is null");
         }
         
         // Extract button number from GameObject name
         string buttonName = this.gameObject.name;
-        int buttonNumber;
         
         if (buttonName == "Prog_button")
         {
@@ -224,15 +242,78 @@ public class prog_button : MonoBehaviour
             buttonNumber = int.Parse(numberStr);
         }
 
+        // Calculate coordinates and string number BEFORE getting note value
+        this.x_coord = buttonNumber % 13;
+        this.y_coord = buttonNumber / 13;
+        stringnum = this.y_coord;  // stringnum is the same as y_coord
+
+        // Now get the note value after stringnum is set
         getNoteValue(buttonNumber);
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
-
-        stringnum = buttonNumber / 13; //there are 13 nodes on 1 string   
-        Debug.Log("button number: " + buttonNumber + " string number: " + stringnum + " notevalue: " + notevalue + " notename_sharp: " + notename_sharp + " notename_flat: " + notename_flat);   
         text.text = notename_sharp;
-    }
 
+        // Set initial circle state to transparent
+        circleIndex = 0;
+    }
+    // Public function that can be called from other scripts
+    public void SetActiveCircle(int circleIndex)
+    {
+       // Debug.Log($"Attempting to set active circle: {circleIndex}");
+        
+        // Validate the index
+        if (circleIndex < 0 || circleIndex >= circleImages.Count)
+        {
+            Debug.LogWarning($"Invalid circle index: {circleIndex}. Must be between 0 and {circleImages.Count - 1}");
+            return;
+        }
+
+        this.circleIndex = circleIndex;  // Store the current circle index
+
+        // Deactivate all circles first
+        foreach (GameObject circle in circleImages)
+        {
+            if (circle != null)
+            {
+                circle.SetActive(false);
+                // Reset scale of all circles
+                circle.transform.localScale = originalScale;
+            }
+            else
+            {
+                Debug.LogWarning("Null reference found in circleImages list");
+            }
+        }
+
+        // Set text visibility based on circleIndex
+        if (text != null)
+        {
+            Color textColor = text.color;
+            //textColor.= circleIndex == 0 ? 0f : 1f; // Transparent if 0, fully visible otherwise
+            textColor.a = circleIndex == 0 ? 0f : 1f;
+            text.color = textColor;
+            text.alpha = circleIndex == 0 ? 0f : 1f;  // Set TextMeshPro's alpha directly
+        }
+
+        // Activate the selected circle
+        if (circleImages[circleIndex] != null)
+        {
+            circleImages[circleIndex].SetActive(true);
+            // Start scaling animation
+            if (scaleCoroutine != null)
+            {
+                StopCoroutine(scaleCoroutine);
+            }
+            scaleCoroutine = StartCoroutine(ScaleCircle(circleImages[circleIndex]));
+            Debug.Log($"Activated circle at index {circleIndex}");
+        }
+        else
+        {
+            Debug.LogError($"Circle at index {circleIndex} is null");
+        
+    }
+    }
+/*
     // Public function that can be called from other scripts
     public void SetActiveCircle(int circleIndex)
     {
@@ -277,6 +358,7 @@ public class prog_button : MonoBehaviour
             Debug.LogError($"Circle at index {circleIndex} is null");
         }
     }
+    */
 
     private IEnumerator ScaleCircle(GameObject circle)
     {
@@ -302,27 +384,41 @@ public class prog_button : MonoBehaviour
             {
                 text.transform.localScale = Vector3.Lerp(startScale, endScale, t);
                 Color textColor = text.color;
-                textColor.a = t; // Fade in the text
+                textColor.a = circleIndex == 0 ? 0f : t; // Only fade in if not transparent state
                 text.color = textColor;
             }
             yield return null;
         }
 
-        // Ensure we end exactly at the target scale and full opacity
+        // Ensure we end exactly at the target scale and correct opacity
         circle.transform.localScale = endScale;
         if (text != null)
         {
             text.transform.localScale = endScale;
             Color textColor = text.color;
-            textColor.a = 1f;
+            textColor.a = circleIndex == 0 ? 0f : 1f; // Keep transparent if circleIndex is 0
             text.color = textColor;
         }
     }
 
     void ButtonSelected()
     {
+         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Next)return;
+         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Gameover)return;
+       
+        if(selectedRegion==false)
+        {
+            Debug.Log("Button not in selected region");
+            return;
+        }
+        
         Debug.Log("Button selected on " + gameObject.name);
         SetActiveCircle(circleIndex);
+        
+        // Play the sound for this button
+        audioManager.PlayNote(notevalue, x_coord, stringnum,transposed_notes_dict[stringnum]);
+
+        arpeggio_manager.instance.Selected_prog_button(this);
     }
 
     void OnDestroy()
@@ -343,29 +439,51 @@ public class prog_button : MonoBehaviour
 
        private void getNoteValue(int buttonNumber)
     {
-        // Check if global_settings instance exists
-        global_settings settingsInstance = FindObjectOfType<global_settings>();
+        // Get the base note value from the dictionary
+        int baseNoteValue = notevalue_dict[buttonNumber];
         
-        if (settingsInstance != null && settingsInstance.transposed_notes_dict != null)
+        // Get the transposition value for this string
+        int transpositionValue = 0;
+        if (transposed_notes_dict != null && transposed_notes_dict.ContainsKey(stringnum))
         {
-            transposed_notes_dict = settingsInstance.transposed_notes_dict;
-            Debug.Log("Using global transposed notes dictionary");
+            transpositionValue = transposed_notes_dict[stringnum];
+            Debug.Log($"String {stringnum} is transposed by {transpositionValue}");
         }
         else
         {
-            Debug.Log("Global settings not found, using local transposed notes dictionary");
+            Debug.Log($"String {stringnum} is not transposed (no value in dictionary)");
         }
 
-        int transposed_mathematical_value;
-
-        transposed_mathematical_value = notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum];
-
-        //turn the negative numbers into positive number mapped to the corresponding note
-        while (transposed_mathematical_value < 0)
+        // Calculate the final note value with transposition
+        int transposedValue = baseNoteValue + transpositionValue;
+        
+        // Handle negative values by wrapping around
+        while (transposedValue < 0)
         {
-            transposed_mathematical_value = 11 + transposed_mathematical_value;
+            transposedValue = 11 + transposedValue;
         }
 
-        notevalue = (notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum]) % 12;
+        // Get the final note value in the 0-11 range
+        notevalue = transposedValue % 12;
+        
+        Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {baseNoteValue}, Transposed by {transpositionValue}, Final note {notevalue}");
     }
+
+    void Start()
+    { /*
+       if (global_settings.instance.transposed_notes_dict!=null)
+        {
+
+            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
+             Debug.Log("transposed_notes_dict found from global settings singletonl");
+             
+
+        }
+        else
+        {
+            Debug.Log("transposed_notes_dict is null");
+        }
+        */
+    }
+
 }
