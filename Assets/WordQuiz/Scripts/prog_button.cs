@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class prog_button : MonoBehaviour
 {
@@ -20,18 +21,20 @@ public class prog_button : MonoBehaviour
     public TMPro.TextMeshProUGUI text;
     private int stringnum;
 
-     public int notevalue;
+    public int notevalue;
     string notename_sharp;
     string notename_flat;
     public bool selectedRegion = false; //to check if the button is in the user selected region of the fretboard defined in settings 
+    public bool isSelected = false;  // ded for intervals mode
+    public int isroot = 0;  // Added for intervals mode
     // Start is called before the first frame update
 
     public int x_coord;
     public int y_coord; 
     public int buttonNumber;    
+    public int fretnum;  // Added for intervals mode
 
-
-       Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
+    Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
         {0,7},
         {1,8},
@@ -118,6 +121,15 @@ public class prog_button : MonoBehaviour
         {77,7}
     };
 
+    Dictionary<int, int> interval_notevalue_dict = new Dictionary<int, int>()
+    {
+        {0, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6},
+        {7, 7}, {8, 8}, {9, 9}, {10, 10}, {11, 11}, {12, 0}, {13, 1},
+        {14, 3}, {15, 4}, {16, 5}, {17, 6}, {18, 7}, {19, 8}, {20, 9},
+        {21, 10}, {22, 11}, {23, 0}, {24, 1}, {25, 2}, {26, 3}, {27, 4},
+        {28, 5}, {29, 6}, {30, 7}, {31, 8}, {32, 9}, {33, 10}, {34, 11},
+        {35, 0}, {36, 1}, {37, 2}, {38, 3}, {39, 4}, {40, 5}, {41, 6}
+    };
 
     Dictionary<int, string> notename_sharps = new Dictionary<int, string>()
      {
@@ -178,24 +190,15 @@ public class prog_button : MonoBehaviour
             Debug.LogError("Button component not found on " + gameObject.name);
             return;
         }
-        else
-        {
-           // Debug.Log("Button found on " + gameObject.name);
-        }
 
         // Validate circle images
         if (circleImages.Count == 0)
         {
             Debug.LogError("No circle images assigned in the Inspector for " + gameObject.name);
         }
-        else
-        {
-            Debug.Log($"Found {circleImages.Count} circle images assigned");
-        }
 
-        // Add click event listener
-        button.onClick.AddListener(ButtonSelected);
-        Debug.Log("Click listener added to button");
+        // Add click event listener that will handle different modes
+        button.onClick.AddListener(HandleButtonClick);
 
         // Initially set all circles to inactive
         foreach (GameObject circle in circleImages)
@@ -206,28 +209,26 @@ public class prog_button : MonoBehaviour
             }
         }
 
-        // Set text to transparent initially and ensure it stays transparent
+        // Set text to transparent initially
         if (text != null)
         {
             Color textColor = text.color;
             textColor.a = 0f;
             text.color = textColor;
-            text.alpha = 0f;  // Set TextMeshPro's alpha directly
+            text.alpha = 0f;
         }
 
-        if (global_settings.instance.transposed_notes_dict!=null)
+        // Get transposed notes dictionary - this is universal for all modes
+        if (global_settings.instance.transposed_notes_dict != null)
         {
-
             transposed_notes_dict = global_settings.instance.transposed_notes_dict;
-             Debug.Log("transposed_notes_dict found from global settings singletonl");
-             
-
+          // Debug.Log("transposed_notes_dict found from global settings singleton");
         }
         else
         {
             Debug.Log("transposed_notes_dict is null");
         }
-        
+
         // Extract button number from GameObject name
         string buttonName = this.gameObject.name;
         
@@ -242,12 +243,44 @@ public class prog_button : MonoBehaviour
             buttonNumber = int.Parse(numberStr);
         }
 
-        // Calculate coordinates and string number BEFORE getting note value
+        // Initialize based on current learning mode
+        switch (global_settings.currentLearningMode)
+        {
+            case LearningMode.Progressions:
+                button_initialisation_progression();
+                break;
+            case LearningMode.Intervals:
+                button_initialisation_intervals();
+                break;
+            case LearningMode.Notes:
+                button_initialisation_notes();
+                break;
+        }
+    }
+
+    private void HandleButtonClick()
+    {
+        switch (global_settings.currentLearningMode)
+        {
+            case LearningMode.Progressions:
+                ButtonSelected_progressions();
+                break;
+            case LearningMode.Intervals:
+                ButtonSelected_intervals();
+                break;
+            case LearningMode.Notes:
+                ButtonSelected_notes();
+                break;
+        }
+    }
+
+    private void button_initialisation_progression()
+    {
+        // Calculate coordinates for progressions mode (13 frets, 6 strings)
         this.x_coord = buttonNumber % 13;
         this.y_coord = buttonNumber / 13;
-        stringnum = this.y_coord;  // stringnum is the same as y_coord
+        stringnum = this.y_coord;
 
-        // Now get the note value after stringnum is set
         getNoteValue(buttonNumber);
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
@@ -256,6 +289,77 @@ public class prog_button : MonoBehaviour
         // Set initial circle state to transparent
         circleIndex = 0;
     }
+
+    private void button_initialisation_intervals()
+    {
+        // Calculate coordinates for intervals mode (7 frets, 6 strings)
+        stringnum = buttonNumber / 7;  // 6 strings numbered 0-5
+        fretnum = buttonNumber % 7;    // 7 frets numbered 0-6
+        this.x_coord = fretnum;
+        this.y_coord = stringnum;
+
+        // Get note value for intervals mode
+        getNoteValue_intervals(buttonNumber);
+        
+        // Set text to empty initially
+        if (text != null)
+        {
+            text.text = "";
+        }
+        
+        // Set initial circle state
+        circleIndex = 0;
+    }
+
+    private void button_initialisation_notes()
+    {
+        // Calculate coordinates for notes mode (specific to notes mode layout)
+        // TODO: Add notes-specific coordinate calculation
+       // Debug.Log("Initializing button for notes mode");
+    }
+
+    void ButtonSelected_progressions()
+    {
+        
+         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Next)return;
+         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Gameover)return;
+        
+        if(selectedRegion == false && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.RegionalFretboard)
+        {
+            Debug.LogError("Button not in selected region");
+            return;
+        }
+        
+        Debug.Log("Button selected on " + gameObject.name);
+        SetActiveCircle(circleIndex);
+        
+        // Play the sound for this button
+        audioManager.PlayNote(notevalue, x_coord, stringnum, transposed_notes_dict[stringnum]);
+
+        arpeggio_manager.instance.Selected_prog_button(this);
+    }
+
+    void ButtonSelected_intervals()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        this.isSelected = !this.isSelected;
+
+        if (scene.name == "challenge_mode")
+        {
+            //QuizManager.instance.SelectedButton(this);
+        }
+        else if (scene.name == "learn_mode")
+        {
+            //learnmode.instance.SelectedButton_learnmode(this);
+        }
+    }
+
+    void ButtonSelected_notes()
+    {
+        // TODO: Add notes-specific button selection logic
+        Debug.Log("Button selected in notes mode");
+    }
+
     // Public function that can be called from other scripts
     public void SetActiveCircle(int circleIndex)
     {
@@ -305,7 +409,7 @@ public class prog_button : MonoBehaviour
                 StopCoroutine(scaleCoroutine);
             }
             scaleCoroutine = StartCoroutine(ScaleCircle(circleImages[circleIndex]));
-            Debug.Log($"Activated circle at index {circleIndex}");
+          //  Debug.Log($"Activated circle at index {circleIndex}");
         }
         else
         {
@@ -400,13 +504,14 @@ public class prog_button : MonoBehaviour
             text.color = textColor;
         }
     }
+    /*
 
     void ButtonSelected()
     {
          if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Next)return;
          if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Gameover)return;
        
-        if(selectedRegion==false)
+        if(selectedRegion==false && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.RegionalFretboard)
         {
             Debug.Log("Button not in selected region");
             return;
@@ -420,13 +525,13 @@ public class prog_button : MonoBehaviour
 
         arpeggio_manager.instance.Selected_prog_button(this);
     }
-
+*/
     void OnDestroy()
     {
         // Remove the event listener when the object is destroyed
         if (button != null)
         {
-            button.onClick.RemoveListener(ButtonSelected);
+            button.onClick.RemoveListener(HandleButtonClick);
             Debug.Log("Click listener removed from button");
         }
     }
@@ -447,7 +552,7 @@ public class prog_button : MonoBehaviour
         if (transposed_notes_dict != null && transposed_notes_dict.ContainsKey(stringnum))
         {
             transpositionValue = transposed_notes_dict[stringnum];
-            Debug.Log($"String {stringnum} is transposed by {transpositionValue}");
+          //  Debug.Log($"String {stringnum} is transposed by {transpositionValue}");
         }
         else
         {
@@ -460,13 +565,36 @@ public class prog_button : MonoBehaviour
         // Handle negative values by wrapping around
         while (transposedValue < 0)
         {
-            transposedValue = 11 + transposedValue;
+            transposedValue = 12 + transposedValue;
         }
 
         // Get the final note value in the 0-11 range
         notevalue = transposedValue % 12;
         
-        Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {baseNoteValue}, Transposed by {transpositionValue}, Final note {notevalue}");
+       // Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {baseNoteValue}, Transposed by {transpositionValue}, Final note {notevalue}");
+    }
+
+    private void getNoteValue_intervals(int buttonNumber)
+    {
+        if (global_settings.instance.transposed_notes_dict != null)
+        {
+            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
+           // Debug.Log("transposed value array at get noteval: " + transposed_notes_dict[0] + " " + transposed_notes_dict[1] + " " + transposed_notes_dict[2] + " " + transposed_notes_dict[3] + " " + transposed_notes_dict[4] + " ");
+        }
+
+        // Calculate the transposed value
+        int transposed_mathematical_value = interval_notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum];
+
+        // Handle negative numbers
+        while (transposed_mathematical_value < 0)
+        {
+            transposed_mathematical_value = 12 + transposed_mathematical_value;
+        }
+
+        // Use the processed transposed value
+        notevalue = transposed_mathematical_value % 12;
+        
+        Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {interval_notevalue_dict[buttonNumber]}, Transposed by {transposed_notes_dict[stringnum]}, Final note {notevalue}");
     }
 
     void Start()

@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 public class learnmode : MonoBehaviour
 {
     public static learnmode instance; //Instance to make is available in other scripts without reference
-
+/*
     public intervalbutton[] intervalbuttons_;   //array of objects of class intervalbutton
     [SerializeField] private interval_option[] optionintervalList;    //list of options word in the game
     private GameObject optionintervalList_parent;
@@ -16,9 +16,14 @@ public class learnmode : MonoBehaviour
     ColorBlock RootButton = new ColorBlock();
     ColorBlock RevealedButton = new ColorBlock();
     ColorBlock RegularButton = new ColorBlock();
+*/
+    public prog_button[] progbuttons_;  // Array of prog buttons
+    public prog_button currentRootProgButton;  // Current root prog button
+    public List<int> selectedIntervals = new List<int>();  // List of intervals to show
+    public List<int> darkenIntervals = new List<int>();  // List of intervals to darken in learn mode
 
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
-    public int root_options_index = 0;
+    public int root_options_index = 3;
 
     public Dictionary<int, string> intervalname = new Dictionary<int, string>()
          {
@@ -42,13 +47,11 @@ public class learnmode : MonoBehaviour
             instance = this;
         else
             Destroy(this.gameObject);
-
-
     }
     // Start is called before the first frame update
     void Start()
     {
-        RootButton = ColorBlock.defaultColorBlock;
+/*        RootButton = ColorBlock.defaultColorBlock;
         RootButton.normalColor = new Color(1, 0, 0, 1);
 
         RevealedButton = ColorBlock.defaultColorBlock;
@@ -56,12 +59,9 @@ public class learnmode : MonoBehaviour
         RevealedButton.pressedColor = new Color(0, 1, 0, 1);
         RevealedButton.selectedColor = new Color(0, 1, 0, 1);
 
-
         RegularButton = ColorBlock.defaultColorBlock;
         RegularButton.normalColor = new Color(0, 0, 1, 0);
         RegularButton.selectedColor= new Color(0, 0, 1, 0);
-
-
 
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
         intervalbuttons_ = originalGameObject.GetComponentsInChildren<intervalbutton>();
@@ -72,13 +72,63 @@ public class learnmode : MonoBehaviour
         {
             optionintervalList[k].SetValue(k);
         }
+*/
+        GameObject progButtonsObject = GameObject.Find("Prog_buttons");
+        if (progButtonsObject != null)
+        {
+            progbuttons_ = progButtonsObject.GetComponentsInChildren<prog_button>();
+            Debug.Log($"Found {progbuttons_.Length} prog buttons");
+        }
+        else
+        {
+            Debug.LogWarning("Prog_buttons GameObject not found in scene");
+        }
 
-        setrootbutton(rootoptions[root_options_index]);
+        // Wait 2 seconds before accessing challenge_settings
+        Invoke("InitializeChallengeSettings", 1f);
+
+       // setrootbutton(rootoptions[root_options_index]);
+    }
+
+    private void InitializeChallengeSettings()
+    {
+        if (challenge_settings.instance != null && challenge_settings.instance.questionList != null)
+        {
+            SetSelectedIntervals(challenge_settings.instance.questionList);
+            Debug.Log($"Setting intervals from challenge settings: {string.Join(", ", challenge_settings.instance.questionList)}");
+            switch(challenge_settings.instance.current_level)
+            {
+                case challenge_settings.Level.level1:
+                    darkenIntervals = new List<int> { };
+                    break;
+                case challenge_settings.Level.level2:
+                    darkenIntervals = challenge_settings.level1_intervals.ToList();
+                    break;
+                case challenge_settings.Level.level3:
+                    darkenIntervals = challenge_settings.level2_intervals.ToList();
+                    break;
+                case challenge_settings.Level.level4:  
+                    darkenIntervals = challenge_settings.level3_intervals.ToList();
+                    break;
+                case challenge_settings.Level.CUSTOM:
+                    darkenIntervals = new List<int> { };
+                    break;
+            }
+            Debug.Log("current level: " + challenge_settings.instance.current_level);
+            Debug.Log("darkenIntervals count: " + darkenIntervals.Count + " " + string.Join(", ", darkenIntervals));
+        }
+        else
+        {
+            Debug.LogWarning("challenge_settings or questionList is null");
+        }
+              
+              
+         setrootbutton(rootoptions[root_options_index]);
     }
 
     void setrootbutton(int siblingindex_root)
     {
-        currentrootnode = intervalbuttons_[siblingindex_root];
+    /*      currentrootnode = intervalbuttons_[siblingindex_root];
         foreach (intervalbutton intervalbutton_ in intervalbuttons_)
         {
             intervalbutton_.isSelected = false;
@@ -102,17 +152,55 @@ public class learnmode : MonoBehaviour
             }
             intervalbutton_.interactable = true;
         }
+*/
+        if (progbuttons_ != null)
+        {
+            currentRootProgButton = progbuttons_[siblingindex_root];
+            
+            foreach (prog_button progButton in progbuttons_)
+            {
+                progButton.SetActiveCircle(0);
+            }
 
+            foreach (prog_button progButton in progbuttons_)
+            {
+                int interval;
+                if (progButton.notevalue >= currentRootProgButton.notevalue)
+                    interval = progButton.notevalue - currentRootProgButton.notevalue;
+                else
+                    interval = 12 - currentRootProgButton.notevalue + progButton.notevalue;
+
+                Debug.Log("interval: " + interval + "on prog button: " + progButton.buttonNumber + "selected intervals: " + string.Join(", ", selectedIntervals));
+
+                if (selectedIntervals.Contains(interval))
+                {
+                    progButton.SetActiveCircle(1);
+                    progButton.text.text=intervalname[interval];
+                }
+
+                if (darkenIntervals.Contains(interval))
+                {
+                    progButton.SetActiveCircle(2);
+                    progButton.text.text=intervalname[interval];
+                }
+
+            
+            }
+
+            currentRootProgButton.SetActiveCircle(3);
+        }
+       // Debug.Log("darkenIntervals: " + string.Join(", ", darkenIntervals));
+           Debug.Log("2----darkenIntervals count: " + darkenIntervals.Count + " " + string.Join(", ", darkenIntervals));
     }
 
     public void shiftroot(int direction)
     {
         //deselct all options
-        foreach(interval_option optionintervalList_ in optionintervalList)
+  /*      foreach(interval_option optionintervalList_ in optionintervalList)
         {
             optionintervalList_.isSelected = false;
         }
-
+*/
         if(direction==1)
         {
             root_options_index = (root_options_index + 1)%6;
@@ -127,6 +215,18 @@ public class learnmode : MonoBehaviour
         }
         setrootbutton(rootoptions[root_options_index]);
     }
+
+    public void SetSelectedIntervals(List<int> intervals)
+    {
+        selectedIntervals = new List<int>(intervals);
+        if (currentRootProgButton != null)
+        {
+            setrootbutton(rootoptions[root_options_index]);
+        }
+    }
+        
+
+/*
     public void SelectedButton_learnmode(intervalbutton value)
     {
         StartCoroutine(Selectedinterval(value));
@@ -154,7 +254,7 @@ public class learnmode : MonoBehaviour
             }
         }
     }
-    // Update is called once per frame
+ */   // Update is called once per frame
     void Update()
     {
         

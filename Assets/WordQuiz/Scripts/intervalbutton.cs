@@ -155,7 +155,8 @@ public class intervalbutton : Button
         }
 
 
-        notevalue = (notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum]) % 12;
+       // notevalue = (notevalue_dict[this.transform.GetSiblingIndex()] + transposed_notes_dict[stringnum]) % 12;
+       notevalue = transposed_mathematical_value % 12;
 
 
 
@@ -176,7 +177,7 @@ public class intervalbutton : Button
         else if(scene.name=="learn_mode")
         {
             //Debug.Log("HIYA BITCH! -1");
-            learnmode.instance.SelectedButton_learnmode(this);
+           // learnmode.instance.SelectedButton_learnmode(this);
         }
         
        // Debug.Log(this.stringnum + "   " + this.fretnum);

@@ -77,8 +77,8 @@ public class global_settings : MonoBehaviour
     void Start()
     {
        // GameObject originalGameObject = GameObject.Find("string_notes_text");
-       // open_string_notes_text = originalGameObject.GetComponentsInChildren<Text>();
-
+       // open_string_notes_text = originalGameObject.GetComponentsInChildren
+       Debug.Log("-4 % 12: " + (-4 % 12));
        
 
         for (int i = 0; i <= 5; i++)
@@ -133,12 +133,25 @@ public class global_settings : MonoBehaviour
 
         if(transposed_notes_dict[string_num]<0)
         {
-            transposed_notes_dict[string_num] = 11;
+           // transposed_notes_dict[string_num] = 11;
         }
-
+        /*
+        int usable_transposed_notes_dict=transposed_notes_dict[string_num]; //this is the value that will be used to calculate the note vvalue text on display
+         
+        while(usable_transposed_notes_dict<0)
+        {
+            usable_transposed_notes_dict=12+usable_transposed_notes_dict;
+        }
+        */
         for (int i = 0; i <= 5; i++)
         {
-            open_string_notes_values[i] = (standard_tuning_notes_values[i] + transposed_notes_dict[i])%12;
+            int usable_transposed_notes_dict=transposed_notes_dict[i]; //this is the value that will be used to calculate the note vvalue text on display
+           while(usable_transposed_notes_dict<0)
+           {
+            usable_transposed_notes_dict=12+usable_transposed_notes_dict;
+           }        
+           // open_string_notes_values[i] = (standard_tuning_notes_values[i] + transposed_notes_dict[i])%12;
+           open_string_notes_values[i] = (standard_tuning_notes_values[i] + usable_transposed_notes_dict)%12;
          
             open_string_notes_text[i].text = notename_sharps[open_string_notes_values[i]];
         }

@@ -417,7 +417,7 @@ public class arpeggio_manager : MonoBehaviour
     public void Selected_prog_button(prog_button value)
     {
         if (gameStatus == GameStatus.Next) return;
-        if (!value.selectedRegion) return; // Only process if button is in selected region
+        if (!value.selectedRegion && gameMode==GameMode.RegionalFretboard) return; // Only process if button is in selected region when we are regionalfretboard gamemode
 
         int i;
         Debug.Log("answer count: " + answer.Count + " selected prog button note:" + value.notevalue);
@@ -507,6 +507,12 @@ public class arpeggio_manager : MonoBehaviour
 
     public void SetGameMode(int gameMode_index)
     {
+        // Reset text components
+        if (questionChordFloating_chordtype != null)
+            questionChordFloating_chordtype.text = "";
+        if (questionChordFloating_note != null)
+            questionChordFloating_note.text = "";
+
         switch(gameMode_index)
         {
             case 0:

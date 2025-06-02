@@ -70,7 +70,7 @@ public class interval_option : MonoBehaviour
           if(scene.name=="challenge_mode")
         QuizManager.instance.SelectedOption_guessmode(this);
         else if (scene.name == "learn_mode") //learn mode
-            learnmode.instance.SelectedOption_learnmode(this);
+         { } // learnmode.instance.SelectedOption_learnmode(this)
         else if (scene.name == "Pre_challengemode")  //challenge settings
         {
             if (this.isSelected == true)

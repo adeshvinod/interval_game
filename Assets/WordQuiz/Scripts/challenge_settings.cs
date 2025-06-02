@@ -17,10 +17,10 @@ public class challenge_settings : MonoBehaviour
     public List<int> questionList;
     public List<int> stringList;
 
-   private int[] level1_intervals = new int[] {0,7};
-    private int[] level2_intervals = new int[] { 0, 7,3,4 };
-    private int[] level3_intervals = new int[] { 0, 7,3,4,1,2,10,11 };
-    private int[] level4_intervals = new int[] { 0, 7, 3, 4, 1, 2, 10, 11,5,6,8,9};
+   public static int[] level1_intervals = new int[] {0,7};
+    public static int[] level2_intervals = new int[] { 0, 7,3,4 };
+    public static int[] level3_intervals = new int[] { 0, 7,3,4,1,2,10,11 };
+    public static  int[] level4_intervals = new int[] { 0, 7, 3, 4, 1, 2, 10, 11,5,6,8,9};
     public Level current_level=Level.CUSTOM;
 
     private int[] allstring_array = new int[] { 0, 1, 2, 3, 4, 5 };
@@ -29,11 +29,12 @@ public class challenge_settings : MonoBehaviour
     private void Awake()
     {
         if (instance == null)
+        {
             instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
         else
             Destroy(this.gameObject);
-
-
     }
 
     // Start is called before the first frame update

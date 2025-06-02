@@ -235,10 +235,12 @@ public class note_button : Button
         //turn the negative numbers into positive number mapped to the corresponding note
         while (transposed_mathematical_value < 0)
         {
-            transposed_mathematical_value = 11 + transposed_mathematical_value;
+            transposed_mathematical_value = 12 + transposed_mathematical_value;
         }
 
-        notevalue = (notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum]) % 12;
+        //notevalue = (notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum]) % 12;
+        notevalue = transposed_mathematical_value % 12;
+        Debug.Log("button number: " + buttonNumber + " string number: " + stringnum + " notevalue: " + notevalue);
     }
 
     public void buttonselected()
