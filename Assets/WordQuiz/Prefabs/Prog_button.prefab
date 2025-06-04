@@ -374,9 +374,12 @@ MonoBehaviour:
   text: {fileID: 3169450531215011352}
   notevalue: 0
   selectedRegion: 0
+  isSelected: 0
+  isroot: 0
   x_coord: 0
   y_coord: 0
   buttonNumber: 0
+  fretnum: 0
 --- !u!1 &3169450531215011358
 GameObject:
   m_ObjectHideFlags: 0

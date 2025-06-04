@@ -1,17 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using UnityEngine.UI;
 using System.IO;
 using System;
-
+using TMPro;
 
 public class gameover_notes : MonoBehaviour
 {
-    [SerializeField] private Text highscore_floating;
-    [SerializeField] private Text currentscore_floating;
-
+    [SerializeField] private TMP_Text highscore_floating;
+    [SerializeField] private TMP_Text currentscore_floating;
+    [SerializeField] private GameObject wholefretboard;
+    [SerializeField] private GameObject scorecard;
+    [SerializeField] private GameObject shadedregion;
+    
     public int HighScore = 0;
     public int currentscore;
     public DateTime currentTime;
@@ -95,4 +97,26 @@ public class gameover_notes : MonoBehaviour
         }
  
     }
+
+    public void ShowFretboard(bool showFretboard)
+    {
+        if (wholefretboard != null && scorecard != null)
+        {
+            wholefretboard.SetActive(showFretboard);
+            scorecard.SetActive(!showFretboard);
+            shadedregion.SetActive(showFretboard);
+        }
+        else
+        {
+            Debug.LogWarning("wholefretboard or scorecard references are missing!");
+        }
+        Debug.Log("Fretboard shown: " + showFretboard);
+    }
+
+    private void OnEnable()
+    {
+        ShowFretboard(false);
+    }
 }
+
+ 

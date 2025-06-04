@@ -87,7 +87,7 @@ public class materialController : MonoBehaviour
         if (stringIndex < 0 || stringIndex >= 6 || materialInstances[stringIndex] == null) return;
 
         // Calculate pulsing intensity between 1 and 40
-        float pulseValue = 1f + (Mathf.Sin(Time.time * pulseSpeed) + 1) *3f; // This will oscillate between 1 and 40
+        float pulseValue = 1f + (Mathf.Sin(Time.time * pulseSpeed) + 1); // This will oscillate between 1 and 40
         
         // Update the specific string's intensity
         switch (stringIndex)

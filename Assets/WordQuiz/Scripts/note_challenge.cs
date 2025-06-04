@@ -321,13 +321,14 @@ public class note_challenge : MonoBehaviour
        
 
         if (gameStatus == GameStatus.Gameover)
-        {
+        {/*
             GameRunningPanel.gameObject.SetActive(false);
             gameover_panel.gameObject.SetActive(true);
 
             gameover_panel.GetComponent<gameover_notes>().loadGame();
 
             gameover_panel.GetComponent<gameover_notes>().saveGame();
+            */
 
 
 
@@ -385,8 +386,15 @@ public class note_challenge : MonoBehaviour
             if ((avg_accuracies[j] > -1 && avg_accuracies[j] < 1) || avg_rxntimes[j] > 5)
                 missedAnswers.Add(j);
         }
+         GameRunningPanel.gameObject.SetActive(false);
+            gameover_panel.gameObject.SetActive(true);
+
+            gameover_panel.GetComponent<gameover_notes>().loadGame();
+
+            gameover_panel.GetComponent<gameover_notes>().saveGame();
 
         showMissedNotes();
+
     }
 
     void InitializeQuestionHistoryArray()

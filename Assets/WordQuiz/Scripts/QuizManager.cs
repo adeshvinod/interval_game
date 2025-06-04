@@ -375,13 +375,15 @@ public class QuizManager : MonoBehaviour, IPointerClickHandler
         }
         if (gameStatus == GameStatus.Gameover)
         {
-
+/*
             GameRunningPanel.gameObject.SetActive(false);
             GameoverPanel.gameObject.SetActive(true);
 
             GameoverPanel.GetComponent<gameover>().loadGame();
 
             GameoverPanel.GetComponent<gameover>().saveGame();
+            */
+           
         }
     }
 
@@ -469,6 +471,14 @@ public class QuizManager : MonoBehaviour, IPointerClickHandler
             }
         }
         Debug.Log("number of wrong pairs: " + wrongPairs.Count);
+
+        
+            GameRunningPanel.gameObject.SetActive(false);
+            GameoverPanel.gameObject.SetActive(true);
+
+            GameoverPanel.GetComponent<gameover>().loadGame();
+
+            GameoverPanel.GetComponent<gameover>().saveGame();
     }
     IEnumerator CallFunctionEvery5Seconds()
     {

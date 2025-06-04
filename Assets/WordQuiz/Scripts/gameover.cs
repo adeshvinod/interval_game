@@ -4,18 +4,23 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using System;
-
+using TMPro;
 
 public class gameover : MonoBehaviour
 {
-    [SerializeField] private Text highscore_floating;
-    [SerializeField] private Text currentscore_floating;
-    [SerializeField] private Text reactiontimes_floating;
-    [SerializeField] private Text accuracies_floating;
+    [SerializeField] private TMP_Text highscore_floating;
+    [SerializeField] private TMP_Text currentscore_floating;
+    [SerializeField] private TMP_Text reactiontimes_floating;
+    [SerializeField] private TMP_Text accuracies_floating;
+    //[SerializeField] private TMP_Text heading_text_floating;
+    //[SerializeField] private TMP_Text subheading_text_floating;
+    [SerializeField] private GameObject wholefretboard;
+    [SerializeField] private GameObject scorecard;
 
     public int HighScore=0;
     public int currentscore;
     public DateTime currentTime;
+
 
     public savedData modifiedData;
 
@@ -52,8 +57,8 @@ public class gameover : MonoBehaviour
 
         highscore_floating.text = HighScore.ToString();
 
-        reactiontimes_floating.text = "rxn times: "+ string.Join(" ", avg_rxntime);
-        accuracies_floating.text = "accuracies: " + string.Join(",", avg_accuracy);
+       // reactiontimes_floating.text = "rxn times: "+ string.Join(" ", avg_rxntime);
+     //   accuracies_floating.text = "accuracies: " + string.Join(",", avg_accuracy);
 
     }
 
@@ -123,5 +128,25 @@ public class gameover : MonoBehaviour
             modifiedData.HighScore = currentscore;
         }
         Debug.Log(path);*/
+    }
+
+    private void OnEnable()
+    {
+        ShowFretboard(false);
+    }
+
+    public void ShowFretboard(bool showFretboard)
+    {
+        if (wholefretboard != null && scorecard != null)
+        {
+            wholefretboard.SetActive(showFretboard);
+            scorecard.SetActive(!showFretboard);
+        
+        }
+        else
+        {
+            Debug.LogWarning("wholefretboard or scorecard references are missing!");
+        }
+            Debug.Log("Fretboard shown: " + showFretboard);
     }
 }

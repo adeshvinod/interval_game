@@ -52,3 +52,6 @@ TagManager:
   - name: nodes
     uniqueID: 4167067249
     locked: 0
+  - name: scorecard
+    uniqueID: 4141995613
+    locked: 0

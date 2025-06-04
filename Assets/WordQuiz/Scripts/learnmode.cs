@@ -41,6 +41,9 @@ public class learnmode : MonoBehaviour
             {11, "M7"},
           };
 
+    private Coroutine currentTransitionCoroutine;
+    private bool isTransitioning = false;
+
     private void Awake()
     {
         if (instance == null)
@@ -128,41 +131,41 @@ public class learnmode : MonoBehaviour
 
     void setrootbutton(int siblingindex_root)
     {
-    /*      currentrootnode = intervalbuttons_[siblingindex_root];
-        foreach (intervalbutton intervalbutton_ in intervalbuttons_)
-        {
-            intervalbutton_.isSelected = false;
-            intervalbutton_.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
-
-            if (intervalbutton_.transform.GetSiblingIndex() == siblingindex_root)
-            {
-                intervalbutton_.isroot = 1;
-                intervalbutton_.colors = RootButton;
-                intervalbutton_.intervalText.text = intervalname[0];
-                // currentrootnode = intervalbutton_;
-            }
-            else
-            {
-                intervalbutton_.isroot = 0;
-                intervalbutton_.colors = RegularButton;
-                if (intervalbutton_.notevalue >= currentrootnode.notevalue)
-                    intervalbutton_.intervalText.text = intervalname[intervalbutton_.notevalue - currentrootnode.notevalue];
-                else
-                    intervalbutton_.intervalText.text = intervalname[12 - currentrootnode.notevalue + intervalbutton_.notevalue];
-            }
-            intervalbutton_.interactable = true;
-        }
-*/
         if (progbuttons_ != null)
         {
+            // Stop any existing transition
+            if (currentTransitionCoroutine != null)
+            {
+                StopCoroutine(currentTransitionCoroutine);
+            }
+
             currentRootProgButton = progbuttons_[siblingindex_root];
             
+            // Reset all buttons first
             foreach (prog_button progButton in progbuttons_)
             {
                 progButton.SetActiveCircle(0);
             }
 
-            foreach (prog_button progButton in progbuttons_)
+            // Immediately set the root button
+            currentRootProgButton.SetActiveCircle(3);
+            currentRootProgButton.text.text = "R";  // Set root button text to "R"
+
+            // Start new coroutine
+            currentTransitionCoroutine = StartCoroutine(DelayedSetOtherButtons(siblingindex_root));
+        }
+    }
+
+    private IEnumerator DelayedSetOtherButtons(int siblingindex_root)
+    {
+        isTransitioning = true;
+        
+        // Wait for 1 second
+        yield return new WaitForSeconds(1f);
+
+        foreach (prog_button progButton in progbuttons_)
+        {
+            if (progButton != currentRootProgButton)  // Skip the root button
             {
                 int interval;
                 if (progButton.notevalue >= currentRootProgButton.notevalue)
@@ -175,22 +178,20 @@ public class learnmode : MonoBehaviour
                 if (selectedIntervals.Contains(interval))
                 {
                     progButton.SetActiveCircle(1);
-                    progButton.text.text=intervalname[interval];
+                    progButton.text.text = intervalname[interval];
                 }
 
                 if (darkenIntervals.Contains(interval))
                 {
                     progButton.SetActiveCircle(2);
-                    progButton.text.text=intervalname[interval];
+                    progButton.text.text = intervalname[interval];
                 }
-
-            
             }
-
-            currentRootProgButton.SetActiveCircle(3);
         }
-       // Debug.Log("darkenIntervals: " + string.Join(", ", darkenIntervals));
-           Debug.Log("2----darkenIntervals count: " + darkenIntervals.Count + " " + string.Join(", ", darkenIntervals));
+        Debug.Log("2----darkenIntervals count: " + darkenIntervals.Count + " " + string.Join(", ", darkenIntervals));
+        
+        isTransitioning = false;
+        currentTransitionCoroutine = null;
     }
 
     public void shiftroot(int direction)
