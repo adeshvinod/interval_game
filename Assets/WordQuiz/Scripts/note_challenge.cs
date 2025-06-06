@@ -389,9 +389,9 @@ public class note_challenge : MonoBehaviour
          GameRunningPanel.gameObject.SetActive(false);
             gameover_panel.gameObject.SetActive(true);
 
-            gameover_panel.GetComponent<gameover_notes>().loadGame();
+            //gameover_panel.GetComponent<gameover_notes>().loadGame();
 
-            gameover_panel.GetComponent<gameover_notes>().saveGame();
+          // gameover_panel.GetComponent<gameover_notes>().saveGame();
 
         showMissedNotes();
 

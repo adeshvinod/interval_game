@@ -1409,7 +1409,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -272.61987, y: 62.88}
+  m_AnchoredPosition: {x: -272.61987, y: 62.880005}
   m_SizeDelta: {x: -270.40002, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &638735492 stripped
@@ -1523,7 +1523,7 @@ PrefabInstance:
     - target: {fileID: 2133961848938424968, guid: 23e7a2a7339777b4596d99ac751cd744,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 173.7845
+      value: 173.78448
       objectReference: {fileID: 0}
     - target: {fileID: 2133961848938424968, guid: 23e7a2a7339777b4596d99ac751cd744,
         type: 3}
@@ -1789,7 +1789,7 @@ PrefabInstance:
     - target: {fileID: 2133961848938424968, guid: 23e7a2a7339777b4596d99ac751cd744,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 24.6615
+      value: 24.661499
       objectReference: {fileID: 0}
     - target: {fileID: 2133961848938424968, guid: 23e7a2a7339777b4596d99ac751cd744,
         type: 3}
@@ -2838,7 +2838,7 @@ GameObject:
   - component: {fileID: 1324797409}
   - component: {fileID: 1324797408}
   m_Layer: 5
-  m_Name: questionlist_text
+  m_Name: questionListFloating
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2917,7 +2917,7 @@ GameObject:
   - component: {fileID: 1348231743}
   - component: {fileID: 1348231742}
   m_Layer: 5
-  m_Name: stringlist_text
+  m_Name: stringListfloating
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3332,7 +3332,7 @@ PrefabInstance:
     - target: {fileID: 2133961848938424968, guid: 23e7a2a7339777b4596d99ac751cd744,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 322.9075
+      value: 322.90747
       objectReference: {fileID: 0}
     - target: {fileID: 2133961848938424968, guid: 23e7a2a7339777b4596d99ac751cd744,
         type: 3}

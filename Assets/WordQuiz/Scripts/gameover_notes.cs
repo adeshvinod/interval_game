@@ -26,6 +26,9 @@ public class gameover_notes : MonoBehaviour
         currentscore = note_challenge.instance.score;
         //currentscore_floating.text = currentscore.ToString();
         currentTime = DateTime.Now;
+
+        loadGame();
+        saveGame();
     }
 
     // Update is called once per frame

@@ -47,6 +47,9 @@ public class gameover : MonoBehaviour
                 avg_rxntime[i] = QuizManager.instance.reactiontimes[i] / QuizManager.instance.questioncounter[i];
             avg_accuracy[i] = QuizManager.instance.accuracies[i].ToString() + "/" + QuizManager.instance.questioncounter[i].ToString() ;
         }
+        
+        loadGame();
+        saveGame();
     }
 
     // Update is called once per frame

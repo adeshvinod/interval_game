@@ -106,8 +106,10 @@ public class audioManager : MonoBehaviour
         
         if (instance.noteSources.ContainsKey(noteName))
         {
-            instance.noteSources[noteName].Play();
-            Debug.Log("Playing note: " + noteName);
+            AudioSource source = instance.noteSources[noteName];
+            source.time = 0.2f;  // Set start time to 0.2 seconds
+            source.Play();
+            Debug.Log("Playing note: " + noteName + " from 0.2 seconds");
         }
         else
         {

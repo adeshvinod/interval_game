@@ -476,9 +476,9 @@ public class QuizManager : MonoBehaviour, IPointerClickHandler
             GameRunningPanel.gameObject.SetActive(false);
             GameoverPanel.gameObject.SetActive(true);
 
-            GameoverPanel.GetComponent<gameover>().loadGame();
+           // GameoverPanel.GetComponent<gameover>().loadGame();
 
-            GameoverPanel.GetComponent<gameover>().saveGame();
+          //  GameoverPanel.GetComponent<gameover>().saveGame();
     }
     IEnumerator CallFunctionEvery5Seconds()
     {

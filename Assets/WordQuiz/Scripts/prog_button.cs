@@ -183,11 +183,16 @@ public class prog_button : MonoBehaviour
     // Awake is called when the script instance is being loaded
     void Awake()
     {
-        // Get the Button component
-        button = GetComponent<Button>();
+        // Get the Button component from the child GameObject
+        Transform rectButtonTransform = transform.Find("rect_button");
+        if (rectButtonTransform != null)
+        {
+            button = rectButtonTransform.GetComponent<Button>();
+        }
+        
         if (button == null)
         {
-            Debug.LogError("Button component not found on " + gameObject.name);
+            Debug.LogError("Button component not found on rect_button child of " + gameObject.name);
             return;
         }
 
