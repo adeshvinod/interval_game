@@ -25,12 +25,9 @@ public class interval_option : MonoBehaviour
             {11, "M7"},
           };
 
-
     [HideInInspector]
-
     public int intervalValue;
     public bool isSelected = false;
-
 
     private Button buttonComponent;
 
@@ -41,14 +38,30 @@ public class interval_option : MonoBehaviour
         {
             buttonComponent.onClick.AddListener(() => optionSelected());
         }
-
     }
 
     private void Start()
     {
+        // Get the button number from the name
+        string buttonName = this.gameObject.name;
+        int buttonNumber;
+        
+        if (buttonName == "option_Button")
+        {
+            buttonNumber = 0;
+        }
+        else
+        {
+            // Extract number from names like "option_Button (1)", "option_Button (2)", etc.
+            string numberStr = buttonName.Replace("option_Button (", "").Replace(")", "");
+            buttonNumber = int.Parse(numberStr);
+        }
 
+        // Set the value based on the button number
+        SetValue(buttonNumber);
     }
-    public void SetValue(int value)
+
+    private void SetValue(int value)
     {
         if (value == -1)
             interval_option_Text.text = "_";
@@ -56,9 +69,6 @@ public class interval_option : MonoBehaviour
             interval_option_Text.text = intervalname[value];
 
         intervalValue = value;
-       // Debug.Log("value set");
-
-
     }
 
     private void optionSelected()
@@ -66,12 +76,9 @@ public class interval_option : MonoBehaviour
         this.isSelected = !this.isSelected;
         //QuizManager.instance.SelectedOption(this);
         scene = SceneManager.GetActiveScene();
-      //  if (scene.buildIndex == 3) //challenge mode
-          if(scene.name=="challenge_mode")
-        QuizManager.instance.SelectedOption_guessmode(this);
-       // else if (scene.name == "learn_mode") //learn mode
-         //{ } // learnmode.instance.SelectedOption_learnmode(this)
-        else if (scene.name == "Pre_challengemode")  //challenge settings
+        if(scene.name=="challenge_mode")
+            QuizManager.instance.SelectedOption_guessmode(this);
+        else if (scene.name == "learn_mode")  //challenge settings
         {
             if (this.isSelected == true)
             {
@@ -79,26 +86,24 @@ public class interval_option : MonoBehaviour
                 Debug.Log(intervalValue + "added");
             }
             else
-            {     challenge_settings.instance.questionList.Remove(intervalValue);
+            {     
+                challenge_settings.instance.questionList.Remove(intervalValue);
                 Debug.Log(intervalValue + "removed");
             }
-
+            learnmode.instance.SelectedOption_learnmode(this);
         }
         else if (scene.name == "pre-arpeggio")
         {
             if (this.isSelected == true)
             {
-                // settings_arpgame.instance.myCustomChord.intervals.Add(intervalValue);
                 settings_arpgame.instance.myCustomChord_intervalList.Add(intervalValue);
                 Debug.Log(intervalValue + "added");
             }
             else
             {
-                // settings_arpgame.instance.myCustomChord.intervals.Remove(intervalValue);
                 settings_arpgame.instance.myCustomChord_intervalList.Remove(intervalValue);
                 Debug.Log(intervalValue + "removed");
             }
         }
     }
-
 }

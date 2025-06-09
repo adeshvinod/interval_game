@@ -33,7 +33,7 @@ public class challenge_settings : MonoBehaviour
         {
             Debug.Log("Creating new instance of challenge_settings");
             instance = this;
-            DontDestroyOnLoad(this.gameObject);
+           // DontDestroyOnLoad(this.gameObject);
             // Initialize scene here as well
             scene = SceneManager.GetActiveScene();
             Debug.Log("Awake - Current scene name: " + scene.name);
@@ -43,6 +43,7 @@ public class challenge_settings : MonoBehaviour
             Debug.Log("Destroying duplicate instance of challenge_settings");
             Destroy(this.gameObject);
         }
+
     }
 
     void OnEnable()
@@ -64,38 +65,7 @@ public class challenge_settings : MonoBehaviour
         Debug.Log("Scene loaded: " + loadedScene.name);
         scene = loadedScene;
         
-        // Find the Text components again when the scene loads
-        if (scene.name == "Pre_challengemode")
-        {
-            questionListFloating = GameObject.Find("questionListFloating")?.GetComponent<Text>();
-            stringListfloating = GameObject.Find("stringListfloating")?.GetComponent<Text>();
-            
-            if (questionListFloating == null || stringListfloating == null)
-            {
-                Debug.LogError("Could not find Text components in Pre_challengemode scene!");
-            }
-            else
-            {
-                Debug.Log("Successfully found Text components in new scene");
-            }
-
-            Debug.Log("Start - Entering Pre_challengemode block");
-            optionintervalList_parent = GameObject.Find("interval_button");
-            if (optionintervalList_parent == null)
-            {
-                Debug.LogError("Could not find interval_button GameObject!");
-                return;
-            }
-            
-            optionintervalList = optionintervalList_parent.GetComponentsInChildren<interval_option>();
-            Debug.Log($"Found {optionintervalList.Length} interval options");
-            
-            for (int k = 0; k < optionintervalList.Length; k++)
-            {
-                optionintervalList[k].SetValue(k);
-                Debug.Log($"Set interval option {k} to value {k}");
-            }
-        }
+      
     }
 
     // Start is called before the first frame update
@@ -106,7 +76,7 @@ public class challenge_settings : MonoBehaviour
         Debug.Log($"Start - Current scene name: {scene.name}");
         Debug.Log($"Start - Expected scene name: Pre_challengemode");
         Debug.Log($"Start - Scene name matches: {scene.name == "Pre_challengemode"}");
-       
+       /*
         if(scene.name == "Pre_challengemode")
         {
             Debug.Log("Start - Entering Pre_challengemode block");
@@ -130,6 +100,7 @@ public class challenge_settings : MonoBehaviour
         {
             Debug.Log($"Start - Skipping Pre_challengemode block because scene name is {scene.name}");
         }
+        */
     }
 
     // Update is called once per frame
@@ -190,9 +161,16 @@ public class challenge_settings : MonoBehaviour
 
                           break;
 
+            case 5: 
+                        current_level = Level.CUSTOM;
+                        questionList.AddRange(new List<int>());
+                        stringList.AddRange(allstring_array);
+                        break;
+
             default:   
                         break;
         }
+        Debug.Log("Level selected: " + current_level+" "+"questionList: "+ListToText(questionList));
     }
 
     private string ListToText(List<int> list)

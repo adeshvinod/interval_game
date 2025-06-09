@@ -130,7 +130,7 @@ public class materialController : MonoBehaviour
 
         if (isOn != previousEmissionStates[index] || intensity != previousIntensities[index])
         {
-            Debug.Log($"String {index + 1} emission changed - On: {isOn}, Intensity: {intensity}");
+           // Debug.Log($"String {index + 1} emission changed - On: {isOn}, Intensity: {intensity}");
             previousEmissionStates[index] = isOn;
             previousIntensities[index] = intensity;
             UpdateStringEmission(index, isOn, intensity, color);

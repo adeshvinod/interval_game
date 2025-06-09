@@ -5,6 +5,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
+using UnityEngine.SceneManagement;
+
+
 public class learnmode : MonoBehaviour
 {
     public static learnmode instance; //Instance to make is available in other scripts without reference
@@ -80,7 +83,7 @@ public class learnmode : MonoBehaviour
         if (progButtonsObject != null)
         {
             progbuttons_ = progButtonsObject.GetComponentsInChildren<prog_button>();
-            Debug.Log($"Found {progbuttons_.Length} prog buttons");
+            //Debug.Log($"Found {progbuttons_.Length} prog buttons");
         }
         else
         {
@@ -93,10 +96,33 @@ public class learnmode : MonoBehaviour
        // setrootbutton(rootoptions[root_options_index]);
     }
 
+     void OnEnable()
+    {
+        Debug.Log("OnEnable called on challenge_settings");
+        // Subscribe to scene loaded event
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        Debug.Log("OnDisable called on challenge_settings");
+        // Unsubscribe from scene loaded event
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene loadedScene, LoadSceneMode mode)
+    {
+        Debug.Log("Scene loaded: " + loadedScene.name);
+       
+
+         Invoke("InitializeChallengeSettings", 1f);
+      
+    }
+
     private void InitializeChallengeSettings()
     {
-        if (challenge_settings.instance != null && challenge_settings.instance.questionList != null)
-        {
+      //  if (challenge_settings.instance != null && challenge_settings.instance.questionList != null)
+      //  {
             SetSelectedIntervals(challenge_settings.instance.questionList);
             Debug.Log($"Setting intervals from challenge settings: {string.Join(", ", challenge_settings.instance.questionList)}");
             switch(challenge_settings.instance.current_level)
@@ -119,17 +145,17 @@ public class learnmode : MonoBehaviour
             }
             Debug.Log("current level: " + challenge_settings.instance.current_level);
             Debug.Log("darkenIntervals count: " + darkenIntervals.Count + " " + string.Join(", ", darkenIntervals));
-        }
-        else
-        {
-            Debug.LogWarning("challenge_settings or questionList is null");
-        }
+      //  }
+      //  else
+      //  {
+      //      Debug.LogWarning("challenge_settings or questionList is null");
+      //  }
               
               
          setrootbutton(rootoptions[root_options_index]);
     }
 
-    void setrootbutton(int siblingindex_root)
+    void setrootbutton(int siblingindex_root, bool Wait=true, bool scalingAnimation=true)
     {
         if (progbuttons_ != null)
         {
@@ -144,23 +170,24 @@ public class learnmode : MonoBehaviour
             // Reset all buttons first
             foreach (prog_button progButton in progbuttons_)
             {
-                progButton.SetActiveCircle(0);
+                progButton.SetActiveCircle(0,scalingAnimation);
             }
 
             // Immediately set the root button
-            currentRootProgButton.SetActiveCircle(3);
+            currentRootProgButton.SetActiveCircle(3,scalingAnimation);
             currentRootProgButton.text.text = "R";  // Set root button text to "R"
 
             // Start new coroutine
-            currentTransitionCoroutine = StartCoroutine(DelayedSetOtherButtons(siblingindex_root));
+            currentTransitionCoroutine = StartCoroutine(DelayedSetOtherButtons(siblingindex_root,Wait,scalingAnimation));
         }
     }
 
-    private IEnumerator DelayedSetOtherButtons(int siblingindex_root)
+    private IEnumerator DelayedSetOtherButtons(int siblingindex_root, bool Wait, bool scalingAnimation=true)
     {
         isTransitioning = true;
         
         // Wait for 1 second
+        if(Wait==true)
         yield return new WaitForSeconds(1f);
 
         foreach (prog_button progButton in progbuttons_)
@@ -173,22 +200,22 @@ public class learnmode : MonoBehaviour
                 else
                     interval = 12 - currentRootProgButton.notevalue + progButton.notevalue;
 
-                Debug.Log("interval: " + interval + "on prog button: " + progButton.buttonNumber + "selected intervals: " + string.Join(", ", selectedIntervals));
+              //  Debug.Log("interval: " + interval + "on prog button: " + progButton.buttonNumber + "selected intervals: " + string.Join(", ", selectedIntervals));
 
                 if (selectedIntervals.Contains(interval))
                 {
-                    progButton.SetActiveCircle(1);
+                    progButton.SetActiveCircle(1,scalingAnimation);
                     progButton.text.text = intervalname[interval];
                 }
 
                 if (darkenIntervals.Contains(interval))
                 {
-                    progButton.SetActiveCircle(2);
+                    progButton.SetActiveCircle(2,scalingAnimation);
                     progButton.text.text = intervalname[interval];
                 }
             }
         }
-        Debug.Log("2----darkenIntervals count: " + darkenIntervals.Count + " " + string.Join(", ", darkenIntervals));
+      //  Debug.Log("2----darkenIntervals count: " + darkenIntervals.Count + " " + string.Join(", ", darkenIntervals));
         
         isTransitioning = false;
         currentTransitionCoroutine = null;
@@ -226,6 +253,18 @@ public class learnmode : MonoBehaviour
         }
     }
         
+    public void SelectedOption_learnmode(interval_option value)
+    {
+        if(value.isSelected==true)
+        {
+            selectedIntervals.Add(value.intervalValue);
+        }
+        else
+        {
+            selectedIntervals.Remove(value.intervalValue);
+        }
+        setrootbutton(rootoptions[root_options_index],false,false);
+    }
 
 /*
     public void SelectedButton_learnmode(intervalbutton value)

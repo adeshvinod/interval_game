@@ -113,13 +113,14 @@ public class settings_arpgame : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
-    {
+    { /*
         optionintervalList_parent = GameObject.Find("option_buttons");
         optionintervalList = GameObject.Find("option_buttons").GetComponentsInChildren<interval_option>();
         for (int k = 0; k < optionintervalList.Length; k++)
         {
             optionintervalList[k].SetValue(k);
         }
+        */
 
         layoutSwitcher(1);
 

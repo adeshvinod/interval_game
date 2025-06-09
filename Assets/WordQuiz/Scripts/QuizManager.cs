@@ -144,7 +144,6 @@ public class QuizManager : MonoBehaviour, IPointerClickHandler
 
 
 
-
         InitializeQuestionHistoryArray();
         //nullbutton = GameObject.Find("nullbutton");
         GameObject originalGameObject = GameObject.Find("IntervalButtons");
@@ -155,10 +154,7 @@ public class QuizManager : MonoBehaviour, IPointerClickHandler
         strings = strings_parent.GetComponentsInChildren<SpriteRenderer>();
         optionintervalList_parent = GameObject.Find("option_buttons");
         optionintervalList = GameObject.Find("option_buttons").GetComponentsInChildren<interval_option>();
-        for (int k = 0; k < optionintervalList.Length; k++)
-        {
-            optionintervalList[k].SetValue(k);
-        }
+        // Remove the initialization loop since it's now handled in interval_option.cs
 
         //gameover_object=gameObject.GetComponent<gameover>
         questionmode_counter = Random.Range(4, 8);
@@ -175,7 +171,29 @@ public class QuizManager : MonoBehaviour, IPointerClickHandler
     void SetQuestion_intervals()
     {
         gameStatus = GameStatus.Playing;
+        
+        if (challenge_settings.instance.questionList != null)
+        {
+            Debug.Log("challenge_settings or questionList is not null");
+            Debug.Log($"challenge_settings.instance: {challenge_settings.instance != null}");
+            Debug.Log($"questionList: {challenge_settings.instance.questionList != null}");
+            Debug.Log($"questionList count: {challenge_settings.instance.questionList.Count}");
+        }
+        else
+        {   
+            Debug.LogWarning("challenge_settings or questionList is null");
+            Debug.LogWarning($"challenge_settings.instance: {challenge_settings.instance != null}");
+            if (challenge_settings.instance != null)
+            {
+                Debug.LogWarning($"questionList: {challenge_settings.instance.questionList != null}");
+                if (challenge_settings.instance.questionList != null)
+                {
+                    Debug.LogWarning("question list: "+ string.Join(", ", challenge_settings.instance.questionList));
+                }
+            }
+        }
         intervalquestion_val = challenge_settings.instance.questionList[Random.Range(0, challenge_settings.instance.questionList.Count)];
+        Debug.Log("intervalquestion_val: " + intervalquestion_val + "  questionList: " + string.Join(", ", challenge_settings.instance.questionList));
         questioncounter[intervalquestion_val]++;
 
         String intervalquestion_text = intervalname[intervalquestion_val];
@@ -499,7 +517,7 @@ public class QuizManager : MonoBehaviour, IPointerClickHandler
 
     void debughighlightedstring()
     {
-        Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
+//Debug.Log("highlighted string is (UPDATE)" + highlightedstring);
     }
     /// <summary>
     /// When we click on any options button this method is called

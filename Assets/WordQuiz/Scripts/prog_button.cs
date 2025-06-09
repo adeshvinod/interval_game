@@ -366,10 +366,13 @@ public class prog_button : MonoBehaviour
     }
 
     // Public function that can be called from other scripts
-    public void SetActiveCircle(int circleIndex)
+    public void SetActiveCircle(int circleIndex, bool scalingAnimation=true)
     {
        // Debug.Log($"Attempting to set active circle: {circleIndex}");
-        
+         if (scalingAnimation==true)
+            originalScale=Vector3.zero;
+            else
+            originalScale=Vector3.one;
         // Validate the index
         if (circleIndex < 0 || circleIndex >= circleImages.Count)
         {
@@ -409,12 +412,15 @@ public class prog_button : MonoBehaviour
         {
             circleImages[circleIndex].SetActive(true);
             // Start scaling animation
+           
+           
             if (scaleCoroutine != null)
             {
                 StopCoroutine(scaleCoroutine);
             }
             scaleCoroutine = StartCoroutine(ScaleCircle(circleImages[circleIndex]));
           //  Debug.Log($"Activated circle at index {circleIndex}");
+           
         }
         else
         {
@@ -537,7 +543,7 @@ public class prog_button : MonoBehaviour
         if (button != null)
         {
             button.onClick.RemoveListener(HandleButtonClick);
-            Debug.Log("Click listener removed from button");
+          //  Debug.Log("Click listener removed from button");
         }
     }
 
@@ -561,7 +567,7 @@ public class prog_button : MonoBehaviour
         }
         else
         {
-            Debug.Log($"String {stringnum} is not transposed (no value in dictionary)");
+          //  Debug.Log($"String {stringnum} is not transposed (no value in dictionary)");
         }
 
         // Calculate the final note value with transposition
@@ -598,8 +604,7 @@ public class prog_button : MonoBehaviour
 
         // Use the processed transposed value
         notevalue = transposed_mathematical_value % 12;
-        
-        Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {interval_notevalue_dict[buttonNumber]}, Transposed by {transposed_notes_dict[stringnum]}, Final note {notevalue}");
+        // Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {interval_notevalue_dict[buttonNumber]}, Transposed by {transposed_notes_dict[stringnum]}, Final note {notevalue}");
     }
 
     void Start()

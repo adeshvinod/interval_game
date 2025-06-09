@@ -104,7 +104,7 @@ public class intervalbutton : Button
          stringnum = this.transform.GetSiblingIndex()/ 7; //the 6 strings are numbered from 0 to 5       
        
 
-        Debug.Log("sibling indec" + this.transform.GetSiblingIndex() + "   note value:" + notevalue);
+       // Debug.Log("sibling indec" + this.transform.GetSiblingIndex() + "   note value:" + notevalue);
         getNoteValue(this.transform.GetSiblingIndex());
        // intervalText.text = notevalue.ToString();
         intervalText.text = "";
@@ -141,7 +141,7 @@ public class intervalbutton : Button
             transposed_notes_dict = global_settings.instance.transposed_notes_dict;
 
             //Debug.Log("transposed value array: " + global_settings.instance.transposed_notes_dict[0] + " " + global_settings.instance.transposed_notes_dict[1] + " " + global_settings.instance.transposed_notes_dict[2] + " " + global_settings.instance.transposed_notes_dict[3] + " " + global_settings.instance.transposed_notes_dict[4] + " ");
-            Debug.Log("transposed value array at get noteval: " + transposed_notes_dict[0] + " " + transposed_notes_dict[1] + " " + transposed_notes_dict[2] + " " + transposed_notes_dict[3] + " " + transposed_notes_dict[4] + " ");
+            //Debug.Log("transposed value array at get noteval: " + transposed_notes_dict[0] + " " + transposed_notes_dict[1] + " " + transposed_notes_dict[2] + " " + transposed_notes_dict[3] + " " + transposed_notes_dict[4] + " ");
         }
 
         int transposed_mathematical_value; //value after transposing, includes negative numbers
