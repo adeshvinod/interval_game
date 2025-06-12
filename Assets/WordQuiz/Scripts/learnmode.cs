@@ -247,6 +247,15 @@ public class learnmode : MonoBehaviour
         {
             selectedIntervals.Remove(value.intervalValue);
         }
+
+        // Update GameSettings with the current selected intervals
+        if (gameSettings.currentIntervalLevel == IntervalLevel.CUSTOM)
+        {
+            gameSettings.intervalQuestionList.Clear();
+            gameSettings.intervalQuestionList.AddRange(selectedIntervals);
+            Debug.Log($"Updated GameSettings with custom intervals: {string.Join(", ", selectedIntervals)}");
+        }
+
         setrootbutton(rootoptions[root_options_index], false, false);
     }
 

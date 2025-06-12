@@ -78,6 +78,7 @@ public class GameSettings : ScriptableObject
         {
            // transposedNotes[i] = 0;
         }
+        intervalQuestionList.AddRange(intervalLevel4);
     }
 
     

@@ -1812,7 +1812,8 @@ MonoBehaviour:
   accuracies_floating: {fileID: 0}
   wholefretboard: {fileID: 173316246}
   scorecard: {fileID: 1436708672}
-  HighScore: 0
+  gameData: {fileID: 11400000, guid: ec568c32558648949af6392ac0572d43, type: 2}
+  gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
   currentscore: 0
   modifiedData:
     HighScore: 0
@@ -4708,8 +4709,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: QuizManager, Assembly-CSharp
+      - m_Target: {fileID: 912372181}
+        m_TargetAssemblyTypeName: intervalsGameManager, Assembly-CSharp
         m_MethodName: showWrongPairs
         m_Mode: 3
         m_Arguments:
@@ -5670,6 +5671,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 912372179}
+  - component: {fileID: 912372181}
+  - component: {fileID: 912372180}
   m_Layer: 0
   m_Name: intervalGameManger
   m_TagString: Untagged
@@ -5691,6 +5694,77 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &912372180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912372178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0713333cbd46fdd43afbbc0d8f9ee127, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  string1Renderer: {fileID: 1602518300}
+  isEmissionOn1: 1
+  emissionColor1: {r: 1, g: 1, b: 1, a: 1}
+  emissionIntensity1: 1
+  string2Renderer: {fileID: 1367384711}
+  isEmissionOn2: 1
+  emissionColor2: {r: 1, g: 1, b: 1, a: 1}
+  emissionIntensity2: 1
+  string3Renderer: {fileID: 779824038}
+  isEmissionOn3: 1
+  emissionColor3: {r: 1, g: 1, b: 1, a: 1}
+  emissionIntensity3: 1
+  string4Renderer: {fileID: 516581900}
+  isEmissionOn4: 1
+  emissionColor4: {r: 1, g: 1, b: 1, a: 1}
+  emissionIntensity4: 1
+  string5Renderer: {fileID: 1567868200}
+  isEmissionOn5: 1
+  emissionColor5: {r: 1, g: 1, b: 1, a: 1}
+  emissionIntensity5: 1
+  string6Renderer: {fileID: 31763312}
+  isEmissionOn6: 1
+  emissionColor6: {r: 1, g: 1, b: 1, a: 1}
+  emissionIntensity6: 1
+--- !u!114 &912372181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912372178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f46a122a882e84d89d88435365df0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  materialController: {fileID: 912372180}
+  gameComplete: {fileID: 329997862}
+  questionChordFloating: {fileID: 988466658}
+  gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
+  gameData: {fileID: 11400000, guid: ec568c32558648949af6392ac0572d43, type: 2}
+  optionintervalList: []
+  gameStatus: 1
+  progbuttons_: []
+  currentrootnode: {fileID: 0}
+  rootoptions: 030000000a00000011000000180000001f00000026000000
+  strings: []
+  score_text: {fileID: 1306508053}
+  lives_image:
+  - {fileID: 1708443876}
+  - {fileID: 1842025483}
+  - {fileID: 544556987}
+  timer_text: {fileID: 1421113904}
+  GameoverPanel: {fileID: 329997862}
+  GameRunningPanel: {fileID: 1853571836}
+  gameover_function_flag: 0
+  eventManager: {fileID: 11400000, guid: fa51b38f09bd7414395232376dd1665c, type: 2}
+  correctanswer_audio: {fileID: 1943639094}
+  wronganswer_audio: {fileID: 1930822108}
 --- !u!1 &915934205
 GameObject:
   m_ObjectHideFlags: 0
@@ -9523,8 +9597,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: QuizManager, Assembly-CSharp
+      - m_Target: {fileID: 912372181}
+        m_TargetAssemblyTypeName: intervalsGameManager, Assembly-CSharp
         m_MethodName: showWrongPairs
         m_Mode: 3
         m_Arguments:

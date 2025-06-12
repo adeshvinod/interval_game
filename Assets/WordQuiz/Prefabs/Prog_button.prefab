@@ -373,6 +373,7 @@ MonoBehaviour:
   circleIndex: 1
   scaleDuration: 0.2
   text: {fileID: 3169450531215011352}
+  stringnum: 0
   notevalue: 0
   selectedRegion: 0
   isSelected: 0
@@ -383,6 +384,7 @@ MonoBehaviour:
   fretnum: 0
   gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
   bigdick: 0
+  eventManager: {fileID: 11400000, guid: fa51b38f09bd7414395232376dd1665c, type: 2}
 --- !u!1 &3169450531215011358
 GameObject:
   m_ObjectHideFlags: 0

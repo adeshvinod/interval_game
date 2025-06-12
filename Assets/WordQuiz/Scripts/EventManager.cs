@@ -13,5 +13,14 @@ public class EventManager : ScriptableObject
         OnIntervalOptionSelected?.Invoke(option);
     }
 
+    // Interval Button Events
+    public delegate void IntervalButtonSelectedHandler(prog_button button);
+    public event IntervalButtonSelectedHandler OnIntervalButtonSelected;
+
+    public void SelectedIntervalButton(prog_button button)
+    {
+        OnIntervalButtonSelected?.Invoke(button);
+    }
+
     // Add more events here as needed
 } 

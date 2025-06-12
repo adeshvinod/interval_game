@@ -37,6 +37,8 @@ public class prog_button : MonoBehaviour
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private int bigdick;
 
+     [SerializeField] private EventManager eventManager;
+
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
         {0,7},
@@ -375,6 +377,10 @@ public class prog_button : MonoBehaviour
         if (scene.name == "challenge_mode")
         {
             //QuizManager.instance.SelectedButton(this);
+            if (eventManager != null)
+            {
+                eventManager.SelectedIntervalButton(this);
+            }
         }
         else if (scene.name == "learn_mode")
         {

@@ -80,7 +80,11 @@ public class interval_option : MonoBehaviour
         
         if(scene.name=="challenge_mode")
         {
-            QuizManager.instance.SelectedOption_guessmode(this);
+            //QuizManager.instance.SelectedOption_guessmode(this);
+            if (eventManager != null)
+            {
+                eventManager.SelectIntervalOption(this);
+            }   
         }
         else if (scene.name == "learn_mode")
         {
