@@ -150,6 +150,8 @@ MonoBehaviour:
   interval_option_Text: {fileID: 8182208661169907849}
   intervalValue: 0
   isSelected: 0
+  gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
+  eventManager: {fileID: 11400000, guid: fa51b38f09bd7414395232376dd1665c, type: 2}
 --- !u!1 &8901689850624582645
 GameObject:
   m_ObjectHideFlags: 0

@@ -272,9 +272,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: toggle_settingsPanel
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: ToggleSettingsPanel
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -665,9 +665,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_down
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeDown
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -892,7 +892,7 @@ MonoBehaviour:
           m_StringArgument: notes_levels
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 253858416}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
         m_MethodName: SetLearningMode
         m_Mode: 3
@@ -1049,7 +1049,6 @@ GameObject:
   - component: {fileID: 253858413}
   - component: {fileID: 253858412}
   - component: {fileID: 253858411}
-  - component: {fileID: 253858416}
   - component: {fileID: 253858417}
   m_Layer: 0
   m_Name: Main Camera (1)
@@ -1147,19 +1146,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &253858416
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 253858410}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a5e45127a4819b46ba40e123fe87e64, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  settingsPanel: {fileID: 1194892439}
 --- !u!114 &253858417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2259,7 +2245,7 @@ MonoBehaviour:
           m_StringArgument: pre-arpeggio
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 253858416}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
         m_MethodName: SetLearningMode
         m_Mode: 3
@@ -2433,9 +2419,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_up
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeUp
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2566,9 +2552,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_down
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeDown
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2878,9 +2864,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_up
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeUp
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3011,9 +2997,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_up
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeUp
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3102,6 +3088,58 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1118235523
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1118235525}
+  - component: {fileID: 1118235524}
+  m_Layer: 0
+  m_Name: GameSettings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1118235524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1118235523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c307294ca009f684f8877b4f4f1db0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
+  stringNotesText:
+  - {fileID: 2091254968}
+  - {fileID: 687616064}
+  - {fileID: 557402232}
+  - {fileID: 16090791}
+  - {fileID: 496886136}
+  - {fileID: 1986114178}
+  settingsPanel: {fileID: 1194892439}
+--- !u!4 &1118235525
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1118235523}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -7.752898, y: 1.2105553, z: -6.1560926}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1162225960
 GameObject:
   m_ObjectHideFlags: 0
@@ -3185,9 +3223,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_down
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeDown
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3498,7 +3536,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
         m_MethodName: toggle_settingsPanel
         m_Mode: 6
@@ -3839,9 +3877,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_up
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeUp
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4130,9 +4168,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_down
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeDown
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4344,9 +4382,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_down
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeDown
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4477,9 +4515,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_up
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeUp
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4703,7 +4741,7 @@ MonoBehaviour:
           m_StringArgument: interval_levels
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 253858416}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
         m_MethodName: SetLearningMode
         m_Mode: 3
@@ -4835,7 +4873,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
         m_MethodName: toggle_settingsPanel
         m_Mode: 6
@@ -4967,9 +5005,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: toggle_settingsPanel
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: ToggleSettingsPanel
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5339,9 +5377,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_down
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeDown
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5553,9 +5591,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253858416}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
-        m_MethodName: transpose_up
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
+        m_MethodName: TransposeUp
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

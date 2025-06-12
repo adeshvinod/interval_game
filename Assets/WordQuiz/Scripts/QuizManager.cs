@@ -893,6 +893,7 @@ public class QuestionData
 
     public int[] answer2;
 }
+/*
 
 public enum GameStatus
 {
@@ -906,3 +907,4 @@ public enum QuestionMode
     PressTheInterval,    //in this mode, player will have to click on the correction position on the fretboard  
     GuessTheInterval     //in this mode,player will have to click the correct option on the panel below looking at the the 2 circles on the fretboard
 }
+}*/

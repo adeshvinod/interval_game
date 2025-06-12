@@ -30,6 +30,8 @@ public class interval_option : MonoBehaviour
     public bool isSelected = false;
 
     private Button buttonComponent;
+    [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private EventManager eventManager;
 
     private void Awake()
     {
@@ -74,27 +76,23 @@ public class interval_option : MonoBehaviour
     private void optionSelected()
     {
         this.isSelected = !this.isSelected;
-        //QuizManager.instance.SelectedOption(this);
         scene = SceneManager.GetActiveScene();
+        
         if(scene.name=="challenge_mode")
-            QuizManager.instance.SelectedOption_guessmode(this);
-        else if (scene.name == "learn_mode")  //challenge settings
         {
-            if (this.isSelected == true)
+            QuizManager.instance.SelectedOption_guessmode(this);
+        }
+        else if (scene.name == "learn_mode")
+        {
+            
+            if (eventManager != null)
             {
-                challenge_settings.instance.questionList.Add(intervalValue);
-                Debug.Log(intervalValue + "added");
+                eventManager.SelectIntervalOption(this);
             }
-            else
-            {     
-                challenge_settings.instance.questionList.Remove(intervalValue);
-                Debug.Log(intervalValue + "removed");
-            }
-            learnmode.instance.SelectedOption_learnmode(this);
         }
         else if (scene.name == "pre-arpeggio")
         {
-            if (this.isSelected == true)
+            if (this.isSelected)
             {
                 settings_arpgame.instance.myCustomChord_intervalList.Add(intervalValue);
                 Debug.Log(intervalValue + "added");

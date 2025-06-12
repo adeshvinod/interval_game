@@ -9,6 +9,7 @@ public class challenge_settings : MonoBehaviour
     Scene scene; //this needs to be in game settings static instance
 
     public static challenge_settings instance;
+    [SerializeField] private GameSettings gameSettings;  // Reference to GameSettings scriptable object
     [SerializeField] private interval_option[] optionintervalList;    //list of ALL interval options in the game (R,b2,M2,b3 etc)
     private GameObject optionintervalList_parent;
     [SerializeField] private Text questionListFloating;   //the text which shows the question

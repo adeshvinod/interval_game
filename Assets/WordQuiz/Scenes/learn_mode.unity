@@ -14834,6 +14834,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1426635a73cda12418744a8d07aeb3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
+  eventManager: {fileID: 11400000, guid: fa51b38f09bd7414395232376dd1665c, type: 2}
   progbuttons_: []
   currentRootProgButton: {fileID: 0}
   selectedIntervals: 

@@ -19,7 +19,7 @@ public class prog_button : MonoBehaviour
     private Vector3 targetScale = Vector3.one ; // Twice the original size
     private Coroutine scaleCoroutine;
     public TMPro.TextMeshProUGUI text;
-    private int stringnum;
+    public int stringnum;
 
     public int notevalue;
     string notename_sharp;
@@ -33,6 +33,9 @@ public class prog_button : MonoBehaviour
     public int y_coord; 
     public int buttonNumber;    
     public int fretnum;  // Added for intervals mode
+
+    [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private int bigdick;
 
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
@@ -180,6 +183,22 @@ public class prog_button : MonoBehaviour
 
            };  
     
+    public Dictionary<int, string> intervalname = new Dictionary<int, string>()
+     {
+        {0, "R"},
+        {1, "b2"},
+        {2, "M2"},
+        {3, "b3"},
+        {4, "M3"},
+        {5, "P4"},
+        {6, "b5"},
+        {7, "P5"},
+        {8, "b6"},
+        {9, "M6"},
+        {10, "b7"},
+        {11, "M7"},
+     };
+
     // Awake is called when the script instance is being loaded
     void Awake()
     {
@@ -223,16 +242,19 @@ public class prog_button : MonoBehaviour
             text.alpha = 0f;
         }
 
-        // Get transposed notes dictionary - this is universal for all modes
-        if (global_settings.instance.transposed_notes_dict != null)
+        // Validate GameSettings reference
+        if (gameSettings == null)
         {
-            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
-          // Debug.Log("transposed_notes_dict found from global settings singleton");
+            Debug.LogError("GameSettings reference not assigned in the Inspector for " + gameObject.name);
+            return;
         }
         else
         {
-            Debug.Log("transposed_notes_dict is null");
+            Debug.Log("GameSettings GAMEID:"+gameSettings.GetInstanceID());
         }
+
+        // Subscribe to tuning changes
+        gameSettings.OnTuningChanged += UpdateNoteDisplay;
 
         // Extract button number from GameObject name
         string buttonName = this.gameObject.name;
@@ -249,7 +271,7 @@ public class prog_button : MonoBehaviour
         }
 
         // Initialize based on current learning mode
-        switch (global_settings.currentLearningMode)
+        switch (gameSettings.currentLearningMode)
         {
             case LearningMode.Progressions:
                 button_initialisation_progression();
@@ -265,7 +287,7 @@ public class prog_button : MonoBehaviour
 
     private void HandleButtonClick()
     {
-        switch (global_settings.currentLearningMode)
+        switch (gameSettings.currentLearningMode)
         {
             case LearningMode.Progressions:
                 ButtonSelected_progressions();
@@ -314,6 +336,7 @@ public class prog_button : MonoBehaviour
         
         // Set initial circle state
         circleIndex = 0;
+        Debug.Log("transposed notes are:"+gameSettings.transposedNotes[0]+" "+gameSettings.transposedNotes[1]+" "+gameSettings.transposedNotes[2]+" "+gameSettings.transposedNotes[3]+" "+gameSettings.transposedNotes[4]+" "+gameSettings.transposedNotes[5]);
     }
 
     private void button_initialisation_notes()
@@ -545,6 +568,11 @@ public class prog_button : MonoBehaviour
             button.onClick.RemoveListener(HandleButtonClick);
           //  Debug.Log("Click listener removed from button");
         }
+
+        if (gameSettings != null)
+        {
+            gameSettings.OnTuningChanged -= UpdateNoteDisplay;
+        }
     }
 
     // Update is called once per frame
@@ -555,56 +583,55 @@ public class prog_button : MonoBehaviour
 
        private void getNoteValue(int buttonNumber)
     {
-        // Get the base note value from the dictionary
-        int baseNoteValue = notevalue_dict[buttonNumber];
-        
-        // Get the transposition value for this string
-        int transpositionValue = 0;
-        if (transposed_notes_dict != null && transposed_notes_dict.ContainsKey(stringnum))
+        if (notevalue_dict.TryGetValue(buttonNumber, out int baseNoteValue))
         {
-            transpositionValue = transposed_notes_dict[stringnum];
-          //  Debug.Log($"String {stringnum} is transposed by {transpositionValue}");
-        }
-        else
-        {
-          //  Debug.Log($"String {stringnum} is not transposed (no value in dictionary)");
-        }
+            // Get the string number (0-5) from the button number
+            int stringNumber = buttonNumber / 13;
+            
+            // Apply transposition using the original logic
+            int transposed_mathematical_value = baseNoteValue + gameSettings.transposedNotes[stringNumber];
+            
+            // Turn negative numbers into positive numbers mapped to corresponding note
+            while (transposed_mathematical_value < 0)
+            {
+                transposed_mathematical_value = 11 + transposed_mathematical_value;
+            }
 
-        // Calculate the final note value with transposition
-        int transposedValue = baseNoteValue + transpositionValue;
-        
-        // Handle negative values by wrapping around
-        while (transposedValue < 0)
-        {
-            transposedValue = 12 + transposedValue;
-        }
+            notevalue = transposed_mathematical_value % 12;
 
-        // Get the final note value in the 0-11 range
-        notevalue = transposedValue % 12;
-        
-       // Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {baseNoteValue}, Transposed by {transpositionValue}, Final note {notevalue}");
+            // Update the note name display
+            if (text != null)
+            {
+                text.text = notename_sharps[notevalue];
+            }
+        }
     }
 
     private void getNoteValue_intervals(int buttonNumber)
     {
-        if (global_settings.instance.transposed_notes_dict != null)
+        if (interval_notevalue_dict.TryGetValue(buttonNumber, out int baseNoteValue))
         {
-            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
-           // Debug.Log("transposed value array at get noteval: " + transposed_notes_dict[0] + " " + transposed_notes_dict[1] + " " + transposed_notes_dict[2] + " " + transposed_notes_dict[3] + " " + transposed_notes_dict[4] + " ");
+            // Get the string number (0-5) from the button number
+            int stringNumber = buttonNumber / 7;
+            
+            // Apply transposition using the original logic
+            int transposed_mathematical_value = baseNoteValue + gameSettings.transposedNotes[stringNumber];
+            
+            // Turn negative numbers into positive numbers mapped to corresponding note
+            while (transposed_mathematical_value < 0)
+            {
+                transposed_mathematical_value = 11 + transposed_mathematical_value;
+            }
+
+            notevalue = transposed_mathematical_value % 12;
+
+            // Update the interval name display
+            if (text != null)
+            {
+               // text.text = intervalname[notevalue]+" "+notevalue;
+            }
         }
-
-        // Calculate the transposed value
-        int transposed_mathematical_value = interval_notevalue_dict[buttonNumber] + transposed_notes_dict[stringnum];
-
-        // Handle negative numbers
-        while (transposed_mathematical_value < 0)
-        {
-            transposed_mathematical_value = 12 + transposed_mathematical_value;
-        }
-
-        // Use the processed transposed value
-        notevalue = transposed_mathematical_value % 12;
-        // Debug.Log($"Button {buttonNumber} on string {stringnum}: Base note {interval_notevalue_dict[buttonNumber]}, Transposed by {transposed_notes_dict[stringnum]}, Final note {notevalue}");
+        Debug.Log("notevalue is:"+notevalue+" stringnum is:"+stringnum+" buttonnumber is:"+buttonNumber+" baseNoteValue is:"+baseNoteValue+" transposed notes are:"+gameSettings.transposedNotes[stringnum]);
     }
 
     void Start()
@@ -624,4 +651,10 @@ public class prog_button : MonoBehaviour
         */
     }
 
+    private void UpdateNoteDisplay()
+    {
+        // Update the note display based on current transposition
+        getNoteValue(buttonNumber);
+        getNoteValue_intervals(buttonNumber);
+    }
 }

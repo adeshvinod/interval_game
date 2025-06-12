@@ -649,13 +649,13 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 666043851}
+  m_TargetGraphic: {fileID: 2006735958}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1040420405}
-        m_TargetAssemblyTypeName: challenge_settings, Assembly-CSharp
-        m_MethodName: level_select
+      - m_Target: {fileID: 866886945}
+        m_TargetAssemblyTypeName: IntervalLevelSelectionUI, Assembly-CSharp
+        m_MethodName: OnIntervalLevelButtonClicked
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -781,6 +781,52 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &866886944
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 866886946}
+  - component: {fileID: 866886945}
+  m_Layer: 0
+  m_Name: gameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &866886945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866886944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24f776c61841e614ab92b82a4ca22f25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
+  intervalQuestionText: {fileID: 0}
+  intervalStringText: {fileID: 0}
+--- !u!4 &866886946
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866886944}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.39641, y: 2.9966562, z: 4768.5396}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &923951615
 GameObject:
   m_ObjectHideFlags: 0
@@ -856,55 +902,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 923951615}
   m_CullTransparentMesh: 1
---- !u!1 &1040420404
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1040420406}
-  - component: {fileID: 1040420405}
-  m_Layer: 0
-  m_Name: challenge_settings
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1040420405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1040420404}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30789dadeff26594f9db460acb969443, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  optionintervalList: []
-  questionListFloating: {fileID: 0}
-  stringListfloating: {fileID: 0}
-  questionList: 
-  stringList: 
-  current_level: 4
---- !u!4 &1040420406
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1040420404}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.214982, y: 5.6221952, z: -86.61354}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1128039740
 GameObject:
   m_ObjectHideFlags: 0
@@ -983,13 +980,13 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 1128039743}
+  m_TargetGraphic: {fileID: 2006735958}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1040420405}
-        m_TargetAssemblyTypeName: challenge_settings, Assembly-CSharp
-        m_MethodName: level_select
+      - m_Target: {fileID: 866886945}
+        m_TargetAssemblyTypeName: IntervalLevelSelectionUI, Assembly-CSharp
+        m_MethodName: OnIntervalLevelButtonClicked
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1315,7 +1312,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1040420405}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: challenge_settings, Assembly-CSharp
         m_MethodName: level_select
         m_Mode: 3
@@ -1337,6 +1334,18 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: learn_mode
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 866886945}
+        m_TargetAssemblyTypeName: IntervalLevelSelectionUI, Assembly-CSharp
+        m_MethodName: OnIntervalLevelButtonClicked
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1361874021
@@ -2017,9 +2026,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1040420405}
-        m_TargetAssemblyTypeName: challenge_settings, Assembly-CSharp
-        m_MethodName: level_select
+      - m_Target: {fileID: 866886945}
+        m_TargetAssemblyTypeName: IntervalLevelSelectionUI, Assembly-CSharp
+        m_MethodName: OnIntervalLevelButtonClicked
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2157,13 +2166,13 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 2037576855}
+  m_TargetGraphic: {fileID: 2006735958}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1040420405}
-        m_TargetAssemblyTypeName: challenge_settings, Assembly-CSharp
-        m_MethodName: level_select
+      - m_Target: {fileID: 866886945}
+        m_TargetAssemblyTypeName: IntervalLevelSelectionUI, Assembly-CSharp
+        m_MethodName: OnIntervalLevelButtonClicked
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
