@@ -10,10 +10,10 @@ using Random = UnityEngine.Random;
 
 public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 {
-    public static intervalsGameManager instance;
+    
 
     [SerializeField] private materialController materialController;
-    [SerializeField] private GameObject gameComplete;
+   
     [SerializeField] private TextMeshProUGUI questionChordFloating;
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private IntervalsGameData gameData;
@@ -69,11 +69,6 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(this.gameObject);
-
         // Find GameSettings if not assigned
         if (gameSettings == null)
         {

@@ -99,7 +99,6 @@ public class arpeggio_manager : MonoBehaviour
     ColorBlock CorrectButton = new ColorBlock();
     ColorBlock RegularButton = new ColorBlock();
 
-    public note_button[] notebuttons_;
     public prog_button[] progbuttons_; // New field for prog buttons
 
     private void Awake()

@@ -31,9 +31,17 @@ public class option_note : MonoBehaviour
 
     public int noteValue;
     public bool isSelected = false;
-
+    public Text noteText;
+    public Image noteImage;
+    public Color selectedColor;
+    public Color unselectedColor;
+    public Color correctColor;
+    public Color wrongColor;
+    public Color defaultColor;
 
     private Button buttonComponent;
+
+    [SerializeField] private EventManager eventManager;
 
     private void Awake()
     {
@@ -44,6 +52,14 @@ public class option_note : MonoBehaviour
         }
         note_option_text = this.GetComponentInChildren<Text>();
 
+        if (eventManager == null)
+        {
+            eventManager = Resources.Load<EventManager>("EventManager");
+            if (eventManager == null)
+            {
+                Debug.LogError("EventManager ScriptableObject not found in Resources folder!");
+            }
+        }
     }
 
     private void Start()
@@ -63,9 +79,28 @@ public class option_note : MonoBehaviour
     private void optionSelected()
     {
         this.isSelected = !this.isSelected;
-       
-            note_challenge.instance.SelectedOption_guessmode(this);
-       
+        eventManager.SelectNoteOption(this);
     }
 
+    public void SetSelected(bool selected)
+    {
+        isSelected = selected;
+        noteImage.color = selected ? selectedColor : unselectedColor;
+    }
+
+    public void SetCorrect()
+    {
+        noteImage.color = correctColor;
+    }
+
+    public void SetWrong()
+    {
+        noteImage.color = wrongColor;
+    }
+
+    public void Reset()
+    {
+        isSelected = false;
+        noteImage.color = defaultColor;
+    }
 }

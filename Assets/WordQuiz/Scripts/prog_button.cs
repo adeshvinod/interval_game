@@ -346,6 +346,18 @@ public class prog_button : MonoBehaviour
         // Calculate coordinates for notes mode (specific to notes mode layout)
         // TODO: Add notes-specific coordinate calculation
        // Debug.Log("Initializing button for notes mode");
+       // Calculate coordinates for progressions mode (13 frets, 6 strings)
+        this.x_coord = buttonNumber % 13;
+        this.y_coord = buttonNumber / 13;
+        stringnum = this.y_coord;
+
+        getNoteValue(buttonNumber);
+        notename_sharp = notename_sharps[notevalue];
+        notename_flat = notename_flats[notevalue];
+        text.text = notename_sharp;
+
+        // Set initial circle state to transparent
+        circleIndex = 0;
     }
 
     void ButtonSelected_progressions()
@@ -391,7 +403,10 @@ public class prog_button : MonoBehaviour
     void ButtonSelected_notes()
     {
         // TODO: Add notes-specific button selection logic
-        Debug.Log("Button selected in notes mode");
+        if (eventManager != null)
+        {
+            eventManager.SelectedNoteButton(this);
+        }
     }
 
     // Public function that can be called from other scripts

@@ -892,8 +892,8 @@ MonoBehaviour:
           m_StringArgument: notes_levels
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
         m_MethodName: SetLearningMode
         m_Mode: 3
         m_Arguments:
@@ -2245,8 +2245,8 @@ MonoBehaviour:
           m_StringArgument: pre-arpeggio
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
         m_MethodName: SetLearningMode
         m_Mode: 3
         m_Arguments:
@@ -4741,8 +4741,8 @@ MonoBehaviour:
           m_StringArgument: interval_levels
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: global_settings, Assembly-CSharp
+      - m_Target: {fileID: 1118235524}
+        m_TargetAssemblyTypeName: GameSettingsManager, Assembly-CSharp
         m_MethodName: SetLearningMode
         m_Mode: 3
         m_Arguments:

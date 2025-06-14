@@ -6,16 +6,57 @@ using UnityEngine.UI;
 //script for managing the notes mode of the game-A,A#,B,C etc- equivalent of intervals game quiz manager but for notes
 public class note_challenge : MonoBehaviour
 {
-    public static note_challenge instance; //Instance to make is available in other scripts without reference
+  //  public static note_challenge instance; //Instance to make is available in other scripts without reference
+
+    [SerializeField] private NotesGameData gameData;
+    [SerializeField] private EventManager eventManager;
+    [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private Text score_text;
+    [SerializeField] private List<Image> lives_image;
+    [SerializeField] private Text timer_text;
+    [SerializeField] private GameObject gameover_panel;
+    [SerializeField] private GameObject GameRunningPanel;
+    [SerializeField] private AudioSource correctanswer_audio;
+    [SerializeField] private AudioSource wronganswer_audio;
 
     private void Awake()
-    {
+    {/*
         if (instance == null)
             instance = this;
         else
-            Destroy(this.gameObject);
+            Destroy(this.gameObject)
+            */
+        if (gameData == null)
+        {
+            Debug.LogError("NotesGameData reference is missing!");
+        }
 
+        if (eventManager == null)
+        {
+            Debug.LogError("EventManager reference is missing!");
+        }
+    }
 
+    private void OnEnable()
+    {
+        eventManager.OnNoteButtonSelected += HandleNoteButtonSelected;
+        eventManager.OnNoteOptionSelected += HandleNoteOptionSelected;
+    }
+
+    private void OnDisable()
+    {
+        eventManager.OnNoteButtonSelected -= HandleNoteButtonSelected;
+        eventManager.OnNoteOptionSelected -= HandleNoteOptionSelected;
+    }
+
+    private void HandleNoteButtonSelected(prog_button button)
+    {
+        SelectedButton(button);
+    }
+
+    private void HandleNoteOptionSelected(option_note option)
+    {
+        SelectedOption_guessmode(option);
     }
 
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
@@ -148,104 +189,53 @@ public class note_challenge : MonoBehaviour
     public Text question_noteval_floating;
     int question_noteval;
     QuestionMode questionmode = QuestionMode.PressTheNote;
-    public note_button[] notebuttons_;
+    public prog_button[] progbuttons_;
     private int questionmode_counter;
 
-    public int score = 0;
-    public Text score_text;
-    public int lives = 3;
-    [SerializeField] public List<Image> lives_image;
-    public float timer = 10;
-    public int time; //int form of time
-    [SerializeField] public Text timer_text;
-
-    private List<note_button> possibleAnswers;
-
-    private List<note_button> Question_button_list = new List<note_button>();
-
+    private List<prog_button> possibleAnswers;
+    private prog_button currentQuestionButton;
+    private List<prog_button> Question_button_list = new List<prog_button>();
     private GameObject option_notes_panel;
-    [SerializeField] public GameObject gameover_panel;
-    public GameObject GameRunningPanel;
     private bool gameover_function_flag = false;
-
-    public float[] questionHistory_accuracy = new float[78];   //creates a record of each question answer pair, initializes to -1 but changes to >=0 if that pair is invoked during the game
-    public float[] questionHistory_rxntimes = new float[78];
-    public float[] questionHistory_Counter = new float[78];
-    private float[] avg_rxntimes = new float[78];
-    private float[] avg_accuracies = new float[78]; //computed at the end after gameover
-
     private List<int> missedAnswers = new List<int>();
-    public int currentQuestion_Answer_node;
-
-    // Audio sources for correct and wrong answers
-    public AudioSource correctanswer_audio;
-    public AudioSource wronganswer_audio;
     private bool correctanswer = false;
     private bool togglesound = false;
+    public GameStatus gameStatus = GameStatus.Playing;
 
-    public GameStatus gameStatus = GameStatus.Playing;     //to keep track of game status  d
     // Start is called before the first frame update
     void Start()
     {
-
-        CorrectButton = ColorBlock.defaultColorBlock;
-        CorrectButton.normalColor = new Color(0, 1, 0, 1);
-        //CorrectButton.selectedColor = new Color(0, 1, 0, 1);
-        CorrectButton.selectedColor = new Color(0.773f, 0.784f, 0.263f, 1f);  // C5C843, fully visible when selected
-        CorrectButton.highlightedColor = new Color(0.773f, 0.784f, 0.263f, 0f);  // C5C843, fully visible when selected
-
-        RegularButton = ColorBlock.defaultColorBlock;
-        RegularButton.normalColor = new Color(1, 1, 1, 0f);
-        //RegularButton.selectedColor = new Color(1, 1, 0, 1);
-        RegularButton.selectedColor = new Color(0.988f, 0.196f, 0.196f, 1f);  // FC3232, fully visible when selected
-        RegularButton.highlightedColor = new Color(0.988f, 0.196f, 0.196f, 0f);  // FC3232, fully visible when selected         
-
-        /*
-        CorrectButton = ColorBlock.defaultColorBlock;
-        CorrectButton.normalColor = new Color(0, 1, 0, 1);
-        CorrectButton.selectedColor = new Color(0, 1, 0, 1);
-
-        RegularButton = ColorBlock.defaultColorBlock;
-        RegularButton.normalColor = new Color(0, 0, 1, 0);
-        RegularButton.selectedColor = new Color(1, 0, 0, 1);
-*/
-        noActionButton = ColorBlock.defaultColorBlock;     //this is for the guess mode, it prevents the button from showing when you click it  
-        noActionButton.normalColor = new Color(0, 0, 1, 0);
-        noActionButton.selectedColor = new Color(1, 0, 0, 0);
-
         InitializeQuestionHistoryArray();
 
-        // Find all note buttons from the 6 strings
-        List<note_button> allNoteButtons = new List<note_button>();
-        for (int i = 1; i <= 6; i++)
+        // Initialize prog buttons
+        GameObject progButtonsObject = GameObject.Find("Prog_buttons");
+        if (progButtonsObject != null)
         {
-            string stringPath = $"Canvas/fretboard/FRETBOARD_IMAGE/string{i}";
-            GameObject stringObj = GameObject.Find(stringPath);
-            if (stringObj != null)
-            {
-                note_button[] stringButtons = stringObj.GetComponentsInChildren<note_button>();
-                allNoteButtons.AddRange(stringButtons);
-            }
+            progbuttons_ = progButtonsObject.GetComponentsInChildren<prog_button>();
+            Debug.Log($"Found {progbuttons_.Length} prog buttons");
         }
-        notebuttons_ = allNoteButtons.ToArray();
+        else
+        {
+            Debug.LogWarning("Prog_buttons GameObject not found in scene");
+        }
 
         option_notes_panel = GameObject.Find("option_notes");
 
-        possibleAnswers = new List<note_button>();
+        possibleAnswers = new List<prog_button>();
         questionmode_counter = Random.Range(4, 8);
 
-        Debug.Log(settings_notechallenge.instance.questionList);
+        Debug.Log(gameData.questionList);
 
-        foreach ((int, int) question in settings_notechallenge.instance.questionList)
+        foreach ((int, int) question in gameData.questionList)
         {
             Debug.Log($"Processing question coordinates: ({question.Item1}, {question.Item2})");
-            int buttonIndex = settings_notechallenge.instance.Coordinate_system[question];
+            int buttonIndex = gameData.Coordinate_system[question];
             Debug.Log($"Button index from coordinate system: {buttonIndex}");
             
-            Question_button_list.Add(notebuttons_[buttonIndex]);
-            notebuttons_[buttonIndex].selectedRegion = true;
+            Question_button_list.Add(progbuttons_[buttonIndex]);
+            progbuttons_[buttonIndex].selectedRegion = true;
             
-            Transform spriteMask = notebuttons_[buttonIndex].transform.Find("Sprite Mask");
+            Transform spriteMask = progbuttons_[buttonIndex].transform.Find("Sprite Mask");
             if (spriteMask != null)
             {
                 Debug.Log($"Found Sprite Mask for button {buttonIndex}, activating it");
@@ -257,13 +247,10 @@ public class note_challenge : MonoBehaviour
             }
         }
 
-        Debug.Log("total list:" + Question_button_list.Count + "      radom note val:" + Question_button_list[2].notevalue);
-
+        Debug.Log("total list:" + Question_button_list.Count);
 
         nextQuestion();
 
-
-       
     }
 
     // Update is called once per frame
@@ -272,13 +259,13 @@ public class note_challenge : MonoBehaviour
        //Debug.Log("list of notes"+settings_notechallenge.instance.questionList);
         if (gameStatus == GameStatus.Playing)
         {
-            timer -= Time.deltaTime;
-            time = (int)timer;
+            gameData.timer -= Time.deltaTime;
+            int time = (int)gameData.timer;
             SetTimer(time);
         }
         else if (gameStatus == GameStatus.Next)
         {
-            timer = 10f;
+            gameData.timer = 10f;
         }
 
         if (correctanswer == true && togglesound == true)
@@ -308,7 +295,7 @@ public class note_challenge : MonoBehaviour
             togglesound = false;
         }
 
-        if (time <= 0 || lives == 0)
+        if (gameData.timer <= 0 || gameData.lives == 0)
         {
             gameStatus = GameStatus.Gameover;
             if (gameover_function_flag == false)
@@ -342,48 +329,39 @@ public class note_challenge : MonoBehaviour
 
         foreach (int missednote_index in missedAnswers)
         {
-            note_button button = notebuttons_[missednote_index];
-            SetButtonState(button, true);
-            button.colors = CorrectButton;
-            button.noteText.text = notename_sharps[button.notevalue];
-            button.UpdateTextVisibility(true);
-            
+            prog_button button = progbuttons_[missednote_index];
+            button.SetActiveCircle(1); // Show correct answer
+            button.text.text = notename_sharps[button.notevalue];
         }
     }
 
     public void gameover_function()
     {
         // First enable all buttons in selected region
-        foreach (note_button note_button_temp in notebuttons_)
+        foreach (prog_button button in progbuttons_)
         {
-            if (note_button_temp.selectedRegion)
+            if (button.selectedRegion)
             {
-                SetButtonState(note_button_temp, true);
-                note_button_temp.interactable = false;
-                note_button_temp.colors = RegularButton;
-                note_button_temp.interactable = true;
-            }
-            else
-            {
-                SetButtonState(note_button_temp, false);
+                button.SetActiveCircle(0); // Reset to transparent
+                button.text.text = "";
             }
         }
         
         for (int j = 0; j < 78; j++)
         {
-            if (questionHistory_Counter[j] == 0)
+            if (gameData.questioncounter[j] == 0)
                 continue;
-            if (j == currentQuestion_Answer_node && time <= 0)
-                avg_rxntimes[j] = questionHistory_rxntimes[j] / (questionHistory_Counter[j] - 1);
+            if (j == gameData.currentQuestion_Answer_node && gameData.timer <= 0)
+                gameData.reactiontimes[j] = gameData.reactiontimes[j] / (gameData.questioncounter[j] - 1);
             else
-                avg_rxntimes[j] = questionHistory_rxntimes[j] / questionHistory_Counter[j];
+                gameData.reactiontimes[j] = gameData.reactiontimes[j] / gameData.questioncounter[j];
 
-            avg_accuracies[j] = questionHistory_accuracy[j] / questionHistory_Counter[j];
+            gameData.accuracies[j] = gameData.accuracies[j] / gameData.questioncounter[j];
         }
         
         for (int j = 0; j < 78; j++)
         {
-            if ((avg_accuracies[j] > -1 && avg_accuracies[j] < 1) || avg_rxntimes[j] > 5)
+            if ((gameData.accuracies[j] > -1 && gameData.accuracies[j] < 1) || gameData.reactiontimes[j] > 5)
                 missedAnswers.Add(j);
         }
          GameRunningPanel.gameObject.SetActive(false);
@@ -399,16 +377,12 @@ public class note_challenge : MonoBehaviour
 
     void InitializeQuestionHistoryArray()
     {
-            for (int j = 0; j < questionHistory_accuracy.GetLength(0); j++)
-            {
-                // Set the value at current row and column to -1 to indicate that pair has not been evoked
-                questionHistory_accuracy[j] = -1;
-                questionHistory_rxntimes[j] = -1;
-                questionHistory_Counter[j] = 0;
-                avg_accuracies[j] = -1;
-                avg_rxntimes[j] = -1;
-            }
-        
+        for (int j = 0; j < 78; j++)
+        {
+            gameData.accuracies[j] = -1;
+            gameData.reactiontimes[j] = -1;
+            gameData.questioncounter[j] = 0;
+        }
     }
     private void SetTimer(int value)
     {
@@ -448,126 +422,97 @@ public class note_challenge : MonoBehaviour
         questionmode_counter--;
     }
 
-    private void SetButtonState(note_button button, bool enable)
-    {
-        button.enabled = enable;
-        button.GetComponent<Image>().enabled = enable;
-        button.UpdateTextVisibility(enable);
-    }
-
     private void setquestion_notes_guessmode()
     {
+        Debug.Log("=== Starting GuessTheNote Mode ===");
         gameStatus = GameStatus.Playing;
         question_noteval = Question_button_list[Random.Range(0, Question_button_list.Count)].notevalue;
+        Debug.Log($"Selected question note value: {question_noteval} ({notename_sharps[question_noteval]})");
         question_noteval_floating.text = "Guess the note displayed on the fretboard";
 
-        // First make sure all buttons are visible and enabled
-        foreach(note_button note_button in notebuttons_)
-        {
-            SetButtonState(note_button, true);
-        }
+        possibleAnswers.Clear(); // Clear previous answers
+        Debug.Log("Clearing and finding possible answers...");
 
-        possibleAnswers.Clear();
-        foreach (note_button note_button_temp in notebuttons_)
+        foreach(prog_button button in progbuttons_)
         {
-            // Disable buttons that are not in selected region
-            if (!note_button_temp.selectedRegion)
+            button.SetActiveCircle(0); // Reset to transparent
+            button.text.text = "";
+            
+            if (!button.selectedRegion)
             {
-                SetButtonState(note_button_temp, false);
                 continue;
             }
 
-            note_button_temp.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
-            note_button_temp.colors = noActionButton;
-            note_button_temp.noteText.text = ""; // Clear all text initially
-            note_button_temp.UpdateTextVisibility(false); //this is to make the text transparent
-            
-            if(note_button_temp.notevalue==question_noteval && note_button_temp.selectedRegion==true)
+            if(button.notevalue == question_noteval && button.selectedRegion)
             {
-                possibleAnswers.Add(note_button_temp);
+                possibleAnswers.Add(button);
+                Debug.Log($"Added possible answer: Button {button.buttonNumber} with note {notename_sharps[button.notevalue]}");
             }
-
-            note_button_temp.interactable = true;
         }
-        int b = Random.Range(0, possibleAnswers.Count - 1);
-        possibleAnswers[b].colors = CorrectButton;
-        possibleAnswers[b].noteText.text = "?"; // Show question mark on the correct button
-        possibleAnswers[b].UpdateTextVisibility(true);
+
+        Debug.Log($"Found {possibleAnswers.Count} possible answers");
+        int b = Random.Range(0, possibleAnswers.Count);
+        currentQuestionButton = possibleAnswers[b];
+        Debug.Log($"Selected question button: Button {currentQuestionButton.buttonNumber} with note {notename_sharps[currentQuestionButton.notevalue]}");
         
-        // Disable note_button and Image components for all buttons except the one with the question mark
-        foreach (note_button note_button_temp in notebuttons_)
+        currentQuestionButton.SetActiveCircle(1);
+        currentQuestionButton.text.text = "?";
+        
+        foreach (prog_button button in progbuttons_)
         {
-            if (note_button_temp != possibleAnswers[b] && note_button_temp.selectedRegion)
+            if (button != currentQuestionButton && button.selectedRegion)
             {
-                SetButtonState(note_button_temp, false);
+                button.SetActiveCircle(0);
             }
         }
         
-        string buttonName = possibleAnswers[b].gameObject.name;
-        int buttonNumber;
-        if (buttonName == "Button")
-        {
-            buttonNumber = 0;
-        }
-        else
-        {
-            string numberStr = buttonName.Replace("Button (", "").Replace(")", "");
-            buttonNumber = int.Parse(numberStr);
-        }
-        currentQuestion_Answer_node = buttonNumber;
+        gameData.currentQuestion_Answer_node = currentQuestionButton.buttonNumber;
+        Debug.Log($"Set currentQuestion_Answer_node to: {gameData.currentQuestion_Answer_node}");
         
-        possibleAnswers[b].interactable = true;
-
-        if (questionHistory_accuracy[currentQuestion_Answer_node] == -1)
+        if (gameData.accuracies[gameData.currentQuestion_Answer_node] == -1)
         {
-            questionHistory_accuracy[currentQuestion_Answer_node]++;
-            questionHistory_rxntimes[currentQuestion_Answer_node]++;
+            gameData.accuracies[gameData.currentQuestion_Answer_node]++;
+            gameData.reactiontimes[gameData.currentQuestion_Answer_node]++;
         }
-        questionHistory_Counter[currentQuestion_Answer_node]++;
+        gameData.questioncounter[gameData.currentQuestion_Answer_node]++;
+        Debug.Log("=== GuessTheNote Mode Setup Complete ===");
     }
     private void setquestion_notes()
     {
         gameStatus = GameStatus.Playing;
-        question_noteval = Question_button_list[Random.Range(0,Question_button_list.Count)].notevalue;
+        question_noteval = Question_button_list[Random.Range(0, Question_button_list.Count)].notevalue;
         question_noteval_floating.text = notename_sharps[question_noteval];
 
-        // First make sure all buttons are visible and enabled
-        foreach(note_button note_button in notebuttons_)
+        foreach(prog_button button in progbuttons_)
         {
-            SetButtonState(note_button, true);
-        }
-
-        foreach(note_button note_button in notebuttons_)
-        {
-            // Disable buttons that are not in selected region
-            if (!note_button.selectedRegion)
+            button.SetActiveCircle(0); // Reset to transparent
+            button.text.text = "";
+            
+            if (!button.selectedRegion)
             {
-                SetButtonState(note_button, false);
                 continue;
             }
-
-            note_button.interactable = false; //basically to reset the button from selected state to normal state, we will reactive the interactability at the end of this iteration
-            note_button.colors = RegularButton;
-            note_button.noteText.color = new Color(note_button.noteText.color.r, note_button.noteText.color.g, note_button.noteText.color.b, 0);
-            note_button.interactable = true;
         }
     }
 
-    public void SelectedButton(note_button value)
+    public void SelectedButton(prog_button value)
     {
         if (gameStatus == GameStatus.Next || questionmode == QuestionMode.GuessTheNote || gameStatus == GameStatus.Gameover) return;
-        if (value.notevalue == question_noteval && value.selectedRegion == true)
+        
+        if (value.notevalue == question_noteval && value.selectedRegion)
         {
             correctanswer = true;
             togglesound = true;
 
-            if (time >= 7)
-                score = score + 10;
-            else if (time > 0 && time < 7)
-                score = score + 5;
-            score_text.text = score.ToString();
+            if (gameData.timer >= 7)
+                gameData.score = gameData.score + 10;
+            else if (gameData.timer > 0 && gameData.timer < 7)
+                gameData.score = gameData.score + 5;
+            score_text.text = gameData.score.ToString();
 
-            value.colors = CorrectButton;
+            value.SetActiveCircle(1); // Show correct answer
+            value.text.text = notename_sharps[value.notevalue];
+            
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
         }
@@ -576,10 +521,10 @@ public class note_challenge : MonoBehaviour
             correctanswer = false;
             togglesound = true;
 
-            lives--;
-            lives_image[lives].gameObject.SetActive(false);
+            gameData.lives--;
+            lives_image[gameData.lives].gameObject.SetActive(false);
 
-            if (lives == 0)
+            if (gameData.lives == 0)
                 gameStatus = GameStatus.Gameover;
             else
             {
@@ -591,62 +536,66 @@ public class note_challenge : MonoBehaviour
 
     public void SelectedOption_guessmode(option_note value)
     {
-        if (gameStatus == GameStatus.Next || questionmode == QuestionMode.PressTheNote) return;
+        Debug.Log("=== Option Selected in GuessTheNote Mode ===");
+        Debug.Log($"Current game status: {gameStatus}, Question mode: {questionmode}");
+        Debug.Log($"Selected option note value: {value.noteValue} ({notename_sharps[value.noteValue]})");
+        Debug.Log($"Expected answer: {question_noteval} ({notename_sharps[question_noteval]})");
+        Debug.Log($"Current question button: Button {currentQuestionButton?.buttonNumber} with note {currentQuestionButton?.notevalue}");
 
-        if(value.noteValue==question_noteval)
+        if (gameStatus == GameStatus.Next || questionmode == QuestionMode.PressTheNote || currentQuestionButton == null)
         {
+            Debug.Log("Selection ignored - Invalid game state or missing question button");
+            return;
+        }
+
+        if(value.noteValue == question_noteval)
+        {
+            Debug.Log("Correct answer selected!");
             correctanswer = true;
             togglesound = true;
 
-            if (time >= 7)
-                score = score + 10;
-            else if (time > 0 && time < 7)
-                score = score + 5;
-            score_text.text = score.ToString();
+            if (gameData.timer >= 7)
+                gameData.score = gameData.score + 10;
+            else if (gameData.timer > 0 && gameData.timer < 7)
+                gameData.score = gameData.score + 5;
+            score_text.text = gameData.score.ToString();
 
-            questionHistory_accuracy[currentQuestion_Answer_node]++;
-            questionHistory_rxntimes[currentQuestion_Answer_node] = questionHistory_rxntimes[currentQuestion_Answer_node] + (10f - time);
+            gameData.accuracies[gameData.currentQuestion_Answer_node]++;
+            gameData.reactiontimes[gameData.currentQuestion_Answer_node] = gameData.reactiontimes[gameData.currentQuestion_Answer_node] + (10f - gameData.timer);
 
-            // Only update the specific button that was showing the question mark
-            foreach (note_button note_button_temp in notebuttons_)
-            {
-                if (note_button_temp.noteText.text == "?")
-                {
-                    note_button_temp.noteText.text = notename_sharps[question_noteval];
-                    note_button_temp.UpdateTextVisibility(true);
-                    break; // Only update the one button that had the question mark
-                }
-            }
+            // Use the stored reference to update the correct button
+            currentQuestionButton.text.text = notename_sharps[question_noteval];
+            currentQuestionButton.SetActiveCircle(1);
+            Debug.Log($"Updated question button text to: {notename_sharps[question_noteval]}");
 
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
         }
         else
         {
+            Debug.Log("Wrong answer selected!");
             correctanswer = false;
             togglesound = true;
 
-            lives--;
-            lives_image[lives].gameObject.SetActive(false);
+            gameData.lives--;
+            lives_image[gameData.lives].gameObject.SetActive(false);
 
-            // Show the wrong answer in red and the correct answer in green
-            foreach (note_button note_button_temp in notebuttons_)
+            currentQuestionButton.text.text = notename_sharps[question_noteval];
+            currentQuestionButton.SetActiveCircle(1);
+            Debug.Log($"Updated question button text to: {notename_sharps[question_noteval]}");
+
+            if (gameData.lives == 0)
             {
-                if (note_button_temp.noteText.text == "?") // Only update the button that had the question mark
-                {
-                    note_button_temp.noteText.text = notename_sharps[question_noteval];
-                    note_button_temp.UpdateTextVisibility(true);
-                }
-            }
-
-            if (lives == 0)
+                Debug.Log("Game Over - No lives remaining");
                 gameStatus = GameStatus.Gameover;
+            }
             else
             {
                 gameStatus = GameStatus.Next;
                 Invoke("nextQuestion", 2.5f);
             }
         }
+        Debug.Log("=== Option Selection Complete ===");
     }
     public enum GameStatus
     {
@@ -662,3 +611,5 @@ public class note_challenge : MonoBehaviour
     }
 
 }
+
+

@@ -72,9 +72,7 @@ public class IntervalsGameData : ScriptableObject
 
     public void LoadHighScores()
     {
-        string path = Application.persistentDataPath + "/player.fun";
-        if (System.IO.File.Exists(path))
-        {
+        
             savedData data = SaveSystem.Loaddata();
             if (data != null)
             {
@@ -83,6 +81,6 @@ public class IntervalsGameData : ScriptableObject
                 level3HighScore = data.l3_intervals_highscore;
                 level4HighScore = data.l4_intervals_highscore;
             }
-        }
+        
     }
 } 
