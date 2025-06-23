@@ -247,6 +247,16 @@ public class note_challenge : MonoBehaviour
             }
         }
 
+        // Disable interactivity for buttons outside the selected region
+        for (int i = 0; i < progbuttons_.Length; i++)
+        {
+            if (!progbuttons_[i].selectedRegion)
+            {
+                progbuttons_[i].GetComponent<Button>().interactable = false;
+                Debug.Log($"Disabled interactivity for button {i} (not in selected region)");
+            }
+        }
+
         Debug.Log("total list:" + Question_button_list.Count);
 
         nextQuestion();
@@ -304,75 +314,78 @@ public class note_challenge : MonoBehaviour
                 gameover_function_flag = true;
             }
         }
-
-       
-
-        if (gameStatus == GameStatus.Gameover)
-        {/*
-            GameRunningPanel.gameObject.SetActive(false);
-            gameover_panel.gameObject.SetActive(true);
-
-            gameover_panel.GetComponent<gameover_notes>().loadGame();
-
-            gameover_panel.GetComponent<gameover_notes>().saveGame();
-            */
-
-
-
-        }
-       
     }
 
-    public void showMissedNotes()               //A function which iterates through the pairs that were either wrong or took to much time to answer
+    public void showMissedNotes()
     {
-        Debug.Log("number of wrong pairs: " + missedAnswers.Count);
-
-        foreach (int missednote_index in missedAnswers)
+        Debug.Log($"Showing {missedAnswers.Count} missed notes");
+        
+        // Clear all buttons first
+        foreach (prog_button button in progbuttons_)
         {
-            prog_button button = progbuttons_[missednote_index];
-            button.SetActiveCircle(1); // Show correct answer
-            button.text.text = notename_sharps[button.notevalue];
+            button.SetActiveCircle(0);
+            button.text.text = "";
+            // Disable button interaction during review
+            button.GetComponent<Button>().interactable = false;
+        }
+
+        // Show all missed notes at once
+        foreach (int buttonIndex in missedAnswers)
+        {
+            if (buttonIndex >= 0 && buttonIndex < progbuttons_.Length)
+            {
+                prog_button button = progbuttons_[buttonIndex];
+                button.SetActiveCircle(1); // Show as missed answer
+                button.text.text = notename_sharps[button.notevalue];
+                Debug.Log($"Showing missed note: Button {buttonIndex}, Note: {notename_sharps[button.notevalue]}");
+            }
         }
     }
 
     public void gameover_function()
     {
-        // First enable all buttons in selected region
+        // Stop all coroutines and reset UI
+        StopAllCoroutines();
+        
+        // Clear all buttons
         foreach (prog_button button in progbuttons_)
         {
-            if (button.selectedRegion)
+            button.SetActiveCircle(0);
+            button.text.text = "";
+            button.GetComponent<Button>().interactable = false;
+        }
+
+        // Clear previous missed answers
+        missedAnswers.Clear();
+
+        // Identify missed answers based on performance data
+        for (int buttonIndex = 0; buttonIndex < 78; buttonIndex++)
+        {
+            if (gameData.questioncounter[buttonIndex] == 0)
+                continue;
+
+            // Calculate average accuracy and reaction time
+            float avgAccuracy = gameData.accuracies[buttonIndex] / gameData.questioncounter[buttonIndex];
+            float avgReactionTime = gameData.reactiontimes[buttonIndex] / gameData.questioncounter[buttonIndex];
+
+            // Add to missed answers if:
+            // 1. Accuracy is less than 100% (wrong answers)
+            // 2. Average reaction time is more than 6 seconds (slow responses)
+            if (avgAccuracy < 1.0f || avgReactionTime > 6.0f)
             {
-                button.SetActiveCircle(0); // Reset to transparent
-                button.text.text = "";
+                missedAnswers.Add(buttonIndex);
+                Debug.Log($"Added missed answer: Button {buttonIndex}, " +
+                         $"Accuracy={avgAccuracy:F2}, AvgTime={avgReactionTime:F2}s");
             }
         }
-        
-        for (int j = 0; j < 78; j++)
-        {
-            if (gameData.questioncounter[j] == 0)
-                continue;
-            if (j == gameData.currentQuestion_Answer_node && gameData.timer <= 0)
-                gameData.reactiontimes[j] = gameData.reactiontimes[j] / (gameData.questioncounter[j] - 1);
-            else
-                gameData.reactiontimes[j] = gameData.reactiontimes[j] / gameData.questioncounter[j];
 
-            gameData.accuracies[j] = gameData.accuracies[j] / gameData.questioncounter[j];
-        }
-        
-        for (int j = 0; j < 78; j++)
-        {
-            if ((gameData.accuracies[j] > -1 && gameData.accuracies[j] < 1) || gameData.reactiontimes[j] > 5)
-                missedAnswers.Add(j);
-        }
-         GameRunningPanel.gameObject.SetActive(false);
-            gameover_panel.gameObject.SetActive(true);
+        Debug.Log($"Total missed answers identified: {missedAnswers.Count}");
 
-            //gameover_panel.GetComponent<gameover_notes>().loadGame();
+        GameRunningPanel.gameObject.SetActive(false);
+        gameover_panel.gameObject.SetActive(true);
 
-          // gameover_panel.GetComponent<gameover_notes>().saveGame();
-
+        // Show all missed notes immediately
         showMissedNotes();
-
     }
 
     void InitializeQuestionHistoryArray()
@@ -433,6 +446,9 @@ public class note_challenge : MonoBehaviour
         possibleAnswers.Clear(); // Clear previous answers
         Debug.Log("Clearing and finding possible answers...");
 
+        // Reset button interactivity based on selected region
+        UpdateButtonInteractivity();
+
         foreach(prog_button button in progbuttons_)
         {
             button.SetActiveCircle(0); // Reset to transparent
@@ -477,11 +493,15 @@ public class note_challenge : MonoBehaviour
         gameData.questioncounter[gameData.currentQuestion_Answer_node]++;
         Debug.Log("=== GuessTheNote Mode Setup Complete ===");
     }
+
     private void setquestion_notes()
     {
         gameStatus = GameStatus.Playing;
         question_noteval = Question_button_list[Random.Range(0, Question_button_list.Count)].notevalue;
         question_noteval_floating.text = notename_sharps[question_noteval];
+
+        // Reset button interactivity based on selected region
+        UpdateButtonInteractivity();
 
         foreach(prog_button button in progbuttons_)
         {
@@ -495,9 +515,32 @@ public class note_challenge : MonoBehaviour
         }
     }
 
+    private void UpdateButtonInteractivity()
+    {
+        // Enable interactivity only for buttons in the selected region
+        for (int i = 0; i < progbuttons_.Length; i++)
+        {
+            if (progbuttons_[i].selectedRegion)
+            {
+                progbuttons_[i].GetComponent<Button>().interactable = true;
+            }
+            else
+            {
+                progbuttons_[i].GetComponent<Button>().interactable = false;
+            }
+        }
+    }
+
     public void SelectedButton(prog_button value)
     {
         if (gameStatus == GameStatus.Next || questionmode == QuestionMode.GuessTheNote || gameStatus == GameStatus.Gameover) return;
+        
+        // Prevent interaction with buttons outside the selected region
+        if (!value.selectedRegion)
+        {
+            Debug.Log($"Button interaction blocked - Button {value.buttonNumber} is not in selected region");
+            return;
+        }
         
         if (value.notevalue == question_noteval && value.selectedRegion)
         {
@@ -513,6 +556,10 @@ public class note_challenge : MonoBehaviour
             value.SetActiveCircle(1); // Show correct answer
             value.text.text = notename_sharps[value.notevalue];
             
+            // Update performance data using timer-based approach
+            gameData.accuracies[value.buttonNumber]++;
+            gameData.reactiontimes[value.buttonNumber] += (10f - gameData.timer);
+            
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
         }
@@ -523,6 +570,13 @@ public class note_challenge : MonoBehaviour
 
             gameData.lives--;
             lives_image[gameData.lives].gameObject.SetActive(false);
+
+            // Update performance data for wrong answer using timer-based approach
+            if (value.selectedRegion)
+            {
+                gameData.reactiontimes[value.buttonNumber] += (10f - gameData.timer);
+                // Don't increment accuracy for wrong answers
+            }
 
             if (gameData.lives == 0)
                 gameStatus = GameStatus.Gameover;
@@ -560,8 +614,9 @@ public class note_challenge : MonoBehaviour
                 gameData.score = gameData.score + 5;
             score_text.text = gameData.score.ToString();
 
+            // Update performance data using timer-based approach
             gameData.accuracies[gameData.currentQuestion_Answer_node]++;
-            gameData.reactiontimes[gameData.currentQuestion_Answer_node] = gameData.reactiontimes[gameData.currentQuestion_Answer_node] + (10f - gameData.timer);
+            gameData.reactiontimes[gameData.currentQuestion_Answer_node] += (10f - gameData.timer);
 
             // Use the stored reference to update the correct button
             currentQuestionButton.text.text = notename_sharps[question_noteval];
@@ -579,6 +634,10 @@ public class note_challenge : MonoBehaviour
 
             gameData.lives--;
             lives_image[gameData.lives].gameObject.SetActive(false);
+
+            // Update performance data for wrong answer using timer-based approach
+            gameData.reactiontimes[gameData.currentQuestion_Answer_node] += (10f - gameData.timer);
+            // Don't increment accuracy for wrong answers
 
             currentQuestionButton.text.text = notename_sharps[question_noteval];
             currentQuestionButton.SetActiveCircle(1);

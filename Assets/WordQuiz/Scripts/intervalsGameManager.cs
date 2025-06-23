@@ -36,7 +36,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
     [SerializeField] public List<Image> lives_image;
     [SerializeField] public TextMeshProUGUI timer_text;
 
-    private List<(int, int)> wrongPairs = new List<(int, int)>();
+    private List<(int rootNode, int answerNode)> wrongPairs = new List<(int rootNode, int answerNode)>();
     private int wrongPairs_index = 0;
 
     private int questionmode_counter;
@@ -132,26 +132,26 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
     {
         gameStatus = GameStatus.Playing;
         
-        if (gameSettings.intervalQuestionList != null && gameSettings.intervalQuestionList.Count > 0)
+        if (gameData.intervalQuestionList != null && gameData.intervalQuestionList.Count > 0)
         {
-            Debug.Log("GameSettings intervalQuestionList is not null");
-            Debug.Log($"intervalQuestionList count: {gameSettings.intervalQuestionList.Count}");
+            Debug.Log("IntervalsGameData intervalQuestionList is not null");
+            Debug.Log($"intervalQuestionList count: {gameData.intervalQuestionList.Count}");
         }
         else
         {   
-            Debug.LogWarning("GameSettings intervalQuestionList is null or empty");
-            Debug.LogWarning($"GameSettings: {gameSettings != null}");
-            if (gameSettings != null)
+            Debug.LogWarning("IntervalsGameData intervalQuestionList is null or empty");
+            Debug.LogWarning($"IntervalsGameData: {gameData != null}");
+            if (gameData != null)
             {
-                Debug.LogWarning($"intervalQuestionList: {gameSettings.intervalQuestionList != null}");
-                if (gameSettings.intervalQuestionList != null)
+                Debug.LogWarning($"intervalQuestionList: {gameData.intervalQuestionList != null}");
+                if (gameData.intervalQuestionList != null)
                 {
-                    Debug.LogWarning("interval question list: "+ string.Join(", ", gameSettings.intervalQuestionList));
+                    Debug.LogWarning("interval question list: "+ string.Join(", ", gameData.intervalQuestionList));
                 }
             }
         }
-        gameData.intervalquestion_val = gameSettings.intervalQuestionList[Random.Range(0, gameSettings.intervalQuestionList.Count)];
-        Debug.Log("intervalquestion_val: " + gameData.intervalquestion_val + "  questionList: " + string.Join(", ", gameSettings.intervalQuestionList));
+        gameData.intervalquestion_val = gameData.intervalQuestionList[Random.Range(0, gameData.intervalQuestionList.Count)];
+        Debug.Log("intervalquestion_val: " + gameData.intervalquestion_val + "  questionList: " + string.Join(", ", gameData.intervalQuestionList));
         gameData.questioncounter[gameData.intervalquestion_val]++;
 
         String intervalquestion_text = intervalname[gameData.intervalquestion_val];
@@ -161,7 +161,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
         materialController.ResetAllStringsToBaseIntensity();
 
-        int a = gameSettings.selectedIntervalStrings[Random.Range(0, gameSettings.selectedIntervalStrings.Count)];
+        int a = gameData.selectedIntervalStrings[Random.Range(0, gameData.selectedIntervalStrings.Count)];
         
         // First pass: Set root node
         foreach (prog_button prog_button_ in progbuttons_)
@@ -260,7 +260,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         Debug.Log("=== Starting SetQuestion_intervals_guessmode ===");
         questionChordFloating.gameObject.SetActive(false);
         gameStatus = GameStatus.Playing;
-        gameData.intervalquestion_val = gameSettings.intervalQuestionList[Random.Range(0, gameSettings.intervalQuestionList.Count)];
+        gameData.intervalquestion_val = gameData.intervalQuestionList[Random.Range(0, gameData.intervalQuestionList.Count)];
         Debug.Log($"Selected interval question value: {gameData.intervalquestion_val}");
         gameData.questioncounter[gameData.intervalquestion_val]++;
 
@@ -270,7 +270,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
         materialController.ResetAllStringsToBaseIntensity();
 
-        int a = gameSettings.selectedIntervalStrings[Random.Range(0, gameSettings.selectedIntervalStrings.Count)];
+        int a = gameData.selectedIntervalStrings[Random.Range(0, gameData.selectedIntervalStrings.Count)];
         Debug.Log($"Selected string index: {a}, Root button number will be: {rootoptions[a]}");
         
         // First pass: Set root node
@@ -344,11 +344,14 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
     public void Update()
     {
+        #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
         {
             Debug.Log("Canvas touched at position: " + Input.mousePosition);
         }
+        #endif
 
+        // Only update timer and game logic if game is still playing
         if (gameStatus == GameStatus.Playing)
         {
             gameData.timer -= Time.deltaTime;
@@ -358,7 +361,9 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         {
             gameData.timer = 10f;
         }
+        // Don't update timer when game is over
 
+        // Handle sound effects
         if (correctanswer == true && togglesound == true)
         {
             correctanswer_audio.Play();
@@ -370,6 +375,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
             togglesound = false;
         }
 
+        // Check for game over conditions only if not already game over
         if (gameData.timer <= 0 || gameData.lives == 0)
         {
             gameStatus = GameStatus.Gameover;
@@ -383,18 +389,30 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
     public void showWrongPairs(int direction)
     {
-        if (wrongPairs.Count == 0) return;
+        if (wrongPairs.Count == 0) 
+        {
+            Debug.Log("No wrong pairs to show");
+            return;
+        }
 
-        // Reset all buttons first
+        // Ensure game is in game over state
+        if (gameStatus != GameStatus.Gameover)
+        {
+            Debug.LogWarning("showWrongPairs called but game is not in game over state");
+            return;
+        }
+
+        // Reset all buttons first and make them non-interactive
         foreach (prog_button prog_button_ in progbuttons_)
         {
             prog_button_.SetActiveCircle(0);
             prog_button_.text.text = "";
             prog_button_.isroot = 0;
+            // Make sure buttons are not interactive in review mode
+            prog_button_.GetComponent<Button>().interactable = false;
         }
 
-        Debug.Log("number of wrong pairs: " + wrongPairs.Count);
-
+        // Navigate through wrong pairs
         if (direction > 0)
         {
             wrongPairs_index = (wrongPairs_index + 1) % wrongPairs.Count;
@@ -404,97 +422,101 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
             wrongPairs_index = (wrongPairs_index - 1 + wrongPairs.Count) % wrongPairs.Count;
         }
 
-        int rootStringIndex = wrongPairs[wrongPairs_index].Item1;
-        int rootButtonNumber = rootoptions[rootStringIndex];
-        
-        Debug.Log($"Root string index: {rootStringIndex}, Root button number: {rootButtonNumber}");
-        Debug.Log($"Root options array: {string.Join(", ", rootoptions)}");
-        
-        // Find root button by buttonNumber
-        prog_button rootButton = null;
-        prog_button wrongPairButton = null;
-        
+        // Get current wrong pair
+        var currentWrongPair = wrongPairs[wrongPairs_index];
+        int rootNode = currentWrongPair.rootNode;
+        int answerNode = currentWrongPair.answerNode;
+
+        Debug.Log($"Showing wrong pair {wrongPairs_index + 1}/{wrongPairs.Count}: Root={rootNode}, Answer={answerNode}");
+
+        // Find and display the root button
+        prog_button rootButton = FindButtonByNumber(rootoptions[rootNode]);
+        if (rootButton != null)
+        {
+            rootButton.SetActiveCircle(3); // Root state
+            rootButton.text.text = "R";
+            rootButton.isroot = 1;
+        }
+
+        // Find and display the answer button
+        prog_button answerButton = FindButtonByNumber(answerNode);
+        if (answerButton != null)
+        {
+            answerButton.SetActiveCircle(1); // Answer state
+            
+            // Calculate and display the interval
+            int interval = CalculateInterval(rootButton.notevalue, answerButton.notevalue);
+            answerButton.text.text = intervalname[interval];
+        }
+    }
+
+    private prog_button FindButtonByNumber(int buttonNumber)
+    {
         foreach (prog_button button in progbuttons_)
         {
-            if (button.buttonNumber == rootButtonNumber)
+            if (button.buttonNumber == buttonNumber)
             {
-                rootButton = button;
-            }
-            if (button.buttonNumber == wrongPairs[wrongPairs_index].Item2)
-            {
-                wrongPairButton = button;
+                return button;
             }
         }
+        Debug.LogError($"Button with number {buttonNumber} not found");
+        return null;
+    }
 
-        if (rootButton == null || wrongPairButton == null)
-        {
-            Debug.LogError($"Could not find buttons - Root: {rootButtonNumber}, Wrong Pair: {wrongPairs[wrongPairs_index].Item2}");
-            return;
-        }
-
-        // Set root node
-        rootButton.SetActiveCircle(3);
-        rootButton.text.text = "R";
-        rootButton.isroot = 1;
-
-        // Set wrong pair node
-        wrongPairButton.SetActiveCircle(1);
-        
-        // Calculate interval
-        int rootNoteValue = rootButton.notevalue;
-        int wrongPairNoteValue = wrongPairButton.notevalue;
-        int computed_wrongpair_interval;
-        
-        if (wrongPairNoteValue >= rootNoteValue)
-        {
-            computed_wrongpair_interval = wrongPairNoteValue - rootNoteValue;
-        }
+    private int CalculateInterval(int rootNote, int answerNote)
+    {
+        if (answerNote >= rootNote)
+            return answerNote - rootNote;
         else
-        {
-            computed_wrongpair_interval = 12 - rootNoteValue + wrongPairNoteValue;
-        }
-        
-        Debug.Log($"Root note value: {rootNoteValue}, Wrong pair note value: {wrongPairNoteValue}, Computed interval: {computed_wrongpair_interval}");
-        Debug.Log($"Root button: {rootButton.buttonNumber}, Wrong pair button: {wrongPairButton.buttonNumber}");
-        
-        wrongPairButton.text.text = intervalname[computed_wrongpair_interval];
+            return 12 - rootNote + answerNote;
     }
 
     public void gameover_function()
     {
+        // Stop the highlighted string coroutine
+        StopAllCoroutines();
+        
         materialController.ResetAllStringsToBaseIntensity();
 
+        // Reset all buttons and make them non-interactive
         foreach (prog_button prog_button_ in progbuttons_)
         {
             prog_button_.SetActiveCircle(0);
             prog_button_.text.text = "";
+            prog_button_.isroot = 0;
+            // Disable button interaction
+            prog_button_.GetComponent<Button>().interactable = false;
         }
 
-        for (int i = 0; i < 6; i++)
+        // Clear previous wrong pairs
+        wrongPairs.Clear();
+
+        // Identify wrong pairs based on performance data
+        for (int rootNode = 0; rootNode < 6; rootNode++)
         {
-            for (int j = 0; j < 42; j++)
+            for (int answerNode = 0; answerNode < 42; answerNode++)
             {
-                if (gameData.questionHistory_Counter[i, j] == 0)
+                if (gameData.questionHistory_Counter[rootNode, answerNode] == 0)
                     continue;
-                if (i == gameData.currentQuestion_Question_node && j == gameData.currentQuestion_Answer_node && gameData.timer <= 0)
-                    gameData.questionHistory_rxntimes[i, j] = gameData.questionHistory_rxntimes[i, j] / (gameData.questionHistory_Counter[i, j] - 1);
-                else
-                    gameData.questionHistory_rxntimes[i, j] = gameData.questionHistory_rxntimes[i, j] / gameData.questionHistory_Counter[i, j];
 
-                gameData.questionHistory_accuracy[i, j] = gameData.questionHistory_accuracy[i, j] / gameData.questionHistory_Counter[i, j];
+                // Calculate average accuracy and reaction time
+                float avgAccuracy = gameData.questionHistory_accuracy[rootNode, answerNode] / gameData.questionHistory_Counter[rootNode, answerNode];
+                float avgReactionTime = gameData.questionHistory_rxntimes[rootNode, answerNode] / gameData.questionHistory_Counter[rootNode, answerNode];
+
+                // Add to wrong pairs if:
+                // 1. Accuracy is less than 100% (wrong answers)
+                // 2. Average reaction time is more than 6 seconds (slow responses)
+                if (avgAccuracy < 1.0f || avgReactionTime > 6.0f)
+                {
+                    wrongPairs.Add((rootNode, answerNode));
+                    Debug.Log($"Added wrong pair: Root={rootNode}, Answer={answerNode}, " +
+                             $"Accuracy={avgAccuracy:F2}, AvgTime={avgReactionTime:F2}s");
+                }
             }
         }
 
-        for (int i = 0; i < 6; i++)
-        {
-            for (int j = 0; j < 42; j++)
-            {
-                if ((gameData.questionHistory_accuracy[i, j] > -1 && gameData.questionHistory_accuracy[i, j] < 1) || 
-                    gameData.questionHistory_rxntimes[i, j] > 5)
-                    wrongPairs.Add((i, j));
-            }
-        }
-        Debug.Log("number of wrong pairs: " + wrongPairs.Count);
+        Debug.Log($"Total wrong pairs identified: {wrongPairs.Count}");
+        wrongPairs_index = 0; // Reset index for next review session
 
         GameRunningPanel.gameObject.SetActive(false);
         GameoverPanel.gameObject.SetActive(true);
@@ -533,15 +555,18 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         Debug.Log($"Selected option - Interval Value: {value.intervalValue}, Expected: {gameData.intervalquestion_val}");
         Debug.Log($"Current game status: {gameStatus}, Question mode: {questionMode}");
 
-        if (gameStatus == GameStatus.Next || questionMode == QuestionMode.PressTheInterval) 
+        // Prevent interaction if game is over or in wrong state
+        if (gameStatus == GameStatus.Gameover || gameStatus == GameStatus.Next || questionMode == QuestionMode.PressTheInterval) 
         {
-            Debug.Log("Returning early - Game status is Next or not in guess mode");
+            Debug.Log($"Option interaction blocked - GameStatus: {gameStatus}, QuestionMode: {questionMode}");
             return;
         }
 
         if (value.intervalValue == gameData.intervalquestion_val)
         {
             Debug.Log("Correct answer selected!");
+            
+            // Award points based on speed
             if (gameData.timer >= 7)
                 gameData.score = gameData.score + 10;
             else if (gameData.timer > 0 && gameData.timer < 7)
@@ -550,12 +575,8 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
             correctanswer_audio.Play();
             score_text.text = gameData.score.ToString();
 
-            gameData.reactiontimes[gameData.intervalquestion_val] = gameData.reactiontimes[gameData.intervalquestion_val] + (10f - gameData.timer);
-            gameData.accuracies[gameData.intervalquestion_val]++;
-
-            gameData.questionHistory_accuracy[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node]++;
-            gameData.questionHistory_rxntimes[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] = 
-                gameData.questionHistory_rxntimes[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] + (10f - gameData.timer);
+            // Update performance data
+            UpdatePerformanceData(true);
 
             gameStatus = GameStatus.Next;
             Invoke("nextQuestion", 0.5f);
@@ -566,6 +587,9 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
             wronganswer_audio.Play();
             gameData.lives--;
             lives_image[gameData.lives].gameObject.SetActive(false);
+
+            // Update performance data for wrong answer
+            UpdatePerformanceData(false);
 
             if (gameData.lives == 0)
             {
@@ -589,7 +613,12 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
     public void SelectedButton(prog_button value)
     {
-        if (gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) return;
+        // Prevent interaction if game is over or in wrong state
+        if (gameStatus == GameStatus.Gameover || gameStatus == GameStatus.Next || questionMode == QuestionMode.GuessTheInterval) 
+        {
+            Debug.Log($"Button interaction blocked - GameStatus: {gameStatus}, QuestionMode: {questionMode}");
+            return;
+        }
         
         if (value != null)
         {
@@ -603,12 +632,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         Debug.Log("the string value is: " + value.stringnum + "  HL:" + highlightedstring);
         
         // Calculate interval using the same logic as learnmode.cs
-        int interval;
-        if (value.notevalue >= currentrootnode.notevalue)
-            interval = value.notevalue - currentrootnode.notevalue;
-        else
-            interval = 12 - currentrootnode.notevalue + value.notevalue;
-
+        int interval = CalculateInterval(currentrootnode.notevalue, value.notevalue);
         value.text.text = intervalname[interval];
 
         Debug.Log("button note value is:"+value.notevalue+"    root node note value is:"+currentrootnode.notevalue+"  current root node number:"+currentrootnode.buttonNumber+"    interval is:"+interval+"button number is:"+value.buttonNumber);
@@ -620,6 +644,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 value.SetActiveCircle(1);
                 Debug.Log("Correct Answer");
 
+                // Award points based on speed
                 if (gameData.timer >= 7)
                     gameData.score = gameData.score + 10;
                 else if (gameData.timer > 0 && gameData.timer < 7)
@@ -628,12 +653,9 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 correctanswer = true;
                 togglesound = true;
                 score_text.text = gameData.score.ToString();
-                gameData.reactiontimes[gameData.intervalquestion_val] = gameData.reactiontimes[gameData.intervalquestion_val] + (10f - gameData.timer);
-                gameData.accuracies[gameData.intervalquestion_val]++;
-
-                gameData.questionHistory_accuracy[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node]++;
-                gameData.questionHistory_rxntimes[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] = 
-                    gameData.questionHistory_rxntimes[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] + (10f - gameData.timer);
+                
+                // Update performance data
+                UpdatePerformanceData(true);
 
                 gameStatus = GameStatus.Next;
                 Invoke("nextQuestion", 0.5f);
@@ -649,6 +671,9 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 lives_image[gameData.lives].gameObject.SetActive(false);
                 correctnode.SetActiveCircle(1);
 
+                // Update performance data for wrong answer
+                UpdatePerformanceData(false);
+
                 if (gameData.lives == 0)
                 {
                     gameStatus = GameStatus.Gameover;
@@ -662,6 +687,21 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         }
         else
             return;
+    }
+
+    private void UpdatePerformanceData(bool isCorrect)
+    {
+        // Update reaction time and accuracy for current question
+        gameData.reactiontimes[gameData.intervalquestion_val] = gameData.reactiontimes[gameData.intervalquestion_val] + (10f - gameData.timer);
+        
+        if (isCorrect)
+        {
+            gameData.accuracies[gameData.intervalquestion_val]++;
+            gameData.questionHistory_accuracy[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node]++;
+        }
+        
+        gameData.questionHistory_rxntimes[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] = 
+            gameData.questionHistory_rxntimes[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] + (10f - gameData.timer);
     }
 
     public void OnPointerClick(PointerEventData eventData)

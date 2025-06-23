@@ -9,6 +9,7 @@ public class Metronome : MonoBehaviour
     public Text slider_text;
     public int beat_no = 1;
     public AudioSource clickSound; // Reference to the click sound AudioSource
+    [SerializeField] private ProgressionsGameData gameData; // Reference to the ProgressionsGameData ScriptableObject
 
     double nextTick = 0.0F; // The next tick in dspTime
     double sampleRate = 0.0F;
@@ -17,7 +18,6 @@ public class Metronome : MonoBehaviour
     void Start()
     {
         initialize();
-
     }
 
     public void initialize()
@@ -35,7 +35,6 @@ public class Metronome : MonoBehaviour
         {
             ticked = true;
             OnTick();
-           
         }
 
         bpm = Mathf.RoundToInt((float)metronome_slider.value);
@@ -67,7 +66,12 @@ public class Metronome : MonoBehaviour
         if(beat_no==0 && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.OpenFretboard)
         {
             if(arpeggio_manager.instance.questionMode==arpeggio_manager.QuestionMode.ChordProgressionQuestions)
-           arpeggio_manager.instance.progression_index = (arpeggio_manager.instance.progression_index + 1) % settings_arpgame.instance.myProgression.Count;
+            {
+                if (gameData.currentProgression != null && gameData.currentProgression.progression.Count > 0)
+                {
+                    arpeggio_manager.instance.progression_index = (arpeggio_manager.instance.progression_index + 1) % gameData.currentProgression.progression.Count;
+                }
+            }
             arpeggio_manager.instance.next_question();
             Debug.Log("next question called from metronome.cs");
         }
@@ -83,6 +87,5 @@ public class Metronome : MonoBehaviour
             ticked = false;
             nextTick += timePerTick;
         }
-
     }
 }

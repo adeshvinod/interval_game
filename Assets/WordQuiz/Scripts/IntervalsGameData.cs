@@ -1,9 +1,38 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
+
+public enum IntervalLevel
+{
+    level1,
+    level2,
+    level3,
+    level4,
+    CUSTOM
+}
 
 [CreateAssetMenu(fileName = "IntervalsGameData", menuName = "Game/Intervals Game Data")]
 public class IntervalsGameData : ScriptableObject
 {
+    [Header("Interval Level Settings")]
+    public IntervalLevel currentIntervalLevel = IntervalLevel.CUSTOM;
+    public List<int> intervalQuestionList = new List<int>();
+    public List<int> selectedIntervalStrings = new List<int>();  // Strings used for interval practice
+    private int[] allIntervalStrings = new int[] { 0, 1, 2, 3, 4, 5 };  // All available strings for interval practice
+
+    [Header("Interval Level Presets")]
+    public static int[] intervalLevel1 = new int[] {0,7};  // Perfect Unison, Perfect Octave
+    public static int[] intervalLevel2 = new int[] { 0, 7, 3, 4 };  // Adding Minor/Major Third
+    public static int[] intervalLevel3 = new int[] { 0, 7, 3, 4, 1, 2, 10, 11 };  // Adding Minor/Major Second, Minor/Major Seventh
+    public static int[] intervalLevel4 = new int[] { 0, 7, 3, 4, 1, 2, 10, 11, 5, 6, 8, 9 };  // All intervals
+
+    // Events
+    public delegate void IntervalLevelChangedHandler(IntervalLevel newLevel, List<int> selectedItems, List<int> strings);
+    public event IntervalLevelChangedHandler OnIntervalLevelChanged;
+
+    public delegate void IntervalStringSelectionChangedHandler(List<int> strings);
+    public event IntervalStringSelectionChangedHandler OnIntervalStringSelectionChanged;
+
     [Header("Score Data")]
     public int score = 0;
     public int highScore = 0;
@@ -30,6 +59,83 @@ public class IntervalsGameData : ScriptableObject
     public int currentQuestion_Question_node;
     public int currentQuestion_Answer_node;
     public int intervalquestion_val;
+
+    private void OnEnable()
+    {
+        intervalQuestionList.AddRange(intervalLevel4);
+    }
+
+    public void SelectIntervalLevel(int level)
+    {
+        intervalQuestionList.Clear();
+        selectedIntervalStrings.Clear();
+        Debug.Log("SelectIntervalLevel: "+level);
+        
+        switch (level)
+        {
+            case 1:
+                currentIntervalLevel = IntervalLevel.level1;
+                intervalQuestionList.AddRange(intervalLevel1);
+                selectedIntervalStrings.AddRange(allIntervalStrings);
+                break;
+
+            case 2:
+                currentIntervalLevel = IntervalLevel.level2;
+                intervalQuestionList.AddRange(intervalLevel2);
+                selectedIntervalStrings.AddRange(allIntervalStrings);
+                break;
+
+            case 3:
+                currentIntervalLevel = IntervalLevel.level3;
+                intervalQuestionList.AddRange(intervalLevel3);
+                selectedIntervalStrings.AddRange(allIntervalStrings);
+                break;
+
+            case 4:
+                currentIntervalLevel = IntervalLevel.level4;
+                intervalQuestionList.AddRange(intervalLevel4);
+                selectedIntervalStrings.AddRange(allIntervalStrings);
+                break;
+
+            case 5:
+                currentIntervalLevel = IntervalLevel.CUSTOM;
+                intervalQuestionList.AddRange(new List<int>());
+                selectedIntervalStrings.AddRange(allIntervalStrings);
+                break;
+        }
+
+        OnIntervalLevelChanged?.Invoke(currentIntervalLevel, intervalQuestionList, selectedIntervalStrings);
+        Debug.Log($"Interval level selected: {currentIntervalLevel} intervalQuestions: {ListToText(intervalQuestionList)}");
+    }
+
+    public void ToggleIntervalString(int stringNum)
+    {
+        if(currentIntervalLevel!=IntervalLevel.CUSTOM)
+        {
+            return;
+        }//we dont want to toggle strings in other levels
+
+        if (selectedIntervalStrings.Contains(stringNum))
+        {
+            selectedIntervalStrings.Remove(stringNum);
+        }
+        else
+        {
+            selectedIntervalStrings.Add(stringNum);
+        }
+        OnIntervalStringSelectionChanged?.Invoke(selectedIntervalStrings);
+        Debug.Log("Interval string list updated: " + ListToText(selectedIntervalStrings));
+    }
+
+    private string ListToText(List<int> list)
+    {
+        string result = "";
+        foreach (var listMember in list)
+        {
+            result += listMember.ToString() + " ";
+        }
+        return result;
+    }
 
     public void ResetGameData()
     {

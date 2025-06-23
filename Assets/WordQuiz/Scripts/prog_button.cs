@@ -7,6 +7,9 @@ using UnityEngine.SceneManagement;
 
 public class prog_button : MonoBehaviour
 {
+    // Event to notify when button is clicked
+    public event System.Action<prog_button> OnButtonClicked;
+
     private Button button;
     
     [SerializeField]
@@ -38,6 +41,7 @@ public class prog_button : MonoBehaviour
     [SerializeField] private int bigdick;
 
      [SerializeField] private EventManager eventManager;
+     /*
 
     Dictionary<int, int> notevalue_dict = new Dictionary<int, int>()
     {
@@ -135,6 +139,7 @@ public class prog_button : MonoBehaviour
         {28, 5}, {29, 6}, {30, 7}, {31, 8}, {32, 9}, {33, 10}, {34, 11},
         {35, 0}, {36, 1}, {37, 2}, {38, 3}, {39, 4}, {40, 5}, {41, 6}
     };
+    */
 
     Dictionary<int, string> notename_sharps = new Dictionary<int, string>()
      {
@@ -289,6 +294,9 @@ public class prog_button : MonoBehaviour
 
     private void HandleButtonClick()
     {
+        // Notify subscribers that this button was clicked
+        OnButtonClicked?.Invoke(this);
+
         switch (gameSettings.currentLearningMode)
         {
             case LearningMode.Progressions:
@@ -310,7 +318,7 @@ public class prog_button : MonoBehaviour
         this.y_coord = buttonNumber / 13;
         stringnum = this.y_coord;
 
-        getNoteValue(buttonNumber);
+        getNoteValue(this.x_coord,this.y_coord);
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
         text.text = notename_sharp;
@@ -328,7 +336,7 @@ public class prog_button : MonoBehaviour
         this.y_coord = stringnum;
 
         // Get note value for intervals mode
-        getNoteValue_intervals(buttonNumber);
+        getNoteValue(this.x_coord,this.y_coord);
         
         // Set text to empty initially
         if (text != null)
@@ -351,7 +359,7 @@ public class prog_button : MonoBehaviour
         this.y_coord = buttonNumber / 13;
         stringnum = this.y_coord;
 
-        getNoteValue(buttonNumber);
+        getNoteValue(this.x_coord,this.y_coord);
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
         text.text = notename_sharp;
@@ -368,15 +376,23 @@ public class prog_button : MonoBehaviour
         
         if(selectedRegion == false && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.RegionalFretboard)
         {
+            #if UNITY_EDITOR
             Debug.LogError("Button not in selected region");
+            #endif
             return;
         }
         
+        #if UNITY_EDITOR
         Debug.Log("Button selected on " + gameObject.name);
+        #endif
         SetActiveCircle(circleIndex);
         
-        // Play the sound for this button
-        audioManager.PlayNote(notevalue, x_coord, stringnum, transposed_notes_dict[stringnum]);
+        // Play the sound for this button - use transposed notes from gameSettings
+        int transposedStringValue = gameSettings.transposedNotes_audio[stringnum];
+        #if UNITY_EDITOR
+        Debug.Log($"Playing note: buttonNumber={buttonNumber}, x_coord={x_coord}, stringnum={stringnum}, notevalue={notevalue}, transposedStringValue={transposedStringValue}");
+        #endif
+        audioManager.PlayNote(notevalue, x_coord, stringnum, transposedStringValue);
 
         arpeggio_manager.instance.Selected_prog_button(this);
     }
@@ -601,7 +617,7 @@ public class prog_button : MonoBehaviour
     {
         
     }
-
+/*
        private void getNoteValue(int buttonNumber)
     {
         if (notevalue_dict.TryGetValue(buttonNumber, out int baseNoteValue))
@@ -627,8 +643,38 @@ public class prog_button : MonoBehaviour
             }
         }
     }
+    */
+    private void getNoteValue(int x_coord,int stringNumber)
+    {
+        // Use the pre-calculated dictionary instead of runtime calculation
+        notevalue = gameSettings.GetFretboardNoteValue(buttonNumber);
+        
+        // Update text display
+        notename_sharp = notename_sharps[notevalue];
+        notename_flat = notename_flats[notevalue];
+        
+        if(gameSettings.currentLearningMode == LearningMode.Progressions)
+        {
+            text.text = notename_sharp;
+        }
+        else if(gameSettings.currentLearningMode == LearningMode.Intervals)
+        {
+            text.text = intervalname[notevalue];
+        }
+        else if(gameSettings.currentLearningMode == LearningMode.Notes)
+        {
+            text.text = notename_sharp;
+        }   
+        else
+        {
+            Debug.Log("Invalid learning mode in getNoteValue in prog_button.cs");
+            text.text = "error";
+        }
+    }
 
-    private void getNoteValue_intervals(int buttonNumber)
+
+
+/*    private void getNoteValue_intervals(int buttonNumber)
     {
         if (interval_notevalue_dict.TryGetValue(buttonNumber, out int baseNoteValue))
         {
@@ -654,7 +700,7 @@ public class prog_button : MonoBehaviour
         }
         Debug.Log("notevalue is:"+notevalue+" stringnum is:"+stringnum+" buttonnumber is:"+buttonNumber+" baseNoteValue is:"+baseNoteValue+" transposed notes are:"+gameSettings.transposedNotes[stringnum]);
     }
-
+*/
     void Start()
     { /*
        if (global_settings.instance.transposed_notes_dict!=null)
@@ -675,7 +721,7 @@ public class prog_button : MonoBehaviour
     private void UpdateNoteDisplay()
     {
         // Update the note display based on current transposition
-        getNoteValue(buttonNumber);
-        getNoteValue_intervals(buttonNumber);
+        getNoteValue(this.x_coord,this.y_coord);
+        //getNoteValue_intervals(buttonNumber);
     }
 }

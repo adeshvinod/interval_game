@@ -73,7 +73,7 @@ public class gameover : MonoBehaviour
             modifiedData = Data;
             
             // Set the high score based on current level
-            switch (gameSettings.currentIntervalLevel)
+            switch (gameData.currentIntervalLevel)
             {
                 case IntervalLevel.level1:
                     gameData.highScore = Data.l1_intervals_highscore;

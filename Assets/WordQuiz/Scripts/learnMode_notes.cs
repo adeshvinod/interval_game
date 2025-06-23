@@ -43,6 +43,7 @@ public class learnMode_notes : MonoBehaviour
         if (gameData != null)
         {
             gameData.OnLevelChanged += HandleLevelChanged;
+            gameData.OnQuestionListChanged += HandleQuestionListChanged;
         }
     }
 
@@ -51,12 +52,18 @@ public class learnMode_notes : MonoBehaviour
         if (gameData != null)
         {
             gameData.OnLevelChanged -= HandleLevelChanged;
+            gameData.OnQuestionListChanged -= HandleQuestionListChanged;
         }
     }
 
     private void HandleLevelChanged(NotesGameData.NoteLevel newLevel)
     {
         Debug.Log($"Level changed to: {newLevel}");
+        RevealSelectedButtons();
+    }
+
+    private void HandleQuestionListChanged()
+    {
         RevealSelectedButtons();
     }
 
@@ -74,10 +81,29 @@ public class learnMode_notes : MonoBehaviour
         {
             progbuttons_ = progButtonsObject.GetComponentsInChildren<prog_button>();
             Debug.Log($"Found {progbuttons_.Length} prog buttons");
+
+            // Subscribe to button click events
+            foreach (prog_button button in progbuttons_)
+            {
+                if (button != null)
+                {
+                    button.OnButtonClicked += HandleButtonClicked;
+                }
+            }
         }
         else
         {
             Debug.LogWarning("Prog_buttons GameObject not found in scene");
+        }
+    }
+
+    private void HandleButtonClicked(prog_button button)
+    {
+        if (gameData.currentLevel == NotesGameData.NoteLevel.Custom)
+        {
+            // Get the coordinates for this button
+            (int, int) coordinates = (button.y_coord, button.x_coord);
+            gameData.ToggleNoteInQuestionList(coordinates);
         }
     }
 
@@ -118,6 +144,21 @@ public class learnMode_notes : MonoBehaviour
                     {
                         spriteMask.gameObject.SetActive(true);
                     }
+                }
+            }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // Unsubscribe from button click events
+        if (progbuttons_ != null)
+        {
+            foreach (prog_button button in progbuttons_)
+            {
+                if (button != null)
+                {
+                    button.OnButtonClicked -= HandleButtonClicked;
                 }
             }
         }

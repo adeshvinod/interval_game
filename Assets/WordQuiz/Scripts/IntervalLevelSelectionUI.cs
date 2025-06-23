@@ -6,6 +6,7 @@ using TMPro;
 public class IntervalLevelSelectionUI : MonoBehaviour
 {
     [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private IntervalsGameData intervalsGameData;
     [SerializeField] private Text intervalQuestionText;  // Shows selected intervals
     [SerializeField] private Text intervalStringText;  // Shows selected strings for interval practice
     
@@ -35,20 +36,20 @@ public class IntervalLevelSelectionUI : MonoBehaviour
 
     private void OnEnable()
     {
-        if (gameSettings != null)
+        if (intervalsGameData != null)
         {
-           // gameSettings.OnIntervalLevelChanged += UpdateIntervalUI;
-          //  gameSettings.OnIntervalStringSelectionChanged += UpdateIntervalStringList;
+           // intervalsGameData.OnIntervalLevelChanged += UpdateIntervalUI;
+          //  intervalsGameData.OnIntervalStringSelectionChanged += UpdateIntervalStringList;
           //  gameSettings.OnLearningModeChanged += OnLearningModeChanged;
         }
     }
 
     private void OnDisable()
     {
-        if (gameSettings != null)
+        if (intervalsGameData != null)
         {
-          //  gameSettings.OnIntervalLevelChanged -= UpdateIntervalUI;
-          //  gameSettings.OnIntervalStringSelectionChanged -= UpdateIntervalStringList;
+          //  intervalsGameData.OnIntervalLevelChanged -= UpdateIntervalUI;
+          //  intervalsGameData.OnIntervalStringSelectionChanged -= UpdateIntervalStringList;
           //  gameSettings.OnLearningModeChanged -= OnLearningModeChanged;
         }
     }
@@ -66,17 +67,17 @@ public class IntervalLevelSelectionUI : MonoBehaviour
 
     public void OnIntervalLevelButtonClicked(int level)
     {
-        if (gameSettings != null)
+        if (intervalsGameData != null)
         {
-            gameSettings.SelectIntervalLevel(level);
+            intervalsGameData.SelectIntervalLevel(level);
         }
     }
 
     public void OnIntervalStringButtonClicked(int stringNum)
     {
-        if (gameSettings != null)
+        if (intervalsGameData != null)
         {
-            gameSettings.ToggleIntervalString(stringNum);
+            intervalsGameData.ToggleIntervalString(stringNum);
         }
     }
 } 

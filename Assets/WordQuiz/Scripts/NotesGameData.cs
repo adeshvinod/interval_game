@@ -10,11 +10,14 @@ public class NotesGameData : ScriptableObject
         level1,
         level2,
         level3,
-        level4
+        level4,
+        Custom
     }
 
     // Event to notify when level changes
     public event Action<NoteLevel> OnLevelChanged;
+    // Event to notify when questionList changes
+    public event Action OnQuestionListChanged;
 
     [Header("Level Settings")]
     [SerializeField] private NoteLevel _currentLevel = NoteLevel.level1;
@@ -177,16 +180,14 @@ public class NotesGameData : ScriptableObject
 
     public void LoadHighScores()
     {
-        
-            savedData data = SaveSystem.Loaddata();
-            if (data != null)
-            {
-                level1HighScore = data.l1_notes_highscore;
-                level2HighScore = data.l2_notes_highscore;
-                level3HighScore = data.l3_notes_highscore;
-                level4HighScore = data.l4_notes_highscore;
-            }
-        
+        savedData data = SaveSystem.Loaddata();
+        if (data != null)
+        {
+            level1HighScore = data.l1_notes_highscore;
+            level2HighScore = data.l2_notes_highscore;
+            level3HighScore = data.l3_notes_highscore;
+            level4HighScore = data.l4_notes_highscore;
+        }
     }
 
     public void SelectLevel(int level)
@@ -239,6 +240,27 @@ public class NotesGameData : ScriptableObject
                     }
                 }
                 break;
+
+            case NoteLevel.Custom:
+                // Custom level starts with empty questionList
+                questionList.Clear();
+                break;
         }
+        OnQuestionListChanged?.Invoke();
+    }
+
+    public void ToggleNoteInQuestionList((int, int) coordinates)
+    {
+        if (currentLevel != NoteLevel.Custom) return;
+
+        if (questionList.Contains(coordinates))
+        {
+            questionList.Remove(coordinates);
+        }
+        else
+        {
+            questionList.Add(coordinates);
+        }
+        OnQuestionListChanged?.Invoke();
     }
 } 

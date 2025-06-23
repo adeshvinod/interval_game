@@ -10,7 +10,12 @@ using UnityEngine.SceneManagement;
 public class learnmode : MonoBehaviour
 {
     [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private IntervalsGameData intervalsGameData;
+    [SerializeField] private GameObject OptionNotesPanel;
     [SerializeField] private EventManager eventManager;
+
+    [SerializeField] private GameObject omitStringPanel;
+    
     public prog_button[] progbuttons_;  // Array of prog buttons
     public prog_button currentRootProgButton;  // Current root prog button
     public List<int> selectedIntervals = new List<int>();  // List of intervals to show
@@ -18,6 +23,17 @@ public class learnmode : MonoBehaviour
 
     public int[] rootoptions = new int[] { 3, 10, 17, 24, 31, 38 };
     public int root_options_index = 3;
+
+    // Mapping of string numbers to their corresponding root button numbers
+    private readonly Dictionary<int, int> stringToRootButton = new Dictionary<int, int>()
+    {
+        {0, 3},   // String 0 (High E) -> Button 3
+        {1, 10},  // String 1 (B) -> Button 10
+        {2, 17},  // String 2 (G) -> Button 17
+        {3, 24},  // String 3 (D) -> Button 24
+        {4, 31},  // String 4 (A) -> Button 31
+        {5, 38}   // String 5 (Low E) -> Button 38
+    };
 
     private Coroutine currentTransitionCoroutine;
     private bool isTransitioning = false;
@@ -27,6 +43,11 @@ public class learnmode : MonoBehaviour
         if (gameSettings == null)
         {
             Debug.LogError("GameSettings reference not assigned in the Inspector for " + gameObject.name);
+            return;
+        }
+        if (intervalsGameData == null)
+        {
+            Debug.LogError("IntervalsGameData reference not assigned in the Inspector for " + gameObject.name);
             return;
         }
         if (eventManager == null)
@@ -54,6 +75,18 @@ public class learnmode : MonoBehaviour
     {
         InitializeProgButtons();
         InitializeIntervalSettings();
+
+        if(intervalsGameData.currentIntervalLevel==IntervalLevel.CUSTOM)
+        {
+           OptionNotesPanel.SetActive(true);
+           omitStringPanel.SetActive(true);
+           
+        }
+        else
+        {
+           OptionNotesPanel.SetActive(false);
+           omitStringPanel.SetActive(false);
+        }
     }
 
     private void InitializeProgButtons()
@@ -73,18 +106,18 @@ public class learnmode : MonoBehaviour
     void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
-        if (gameSettings != null)
+        if (intervalsGameData != null)
         {
-            gameSettings.OnIntervalLevelChanged += OnIntervalLevelChanged;
+            intervalsGameData.OnIntervalLevelChanged += OnIntervalLevelChanged;
         }
     }
 
     void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        if (gameSettings != null)
+        if (intervalsGameData != null)
         {
-            gameSettings.OnIntervalLevelChanged -= OnIntervalLevelChanged;
+            intervalsGameData.OnIntervalLevelChanged -= OnIntervalLevelChanged;
         }
     }
 
@@ -107,28 +140,40 @@ public class learnmode : MonoBehaviour
             return;
         }
 
-        SetSelectedIntervals(gameSettings.intervalQuestionList);
+        SetSelectedIntervals(intervalsGameData.intervalQuestionList);
         
-        switch(gameSettings.currentIntervalLevel)
+        switch(intervalsGameData.currentIntervalLevel)
         {
             case IntervalLevel.level1:
                 darkenIntervals = new List<int> { };
                 break;
             case IntervalLevel.level2:
-                darkenIntervals = GameSettings.intervalLevel1.ToList();
+                darkenIntervals = IntervalsGameData.intervalLevel1.ToList();
                 break;
             case IntervalLevel.level3:
-                darkenIntervals = GameSettings.intervalLevel2.ToList();
+                darkenIntervals = IntervalsGameData.intervalLevel2.ToList();
                 break;
             case IntervalLevel.level4:  
-                darkenIntervals = GameSettings.intervalLevel3.ToList();
+                darkenIntervals = IntervalsGameData.intervalLevel3.ToList();
                 break;
             case IntervalLevel.CUSTOM:
                 darkenIntervals = new List<int> { };
                 break;
         }
               
-        setrootbutton(rootoptions[root_options_index]);
+        // Use filtered root options for initial root button
+        int[] filteredOptions = GetFilteredRootOptions();
+        if (filteredOptions.Length > 0)
+        {
+            // Find a valid root button from filtered options
+            int validRootButton = filteredOptions[0]; // Start with first available option
+            setrootbutton(validRootButton);
+        }
+        else
+        {
+            // Fallback to original method if no filtered options available
+            setrootbutton(rootoptions[root_options_index]);
+        }
     }
 
     void setrootbutton(int siblingindex_root, bool Wait=true, bool scalingAnimation=true)
@@ -213,19 +258,42 @@ public class learnmode : MonoBehaviour
 
     public void shiftroot(int direction)
     {
-        if(direction==1)
+        int[] filteredOptions = GetFilteredRootOptions();
+        
+        if (filteredOptions.Length == 0)
         {
-            root_options_index = (root_options_index + 1)%6;
-            Debug.Log("Shifted up");
+            Debug.LogWarning("No root options available - all strings may be omitted");
+            return;
         }
-        else if(direction==-1)
+        
+        int currentFilteredIndex = GetCurrentFilteredIndex();
+        
+        if(direction == 1)
         {
-            if (root_options_index > 0)
-                root_options_index = root_options_index - 1;
+            currentFilteredIndex = (currentFilteredIndex + 1) % filteredOptions.Length;
+            Debug.Log($"Shifted up to filtered index {currentFilteredIndex}");
+        }
+        else if(direction == -1)
+        {
+            if (currentFilteredIndex > 0)
+                currentFilteredIndex = currentFilteredIndex - 1;
             else
-                root_options_index = 5;
+                currentFilteredIndex = filteredOptions.Length - 1;
+            Debug.Log($"Shifted down to filtered index {currentFilteredIndex}");
         }
-        setrootbutton(rootoptions[root_options_index]);
+        
+        // Update the root_options_index to match the selected filtered option
+        int selectedButton = filteredOptions[currentFilteredIndex];
+        for (int i = 0; i < rootoptions.Length; i++)
+        {
+            if (rootoptions[i] == selectedButton)
+            {
+                root_options_index = i;
+                break;
+            }
+        }
+        
+        setrootbutton(selectedButton);
     }
 
     public void SetSelectedIntervals(List<int> intervals)
@@ -249,14 +317,54 @@ public class learnmode : MonoBehaviour
         }
 
         // Update GameSettings with the current selected intervals
-        if (gameSettings.currentIntervalLevel == IntervalLevel.CUSTOM)
+        if (intervalsGameData.currentIntervalLevel == IntervalLevel.CUSTOM)
         {
-            gameSettings.intervalQuestionList.Clear();
-            gameSettings.intervalQuestionList.AddRange(selectedIntervals);
+            intervalsGameData.intervalQuestionList.Clear();
+            intervalsGameData.intervalQuestionList.AddRange(selectedIntervals);
             Debug.Log($"Updated GameSettings with custom intervals: {string.Join(", ", selectedIntervals)}");
         }
 
         setrootbutton(rootoptions[root_options_index], false, false);
+    }
+
+    // Get filtered root options based on selected strings
+    private int[] GetFilteredRootOptions()
+    {
+        if (intervalsGameData == null || intervalsGameData.selectedIntervalStrings == null)
+        {
+            return rootoptions; // Return all options if no filtering data available
+        }
+
+        List<int> filteredOptions = new List<int>();
+        
+        foreach (int stringNum in intervalsGameData.selectedIntervalStrings)
+        {
+            if (stringToRootButton.TryGetValue(stringNum, out int buttonNumber))
+            {
+                filteredOptions.Add(buttonNumber);
+            }
+        }
+        
+        Debug.Log($"Filtered root options: {string.Join(", ", filteredOptions)} (from selected strings: {string.Join(", ", intervalsGameData.selectedIntervalStrings)})");
+        return filteredOptions.ToArray();
+    }
+
+    // Get current filtered root options index
+    private int GetCurrentFilteredIndex()
+    {
+        int[] filteredOptions = GetFilteredRootOptions();
+        int currentButton = rootoptions[root_options_index];
+        
+        for (int i = 0; i < filteredOptions.Length; i++)
+        {
+            if (filteredOptions[i] == currentButton)
+            {
+                return i;
+            }
+        }
+        
+        // If current button is not in filtered options, return 0
+        return 0;
     }
 
     void Update()

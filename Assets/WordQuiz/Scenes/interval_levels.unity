@@ -921,6 +921,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameSettings: {fileID: 11400000, guid: 55e457149cf8ee240af6bbe74c66ef98, type: 2}
+  intervalsGameData: {fileID: 11400000, guid: ec568c32558648949af6392ac0572d43, type: 2}
   intervalQuestionText: {fileID: 0}
   intervalStringText: {fileID: 0}
   level1HighScoreText: {fileID: 541338770}
@@ -1696,9 +1697,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: challenge_settings, Assembly-CSharp
-        m_MethodName: level_select
+      - m_Target: {fileID: 866886945}
+        m_TargetAssemblyTypeName: IntervalLevelSelectionUI, Assembly-CSharp
+        m_MethodName: OnIntervalLevelButtonClicked
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1718,18 +1719,6 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: learn_mode
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 866886945}
-        m_TargetAssemblyTypeName: IntervalLevelSelectionUI, Assembly-CSharp
-        m_MethodName: OnIntervalLevelButtonClicked
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1361874021
@@ -1993,7 +1982,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 1.24, y: -170.3}
+  m_AnchoredPosition: {x: 1.24, y: -170.29999}
   m_SizeDelta: {x: 107.57, y: 106.07001}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1605575870
