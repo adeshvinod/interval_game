@@ -36,7 +36,7 @@ public class IntervalsGameData : ScriptableObject
     [Header("Score Data")]
     public int score = 0;
     public int highScore = 0;
-    public int lives = 3;
+    public float health = 100f;
     public float timer = 10f;
 
     [Header("Level High Scores")]
@@ -140,7 +140,7 @@ public class IntervalsGameData : ScriptableObject
     public void ResetGameData()
     {
         score = 0;
-        lives = 3;
+        health = 100f;
         timer = 10f;
 
         // Reset arrays

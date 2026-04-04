@@ -49,6 +49,11 @@ public class gameover_notes : MonoBehaviour
         if (File.Exists(path))
         {
             savedData Data = SaveSystem.Loaddata();
+            if (Data == null)
+            {
+                modifiedData = new savedData();
+                return;
+            }
             modifiedData = Data;
             
             // Set the high score based on current level

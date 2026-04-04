@@ -9,6 +9,8 @@ using UnityEngine.SceneManagement;
 
 public class learnmode : MonoBehaviour
 {
+    public static learnmode instance;
+
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private IntervalsGameData intervalsGameData;
     [SerializeField] private GameObject OptionNotesPanel;
@@ -40,6 +42,8 @@ public class learnmode : MonoBehaviour
 
     private void Awake()
     {
+        instance = this;
+
         if (gameSettings == null)
         {
             Debug.LogError("GameSettings reference not assigned in the Inspector for " + gameObject.name);
@@ -367,8 +371,43 @@ public class learnmode : MonoBehaviour
         return 0;
     }
 
+    private Coroutine audioSequenceCoroutine;
+
+    public void PlayButtonAudio(prog_button clickedButton)
+    {
+        // Silent if button is invisible (transparent/empty fret)
+        if (clickedButton.circleIndex == 0) return;
+        if (audioSequenceCoroutine != null) StopCoroutine(audioSequenceCoroutine);
+        audioSequenceCoroutine = StartCoroutine(PlayIntervalSequence(clickedButton));
+    }
+
+    private IEnumerator PlayIntervalSequence(prog_button clickedButton)
+    {
+        // Play root note + pulse root button
+        audioManager.PlayNote(
+            currentRootProgButton.notevalue,
+            currentRootProgButton.x_coord,
+            currentRootProgButton.stringnum,
+            gameSettings.transposedNotes_audio[currentRootProgButton.stringnum]);
+        yield return StartCoroutine(currentRootProgButton.PulseScale());
+
+        // If click was not on the root itself, play interval note + pulse that button
+        if (clickedButton != currentRootProgButton)
+        {
+            yield return new WaitForSeconds(0.08f);
+            audioManager.PlayNote(
+                clickedButton.notevalue,
+                clickedButton.x_coord,
+                clickedButton.stringnum,
+                gameSettings.transposedNotes_audio[clickedButton.stringnum]);
+            yield return StartCoroutine(clickedButton.PulseScale());
+        }
+
+        audioSequenceCoroutine = null;
+    }
+
     void Update()
     {
-        
+
     }
 }

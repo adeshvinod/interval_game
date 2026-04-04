@@ -412,7 +412,8 @@ public class prog_button : MonoBehaviour
         }
         else if (scene.name == "learn_mode")
         {
-            //learnmode.instance.SelectedButton_learnmode(this);
+            if (learnmode.instance != null)
+                learnmode.instance.PlayButtonAudio(this);
         }
     }
 
@@ -534,6 +535,22 @@ public class prog_button : MonoBehaviour
         }
     }
     */
+
+    public IEnumerator PulseScale()
+    {
+        float duration = 0.18f;
+        Vector3 normal = Vector3.one;
+        Vector3 big = new Vector3(1.4f, 1.4f, 1f);
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float s = Mathf.Sin(Mathf.Clamp01(t / duration) * Mathf.PI);
+            transform.localScale = Vector3.Lerp(normal, big, s);
+            yield return null;
+        }
+        transform.localScale = normal;
+    }
 
     private IEnumerator ScaleCircle(GameObject circle)
     {

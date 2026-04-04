@@ -33,8 +33,9 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
     private int highlightedstring;
 
     public TextMeshProUGUI score_text;
-    [SerializeField] public List<Image> lives_image;
+    [SerializeField] public TextMeshProUGUI healthText;
     [SerializeField] public TextMeshProUGUI timer_text;
+    private Coroutine healthAnimCoroutine;
 
     private List<(int rootNode, int answerNode)> wrongPairs = new List<(int rootNode, int answerNode)>();
     private int wrongPairs_index = 0;
@@ -125,6 +126,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         questionmode_counter = Random.Range(4, 8);
         possibleAnswers = new List<prog_button>();
         gameData.ResetGameData();
+        UpdateHealthDisplay();
         nextQuestion();
     }
 
@@ -230,6 +232,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                  $"Possible Answers: {string.Join(", ", possibleAnswers.Select(p => p.buttonNumber))}");
         Debug.Log($"Interval: {gameData.intervalquestion_val}, Answer Node: {gameData.currentQuestion_Answer_node}");
 
+        StartCoroutine(PlayIntervalAudio(currentrootnode, correctnode));
         StartCoroutine(highlightedstringcoroutine());
     }
 
@@ -375,8 +378,21 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
             togglesound = false;
         }
 
-        // Check for game over conditions only if not already game over
-        if (gameData.timer <= 0 || gameData.lives == 0)
+        // Timer expired: lose 34% health, play wrong sound, advance to next question
+        if (gameData.timer <= 0 && gameStatus == GameStatus.Playing)
+        {
+            TakeDamage(34f);
+            gameData.timer = 10f;
+            if (gameData.health > 0)
+            {
+                wronganswer_audio.Play();
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 2.5f);
+            }
+        }
+
+        // Check for game over
+        if (gameData.health <= 0)
         {
             gameStatus = GameStatus.Gameover;
             if (gameover_function_flag == false)
@@ -585,20 +601,19 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         {
             Debug.Log($"Wrong answer - Selected: {value.intervalValue}, Expected: {gameData.intervalquestion_val}");
             wronganswer_audio.Play();
-            gameData.lives--;
-            lives_image[gameData.lives].gameObject.SetActive(false);
+            TakeDamage(25f);
 
             // Update performance data for wrong answer
             UpdatePerformanceData(false);
 
-            if (gameData.lives == 0)
+            if (gameData.health <= 0)
             {
-                Debug.Log("Game over - No lives remaining");
+                Debug.Log("Game over - Health depleted");
                 gameStatus = GameStatus.Gameover;
             }
             else
             {
-                Debug.Log($"Wrong answer - Lives remaining: {gameData.lives}");
+                Debug.Log($"Wrong answer - Health remaining: {gameData.health}");
                 gameStatus = GameStatus.Next;
                 Invoke("nextQuestion", 2.5f);
             }
@@ -653,7 +668,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 correctanswer = true;
                 togglesound = true;
                 score_text.text = gameData.score.ToString();
-                
+
                 // Update performance data
                 UpdatePerformanceData(true);
 
@@ -667,14 +682,13 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 correctanswer = false;
                 togglesound = true;
 
-                gameData.lives--;
-                lives_image[gameData.lives].gameObject.SetActive(false);
+                TakeDamage(25f);
                 correctnode.SetActiveCircle(1);
 
                 // Update performance data for wrong answer
                 UpdatePerformanceData(false);
 
-                if (gameData.lives == 0)
+                if (gameData.health <= 0)
                 {
                     gameStatus = GameStatus.Gameover;
                 }
@@ -687,6 +701,13 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         }
         else
             return;
+    }
+
+    private IEnumerator PlayIntervalAudio(prog_button rootButton, prog_button answerButton)
+    {
+        audioManager.PlayNote(rootButton.notevalue, rootButton.x_coord, rootButton.stringnum, gameSettings.transposedNotes_audio[rootButton.stringnum]);
+        yield return new WaitForSeconds(0.3f);
+        audioManager.PlayNote(answerButton.notevalue, answerButton.x_coord, answerButton.stringnum, gameSettings.transposedNotes_audio[answerButton.stringnum]);
     }
 
     private void UpdatePerformanceData(bool isCorrect)
@@ -744,19 +765,53 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         }
         else if (clickedObject.GetComponent<Image>() != null)
         {
-            if (lives_image.Contains(clickedObject.GetComponent<Image>()))
-            {
-                Debug.Log("User clicked on life element");
-            }
-            else
-            {
-                Debug.Log($"User clicked on image element: {clickedObject.name}");
-            }
+            Debug.Log($"User clicked on image element: {clickedObject.name}");
         }
         else
         {
             Debug.Log($"User clicked on: {clickedObject.name}");
         }
+    }
+
+    private void TakeDamage(float amount)
+    {
+        float fromHealth = gameData.health;
+        gameData.health = Mathf.Max(0f, gameData.health - amount);
+        if (healthAnimCoroutine != null) StopCoroutine(healthAnimCoroutine);
+        healthAnimCoroutine = StartCoroutine(AnimateHealth(fromHealth, gameData.health));
+    }
+
+    private void UpdateHealthDisplay()
+    {
+        if (healthText != null)
+            healthText.text = Mathf.RoundToInt(gameData.health) + "%";
+    }
+
+    private IEnumerator AnimateHealth(float fromHealth, float toHealth)
+    {
+        float duration = 0.55f;
+        float elapsed = 0f;
+        Color normalColor = Color.white;
+        Color damageColor = new Color(1f, 0.2f, 0.2f);
+        Vector3 normalScale = Vector3.one;
+        Vector3 peakScale = new Vector3(1.4f, 1.4f, 1f);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float pulse = Mathf.Sin(t * Mathf.PI); // arc: 0 → 1 → 0
+
+            healthText.text = Mathf.RoundToInt(Mathf.Lerp(fromHealth, toHealth, t)) + "%";
+            healthText.transform.localScale = Vector3.Lerp(normalScale, peakScale, pulse);
+            healthText.color = Color.Lerp(normalColor, damageColor, pulse);
+            yield return null;
+        }
+
+        healthText.text = Mathf.RoundToInt(toHealth) + "%";
+        healthText.transform.localScale = normalScale;
+        healthText.color = normalColor;
+        healthAnimCoroutine = null;
     }
 
     private string GetGameObjectPath(GameObject obj)

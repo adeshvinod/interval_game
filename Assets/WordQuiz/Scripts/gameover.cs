@@ -22,7 +22,7 @@ public class gameover : MonoBehaviour
 
     public int currentscore;
     public DateTime currentTime;
-    public savedData modifiedData;
+    public savedData modifiedData = new savedData();
 
     private float[] avg_rxntime = new float[12];
     private string[] avg_accuracy = new string[12];
@@ -70,8 +70,15 @@ public class gameover : MonoBehaviour
         if (File.Exists(path))
         {
             savedData Data = SaveSystem.Loaddata();
+            if (Data == null)
+            {
+                modifiedData = new savedData();
+                return;
+            }
             modifiedData = Data;
-            
+
+            if (gameData == null) return;
+
             // Set the high score based on current level
             switch (gameData.currentIntervalLevel)
             {

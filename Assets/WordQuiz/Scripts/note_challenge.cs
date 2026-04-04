@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 //script for managing the notes mode of the game-A,A#,B,C etc- equivalent of intervals game quiz manager but for notes
 public class note_challenge : MonoBehaviour
@@ -12,8 +13,9 @@ public class note_challenge : MonoBehaviour
     [SerializeField] private EventManager eventManager;
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private Text score_text;
-    [SerializeField] private List<Image> lives_image;
+    [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private Text timer_text;
+    private Coroutine healthAnimCoroutine;
     [SerializeField] private GameObject gameover_panel;
     [SerializeField] private GameObject GameRunningPanel;
     [SerializeField] private AudioSource correctanswer_audio;
@@ -206,6 +208,8 @@ public class note_challenge : MonoBehaviour
     void Start()
     {
         InitializeQuestionHistoryArray();
+        gameData.health = 100f;
+        UpdateHealthDisplay();
 
         // Initialize prog buttons
         GameObject progButtonsObject = GameObject.Find("Prog_buttons");
@@ -305,7 +309,21 @@ public class note_challenge : MonoBehaviour
             togglesound = false;
         }
 
-        if (gameData.timer <= 0 || gameData.lives == 0)
+        // Timer expired: lose 34% health, play wrong sound, advance to next question
+        if (gameData.timer <= 0 && gameStatus == GameStatus.Playing)
+        {
+            TakeDamage(34f);
+            gameData.timer = 10f;
+            if (gameData.health > 0)
+            {
+                wronganswer_audio.Play();
+                gameStatus = GameStatus.Next;
+                Invoke("nextQuestion", 2.5f);
+            }
+        }
+
+        // Check for game over
+        if (gameData.health <= 0)
         {
             gameStatus = GameStatus.Gameover;
             if (gameover_function_flag == false)
@@ -544,8 +562,7 @@ public class note_challenge : MonoBehaviour
         
         if (value.notevalue == question_noteval && value.selectedRegion)
         {
-            correctanswer = true;
-            togglesound = true;
+            audioManager.PlayNote(value.notevalue, value.x_coord, value.stringnum, gameSettings.transposedNotes_audio[value.stringnum]);
 
             if (gameData.timer >= 7)
                 gameData.score = gameData.score + 10;
@@ -568,17 +585,15 @@ public class note_challenge : MonoBehaviour
             correctanswer = false;
             togglesound = true;
 
-            gameData.lives--;
-            lives_image[gameData.lives].gameObject.SetActive(false);
+            TakeDamage(25f);
 
             // Update performance data for wrong answer using timer-based approach
             if (value.selectedRegion)
             {
                 gameData.reactiontimes[value.buttonNumber] += (10f - gameData.timer);
-                // Don't increment accuracy for wrong answers
             }
 
-            if (gameData.lives == 0)
+            if (gameData.health <= 0)
                 gameStatus = GameStatus.Gameover;
             else
             {
@@ -605,8 +620,7 @@ public class note_challenge : MonoBehaviour
         if(value.noteValue == question_noteval)
         {
             Debug.Log("Correct answer selected!");
-            correctanswer = true;
-            togglesound = true;
+            audioManager.PlayNote(currentQuestionButton.notevalue, currentQuestionButton.x_coord, currentQuestionButton.stringnum, gameSettings.transposedNotes_audio[currentQuestionButton.stringnum]);
 
             if (gameData.timer >= 7)
                 gameData.score = gameData.score + 10;
@@ -632,20 +646,18 @@ public class note_challenge : MonoBehaviour
             correctanswer = false;
             togglesound = true;
 
-            gameData.lives--;
-            lives_image[gameData.lives].gameObject.SetActive(false);
+            TakeDamage(25f);
 
             // Update performance data for wrong answer using timer-based approach
             gameData.reactiontimes[gameData.currentQuestion_Answer_node] += (10f - gameData.timer);
-            // Don't increment accuracy for wrong answers
 
             currentQuestionButton.text.text = notename_sharps[question_noteval];
             currentQuestionButton.SetActiveCircle(1);
             Debug.Log($"Updated question button text to: {notename_sharps[question_noteval]}");
 
-            if (gameData.lives == 0)
+            if (gameData.health <= 0)
             {
-                Debug.Log("Game Over - No lives remaining");
+                Debug.Log("Game Over - Health depleted");
                 gameStatus = GameStatus.Gameover;
             }
             else
@@ -656,6 +668,47 @@ public class note_challenge : MonoBehaviour
         }
         Debug.Log("=== Option Selection Complete ===");
     }
+    private void TakeDamage(float amount)
+    {
+        float fromHealth = gameData.health;
+        gameData.health = Mathf.Max(0f, gameData.health - amount);
+        if (healthAnimCoroutine != null) StopCoroutine(healthAnimCoroutine);
+        healthAnimCoroutine = StartCoroutine(AnimateHealth(fromHealth, gameData.health));
+    }
+
+    private void UpdateHealthDisplay()
+    {
+        if (healthText != null)
+            healthText.text = Mathf.RoundToInt(gameData.health) + "%";
+    }
+
+    private IEnumerator AnimateHealth(float fromHealth, float toHealth)
+    {
+        float duration = 0.55f;
+        float elapsed = 0f;
+        Color normalColor = Color.white;
+        Color damageColor = new Color(1f, 0.2f, 0.2f);
+        Vector3 normalScale = Vector3.one;
+        Vector3 peakScale = new Vector3(1.4f, 1.4f, 1f);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float pulse = Mathf.Sin(t * Mathf.PI); // arc: 0 → 1 → 0
+
+            healthText.text = Mathf.RoundToInt(Mathf.Lerp(fromHealth, toHealth, t)) + "%";
+            healthText.transform.localScale = Vector3.Lerp(normalScale, peakScale, pulse);
+            healthText.color = Color.Lerp(normalColor, damageColor, pulse);
+            yield return null;
+        }
+
+        healthText.text = Mathf.RoundToInt(toHealth) + "%";
+        healthText.transform.localScale = normalScale;
+        healthText.color = normalColor;
+        healthAnimCoroutine = null;
+    }
+
     public enum GameStatus
     {
         Next,
