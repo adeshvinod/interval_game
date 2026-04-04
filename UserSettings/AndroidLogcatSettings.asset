@@ -1,38 +1,13 @@
 {
     "m_SelectedDeviceId": "e42a31c4a99c",
-    "m_SelectedPackage": {
+    "m_SelectedProcess": {
         "deviceId": "",
         "name": "",
         "processId": 0,
         "exited": false
     },
     "m_SelectedPriority": 0,
-    "m_KnownPackagesForSerialization": [
-        {
-            "deviceId": "e42a31c4a99c",
-            "name": "com.DefaultCompany.FretboardNinja",
-            "processId": 20711,
-            "exited": true
-        },
-        {
-            "deviceId": "e42a31c4a99c",
-            "name": "com.fretnoodle.test1",
-            "processId": 19713,
-            "exited": true
-        },
-        {
-            "deviceId": "e42a31c4a99c",
-            "name": "com.instagram.android",
-            "processId": 11778,
-            "exited": true
-        },
-        {
-            "deviceId": "e42a31c4a99c",
-            "name": "com.miui.home",
-            "processId": 2680,
-            "exited": false
-        }
-    ],
+    "m_KnownProcessesForSerialization": [],
     "m_Tags": {
         "m_Entries": [
             {
@@ -65,8 +40,11 @@
             }
         ]
     },
+    "m_ExtraWindowState": {
+        "Type": 0,
+        "Height": 0.0
+    },
     "m_MemoryViewerState": {
-        "MemoryWindowHeight": 300.0,
         "MemoryWindowWidth": 170.0,
         "MemoryTypeEnabled": [
             true,
@@ -81,9 +59,46 @@
             true
         ],
         "MemoryGroup": 2,
-        "Behavior": 0
+        "AutoCapture": true
     },
-    "m_Filter": "",
-    "m_FilterIsRegularExpression": false,
-    "m_SymbolPaths": []
+    "m_FilterOptions": {
+        "m_Filter": "",
+        "m_UseRegularExpressions": false,
+        "m_MatchCase": false
+    },
+    "m_SymbolPaths": [],
+    "m_CaptureVideoSettings": {
+        "TimeLimitEnabled": false,
+        "TimeLimit": 180,
+        "VideoSizeEnabled": false,
+        "VideoSizeX": 1280,
+        "VideoSizeY": 720,
+        "BitRateEnabled": false,
+        "BitRateK": 20000,
+        "DisplayIdEnabled": false,
+        "DisplayId": ""
+    },
+    "m_ScreenCaptureSettings": {
+        "Mode": 0,
+        "m_LastSaveLocation": [
+            "/Users/adeshvinod/Documents/GitHub/interval_game",
+            "/Users/adeshvinod/Documents/GitHub/interval_game"
+        ]
+    },
+    "m_QueryLayoutSettings": {
+        "LastLayoutSaveLocation": "",
+        "LastScreenshotSaveLocation": ""
+    },
+    "m_InputSettings": {
+        "ShiftModifier": false,
+        "SendText": "",
+        "PosixKillSignal": 0,
+        "TargetProcess": {
+            "deviceId": "",
+            "name": "",
+            "processId": 0,
+            "exited": false
+        }
+    },
+    "m_AutoScroll": 2
 }
