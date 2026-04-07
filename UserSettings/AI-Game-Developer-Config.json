@@ -6,7 +6,7 @@
   "transportMethod": "streamableHttp",
   "authOption": "none",
   "connectionMode": "Cloud",
-  "cloudToken": null,
+  "cloudToken": "IE-1a78nJXt5109CC3exqz-CuRStrBAr1RCfMI4Z7qg",
   "tools": [
     {
       "name": "assets-copy",
@@ -441,9 +441,11 @@
       "enabled": false
     }
   ],
-  "skillAutoGenerate": {},
+  "skillAutoGenerate": {
+    "claude-code": true
+  },
   "timeoutMs": 10000,
   "keepConnected": true,
   "generateSkillFiles": false,
-  "skillsPath": ".claude/skills"
+  "skillsPath": "/Users/adeshvinod/Documents/GitHub/interval_game/.claude/skills"
 }

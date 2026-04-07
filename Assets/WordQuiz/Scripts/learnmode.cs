@@ -383,24 +383,24 @@ public class learnmode : MonoBehaviour
 
     private IEnumerator PlayIntervalSequence(prog_button clickedButton)
     {
-        // Play root note + pulse root button
+        // Play the clicked interval note first
         audioManager.PlayNote(
-            currentRootProgButton.notevalue,
-            currentRootProgButton.x_coord,
-            currentRootProgButton.stringnum,
-            gameSettings.transposedNotes_audio[currentRootProgButton.stringnum]);
-        yield return StartCoroutine(currentRootProgButton.PulseScale());
+            clickedButton.notevalue,
+            clickedButton.x_coord,
+            clickedButton.stringnum,
+            gameSettings.transposedNotes_audio[clickedButton.stringnum]);
+        yield return StartCoroutine(clickedButton.PulseScale());
 
-        // If click was not on the root itself, play interval note + pulse that button
+        // Then play root note so user hears the interval in context
         if (clickedButton != currentRootProgButton)
         {
             yield return new WaitForSeconds(0.08f);
             audioManager.PlayNote(
-                clickedButton.notevalue,
-                clickedButton.x_coord,
-                clickedButton.stringnum,
-                gameSettings.transposedNotes_audio[clickedButton.stringnum]);
-            yield return StartCoroutine(clickedButton.PulseScale());
+                currentRootProgButton.notevalue,
+                currentRootProgButton.x_coord,
+                currentRootProgButton.stringnum,
+                gameSettings.transposedNotes_audio[currentRootProgButton.stringnum]);
+            yield return StartCoroutine(currentRootProgButton.PulseScale());
         }
 
         audioSequenceCoroutine = null;

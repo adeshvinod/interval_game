@@ -21,6 +21,9 @@ public class prog_button : MonoBehaviour
     private Vector3 originalScale = Vector3.zero;
     private Vector3 targetScale = Vector3.one ; // Twice the original size
     private Coroutine scaleCoroutine;
+
+    // Captured once in Awake — the designer-set rest scale of this button's transform
+    private Vector3 restScale;
     public TMPro.TextMeshProUGUI text;
     public int stringnum;
 
@@ -289,7 +292,13 @@ public class prog_button : MonoBehaviour
             case LearningMode.Notes:
                 button_initialisation_notes();
                 break;
+            case LearningMode.Chords:
+                button_initialisation_chords();
+                break;
         }
+
+        // Capture the designer-set rest scale after all initialisation is done
+        restScale = transform.localScale;
     }
 
     private void HandleButtonClick()
@@ -307,6 +316,9 @@ public class prog_button : MonoBehaviour
                 break;
             case LearningMode.Notes:
                 ButtonSelected_notes();
+                break;
+            case LearningMode.Chords:
+                ButtonSelected_chords();
                 break;
         }
     }
@@ -366,6 +378,36 @@ public class prog_button : MonoBehaviour
 
         // Set initial circle state to transparent
         circleIndex = 0;
+    }
+
+    private void button_initialisation_chords()
+    {
+        // 5-fret stride: string = buttonNumber / 5, fret = buttonNumber % 5
+        stringnum    = buttonNumber / 5;
+        fretnum      = buttonNumber % 5;
+        this.x_coord = fretnum;
+        this.y_coord = stringnum;
+
+        getNoteValue(this.x_coord, this.y_coord);
+
+        if (text != null) text.text = "";
+        circleIndex = 0;
+    }
+
+    void ButtonSelected_chords()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+
+        if (scene.name == "challengeChords")
+        {
+            if (chordsGameManager.instance != null)
+                chordsGameManager.instance.SelectedButton(this);
+        }
+        else if (scene.name == "learnModeChords")
+        {
+            if (chordsLearnMode.instance != null)
+                chordsLearnMode.instance.PlayButtonAudio(this);
+        }
     }
 
     void ButtonSelected_progressions()
@@ -539,17 +581,18 @@ public class prog_button : MonoBehaviour
     public IEnumerator PulseScale()
     {
         float duration = 0.18f;
-        Vector3 normal = Vector3.one;
-        Vector3 big = new Vector3(1.4f, 1.4f, 1f);
+        // Reset to restScale first — prevents compounding if two pulses overlap
+        transform.localScale = restScale;
+        Vector3 big = new Vector3(restScale.x * 1.4f, restScale.y * 1.4f, restScale.z);
         float t = 0f;
         while (t < duration)
         {
             t += Time.deltaTime;
             float s = Mathf.Sin(Mathf.Clamp01(t / duration) * Mathf.PI);
-            transform.localScale = Vector3.Lerp(normal, big, s);
+            transform.localScale = Vector3.Lerp(restScale, big, s);
             yield return null;
         }
-        transform.localScale = normal;
+        transform.localScale = restScale;
     }
 
     private IEnumerator ScaleCircle(GameObject circle)

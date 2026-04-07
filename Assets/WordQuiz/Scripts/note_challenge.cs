@@ -16,6 +16,7 @@ public class note_challenge : MonoBehaviour
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private Text timer_text;
     private Coroutine healthAnimCoroutine;
+    private Coroutine scoreAnimCoroutine;
     [SerializeField] private GameObject gameover_panel;
     [SerializeField] private GameObject GameRunningPanel;
     [SerializeField] private AudioSource correctanswer_audio;
@@ -564,11 +565,12 @@ public class note_challenge : MonoBehaviour
         {
             audioManager.PlayNote(value.notevalue, value.x_coord, value.stringnum, gameSettings.transposedNotes_audio[value.stringnum]);
 
+            int oldScore_notes = gameData.score;
             if (gameData.timer >= 7)
                 gameData.score = gameData.score + 10;
             else if (gameData.timer > 0 && gameData.timer < 7)
                 gameData.score = gameData.score + 5;
-            score_text.text = gameData.score.ToString();
+            AnimateScoreIncrease(oldScore_notes, gameData.score);
 
             value.SetActiveCircle(1); // Show correct answer
             value.text.text = notename_sharps[value.notevalue];
@@ -622,11 +624,12 @@ public class note_challenge : MonoBehaviour
             Debug.Log("Correct answer selected!");
             audioManager.PlayNote(currentQuestionButton.notevalue, currentQuestionButton.x_coord, currentQuestionButton.stringnum, gameSettings.transposedNotes_audio[currentQuestionButton.stringnum]);
 
+            int oldScore_guess2 = gameData.score;
             if (gameData.timer >= 7)
                 gameData.score = gameData.score + 10;
             else if (gameData.timer > 0 && gameData.timer < 7)
                 gameData.score = gameData.score + 5;
-            score_text.text = gameData.score.ToString();
+            AnimateScoreIncrease(oldScore_guess2, gameData.score);
 
             // Update performance data using timer-based approach
             gameData.accuracies[gameData.currentQuestion_Answer_node]++;
@@ -668,6 +671,39 @@ public class note_challenge : MonoBehaviour
         }
         Debug.Log("=== Option Selection Complete ===");
     }
+    private void AnimateScoreIncrease(int fromScore, int toScore)
+    {
+        if (scoreAnimCoroutine != null) StopCoroutine(scoreAnimCoroutine);
+        scoreAnimCoroutine = StartCoroutine(AnimateScore(fromScore, toScore));
+    }
+
+    private IEnumerator AnimateScore(int fromScore, int toScore)
+    {
+        float duration = 0.5f;
+        float elapsed  = 0f;
+        Color normal   = Color.white;
+        Color glow     = new Color(1f, 0.92f, 0.016f); // golden yellow
+        Vector3 normSc = Vector3.one;
+        Vector3 bigSc  = new Vector3(1.5f, 1.5f, 1f);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float p = Mathf.Sin(t * Mathf.PI);
+
+            score_text.text                     = Mathf.RoundToInt(Mathf.Lerp(fromScore, toScore, t)).ToString();
+            score_text.transform.localScale     = Vector3.Lerp(normSc, bigSc, p);
+            score_text.color                    = Color.Lerp(normal, glow, p);
+            yield return null;
+        }
+
+        score_text.text                 = toScore.ToString();
+        score_text.transform.localScale = normSc;
+        score_text.color                = normal;
+        scoreAnimCoroutine              = null;
+    }
+
     private void TakeDamage(float amount)
     {
         float fromHealth = gameData.health;

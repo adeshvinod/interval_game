@@ -376,6 +376,10 @@ public class audioManager : MonoBehaviour
         AudioSource[] sources = GetComponentsInChildren<AudioSource>();
         foreach (AudioSource source in sources)
         {
+            // Silence on load — only play when explicitly called
+            source.playOnAwake = false;
+            source.Stop();
+
             // Optimize AudioSource for low latency
             source.priority = 0;         // Highest priority for immediate playback
             source.bypassEffects = true; // Bypass audio effects for lower latency

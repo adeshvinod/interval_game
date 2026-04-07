@@ -36,6 +36,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
     [SerializeField] public TextMeshProUGUI healthText;
     [SerializeField] public TextMeshProUGUI timer_text;
     private Coroutine healthAnimCoroutine;
+    private Coroutine scoreAnimCoroutine;
 
     private List<(int rootNode, int answerNode)> wrongPairs = new List<(int rootNode, int answerNode)>();
     private int wrongPairs_index = 0;
@@ -581,15 +582,16 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         if (value.intervalValue == gameData.intervalquestion_val)
         {
             Debug.Log("Correct answer selected!");
-            
+
             // Award points based on speed
+            int oldScore_guess = gameData.score;
             if (gameData.timer >= 7)
                 gameData.score = gameData.score + 10;
             else if (gameData.timer > 0 && gameData.timer < 7)
                 gameData.score = gameData.score + 5;
 
             correctanswer_audio.Play();
-            score_text.text = gameData.score.ToString();
+            AnimateScoreIncrease(oldScore_guess, gameData.score);
 
             // Update performance data
             UpdatePerformanceData(true);
@@ -660,6 +662,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 Debug.Log("Correct Answer");
 
                 // Award points based on speed
+                int oldScore_press = gameData.score;
                 if (gameData.timer >= 7)
                     gameData.score = gameData.score + 10;
                 else if (gameData.timer > 0 && gameData.timer < 7)
@@ -667,7 +670,7 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
                 correctanswer = true;
                 togglesound = true;
-                score_text.text = gameData.score.ToString();
+                AnimateScoreIncrease(oldScore_press, gameData.score);
 
                 // Update performance data
                 UpdatePerformanceData(true);
@@ -771,6 +774,39 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
         {
             Debug.Log($"User clicked on: {clickedObject.name}");
         }
+    }
+
+    private void AnimateScoreIncrease(int fromScore, int toScore)
+    {
+        if (scoreAnimCoroutine != null) StopCoroutine(scoreAnimCoroutine);
+        scoreAnimCoroutine = StartCoroutine(AnimateScore(fromScore, toScore));
+    }
+
+    private IEnumerator AnimateScore(int fromScore, int toScore)
+    {
+        float duration = 0.5f;
+        float elapsed  = 0f;
+        Color normal   = Color.white;
+        Color glow     = new Color(1f, 0.92f, 0.016f); // golden yellow
+        Vector3 normSc = Vector3.one;
+        Vector3 bigSc  = new Vector3(1.5f, 1.5f, 1f);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float p = Mathf.Sin(t * Mathf.PI);
+
+            score_text.text                     = Mathf.RoundToInt(Mathf.Lerp(fromScore, toScore, t)).ToString();
+            score_text.transform.localScale     = Vector3.Lerp(normSc, bigSc, p);
+            score_text.color                    = Color.Lerp(normal, glow, p);
+            yield return null;
+        }
+
+        score_text.text                 = toScore.ToString();
+        score_text.transform.localScale = normSc;
+        score_text.color                = normal;
+        scoreAnimCoroutine              = null;
     }
 
     private void TakeDamage(float amount)
