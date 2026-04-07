@@ -21,6 +21,11 @@ public class savedData
     public int l3_notes_highscore = 0;
     public int l4_notes_highscore = 0;
 
+    public int l1_chords_highscore = 0;
+    public int l2_chords_highscore = 0;
+    public int l3_chords_highscore = 0;
+    public int l4_chords_highscore = 0;
+
     // public List<settings_arpgame.chord_Progression> savedProgressions;
     public int[,] savedProgressions_tonics;   //tonics here does not refer to the key centres but rather just the Root notes of the chords  
     public int[,] savedProgressions_chordtypes;
@@ -31,6 +36,7 @@ public class savedData
     public string[] savedCustomChord_names;
     public int totalCustomChordtypes = 0;
 
+    public int[] transposedNotes_audio = new int[6];
 
     public savedData(savedData _modifieddata)
     {
@@ -46,6 +52,11 @@ public class savedData
         l3_notes_highscore = _modifieddata.l3_notes_highscore;
         l4_notes_highscore = _modifieddata.l4_notes_highscore;
 
+        l1_chords_highscore = _modifieddata.l1_chords_highscore;
+        l2_chords_highscore = _modifieddata.l2_chords_highscore;
+        l3_chords_highscore = _modifieddata.l3_chords_highscore;
+        l4_chords_highscore = _modifieddata.l4_chords_highscore;
+
 
 
 
@@ -57,6 +68,10 @@ public class savedData
         savedCustomChordTypes=_modifieddata.savedCustomChordTypes;
         savedCustomChord_names=_modifieddata.savedCustomChord_names;
         totalCustomChordtypes = _modifieddata.totalCustomChordtypes;
+
+        transposedNotes_audio = _modifieddata.transposedNotes_audio != null
+            ? (int[])_modifieddata.transposedNotes_audio.Clone()
+            : new int[6];
 }
 
     

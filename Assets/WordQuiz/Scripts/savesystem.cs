@@ -20,6 +20,10 @@ public static class SaveSystem
         public int l2_notes_highscore;
         public int l3_notes_highscore;
         public int l4_notes_highscore;
+        public int l1_chords_highscore;
+        public int l2_chords_highscore;
+        public int l3_chords_highscore;
+        public int l4_chords_highscore;
         public int totalProgressions;
         public int totalCustomChordtypes;
 
@@ -31,6 +35,8 @@ public static class SaveSystem
         // int[20, 12] flattened to int[240]
         public int[] savedCustomChordTypes_flat;
         public string[] savedCustomChord_names;
+
+        public int[] transposedNotes_audio;
 
         private const int MAX_PROGRESSIONS = 15;
         private const int MAX_CHORDS = 40;
@@ -50,6 +56,10 @@ public static class SaveSystem
             w.l2_notes_highscore = d.l2_notes_highscore;
             w.l3_notes_highscore = d.l3_notes_highscore;
             w.l4_notes_highscore = d.l4_notes_highscore;
+            w.l1_chords_highscore = d.l1_chords_highscore;
+            w.l2_chords_highscore = d.l2_chords_highscore;
+            w.l3_chords_highscore = d.l3_chords_highscore;
+            w.l4_chords_highscore = d.l4_chords_highscore;
             w.totalProgressions = d.totalProgressions;
             w.totalCustomChordtypes = d.totalCustomChordtypes;
 
@@ -71,6 +81,10 @@ public static class SaveSystem
 
             w.savedCustomChord_names = d.savedCustomChord_names;
 
+            w.transposedNotes_audio = d.transposedNotes_audio != null
+                ? (int[])d.transposedNotes_audio.Clone()
+                : new int[6];
+
             return w;
         }
 
@@ -87,6 +101,10 @@ public static class SaveSystem
             d.l2_notes_highscore = l2_notes_highscore;
             d.l3_notes_highscore = l3_notes_highscore;
             d.l4_notes_highscore = l4_notes_highscore;
+            d.l1_chords_highscore = l1_chords_highscore;
+            d.l2_chords_highscore = l2_chords_highscore;
+            d.l3_chords_highscore = l3_chords_highscore;
+            d.l4_chords_highscore = l4_chords_highscore;
             d.totalProgressions = totalProgressions;
             d.totalCustomChordtypes = totalCustomChordtypes;
 
@@ -107,6 +125,10 @@ public static class SaveSystem
                     d.savedCustomChordTypes[i, j] = savedCustomChordTypes_flat[i * MAX_INTERVALS + j];
 
             d.savedCustomChord_names = savedCustomChord_names;
+
+            d.transposedNotes_audio = transposedNotes_audio != null
+                ? (int[])transposedNotes_audio.Clone()
+                : new int[6];
 
             return d;
         }

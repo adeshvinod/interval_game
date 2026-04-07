@@ -7,7 +7,8 @@ public enum LearningMode
 {
     Intervals,
     Notes,
-    Progressions
+    Progressions,
+    Chords
 }
 
 [CreateAssetMenu(fileName = "GameSettings", menuName = "Settings/Game Settings")]
@@ -27,10 +28,18 @@ public class GameSettings : ScriptableObject
 
     private void OnEnable()
     {
-        // Initialize transposed notes to 0
-        for (int i = 0; i < 6; i++)
+        if (!Application.isPlaying) return;
+
+        savedData data = SaveSystem.Loaddata();
+        if (data != null && data.transposedNotes_audio != null && data.transposedNotes_audio.Length == 6)
         {
-           // transposedNotes[i] = 0;
+            for (int i = 0; i < 6; i++)
+                transposedNotes_audio[i] = data.transposedNotes_audio[i];
+        }
+        else
+        {
+            for (int i = 0; i < 6; i++)
+                transposedNotes_audio[i] = 0;
         }
     }
 
@@ -397,6 +406,7 @@ public class GameSettings : ScriptableObject
     [Header("Pre-calculated Note Values")]
     public Dictionary<int, int> fretboardNoteValues = new Dictionary<int, int>(); // buttonNumber -> noteValue (for Notes/Progressions mode)
     public Dictionary<int, int> fretboardNoteValues_IntervalsMode = new Dictionary<int, int>(); // buttonNumber -> noteValue (for Intervals mode)
+    public Dictionary<int, int> fretboardNoteValues_ChordsMode = new Dictionary<int, int>(); // buttonNumber -> noteValue (for Chords mode, 5-fret stride)
 
     public int GetTransposedNote(int stringNumber)
     {
@@ -428,12 +438,23 @@ public class GameSettings : ScriptableObject
         {
             int x_coord = buttonNumber % 7;   // fret position (0-6)
             int stringNumber = buttonNumber / 7;   // string number (0-5)
-            
+
             int noteValue = GetNoteValue(x_coord, stringNumber);
             fretboardNoteValues_IntervalsMode[buttonNumber] = noteValue;
         }
-        
-        Debug.Log($"Fretboard initialized - Notes/Progressions: {fretboardNoteValues.Count} values, Intervals: {fretboardNoteValues_IntervalsMode.Count} values");
+
+        // Initialize Chords mode (30 buttons: 5 frets × 6 strings)
+        fretboardNoteValues_ChordsMode.Clear();
+        for (int buttonNumber = 0; buttonNumber < 30; buttonNumber++)
+        {
+            int x_coord      = buttonNumber % 5;  // fret position (0-4)
+            int stringNumber = buttonNumber / 5;  // string number (0-5)
+
+            int noteValue = GetNoteValue(x_coord, stringNumber);
+            fretboardNoteValues_ChordsMode[buttonNumber] = noteValue;
+        }
+
+        Debug.Log($"Fretboard initialized - Notes/Progressions: {fretboardNoteValues.Count}, Intervals: {fretboardNoteValues_IntervalsMode.Count}, Chords: {fretboardNoteValues_ChordsMode.Count}");
     }
 
     public int GetFretboardNoteValue(int buttonNumber)
@@ -444,6 +465,12 @@ public class GameSettings : ScriptableObject
         if (currentLearningMode == LearningMode.Intervals)
         {
             targetDictionary = fretboardNoteValues_IntervalsMode;
+        }
+        else if (currentLearningMode == LearningMode.Chords)
+        {
+            if (fretboardNoteValues_ChordsMode == null || fretboardNoteValues_ChordsMode.Count == 0)
+                InitializeFretboard();
+            targetDictionary = fretboardNoteValues_ChordsMode;
         }
         else
         {
@@ -462,31 +489,37 @@ public class GameSettings : ScriptableObject
     }
 
     public void TransposeUp(int stringNumber)
-    { 
+    {
         if(transposedNotes_audio[stringNumber]==12)
-        { 
+        {
             Debug.LogError("Transposed value is 12, cannot transpose up");
             return;
         }
-    
-        
-        //transposedNotes[stringNumber] = (transposedNotes[stringNumber] + 1) % 12;
+
         transposedNotes_audio[stringNumber] = (transposedNotes_audio[stringNumber] + 1);
         InitializeFretboard(); // Recalculate all note values
         OnTuningChanged?.Invoke();
+        SaveTuning();
     }
 
     public void TransposeDown(int stringNumber)
-    { 
+    {
         if(transposedNotes_audio[stringNumber]==-12)
-        { 
+        {
             Debug.LogError("Transposed value is -12, cannot transpose down");
             return;
         }
-        //transposedNotes[stringNumber] = (transposedNotes[stringNumber] - 1 + 12) % 12;
         transposedNotes_audio[stringNumber] = transposedNotes_audio[stringNumber] - 1;
         InitializeFretboard(); // Recalculate all note values
         OnTuningChanged?.Invoke();
+        SaveTuning();
+    }
+
+    private void SaveTuning()
+    {
+        savedData data = SaveSystem.Loaddata() ?? new savedData();
+        data.transposedNotes_audio = (int[])transposedNotes_audio.Clone();
+        SaveSystem.SavePlayer(data);
     }
 
     public string GetNoteName(int noteValue)
