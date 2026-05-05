@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,8 @@ public class GuitarDexManager : MonoBehaviour
 {
     [Header("Data")]
     public List<GuitarDexItem> items = new List<GuitarDexItem>();
+
+    HashSet<int> unlockedIds = new HashSet<int>();
 
     [Header("Grid")]
     public Transform gridContent;
@@ -40,6 +43,8 @@ public class GuitarDexManager : MonoBehaviour
 
     void Start()
     {
+        LoadUnlockedFromSave();
+
         cards.Clear();
         if(gridContent!=null)
         {
@@ -49,10 +54,11 @@ public class GuitarDexManager : MonoBehaviour
                 var item=items[i];
                 var cardUI=cardGO.GetComponent<CardUI>()??cardGO.AddComponent<CardUI>();
                 cardUI.item=item;
+                bool unlocked=IsUnlocked(item);
                 var cardBg=cardGO.GetComponent<UnityEngine.UI.Image>();
-                if(cardBg!=null) cardBg.color=item.unlocked?CardBg:CardBgLocked;
+                if(cardBg!=null) cardBg.color=unlocked?CardBg:CardBgLocked;
                 var graphic=cardGO.transform.Find("GraphicArea/InstrumentImage")?.GetComponent<UnityEngine.UI.Image>();
-                if(graphic!=null){ graphic.color=item.unlocked?Color.white:new Color(0.55f,0.55f,0.55f,1f); graphic.preserveAspect=true; }
+                if(graphic!=null){ graphic.color=unlocked?Color.white:new Color(0.55f,0.55f,0.55f,1f); graphic.preserveAspect=true; }
                 var btn=cardGO.GetComponent<UnityEngine.UI.Button>();
                 if(btn!=null){ var idx=i; btn.onClick.AddListener(()=>Select(items[idx])); }
                 cards.Add(cardUI);
@@ -61,6 +67,37 @@ public class GuitarDexManager : MonoBehaviour
         RefreshProgress();
         if(items.Count>0) Select(items[0]);
     }
+
+    void OnEnable()  { EngagementManager.OnCollectibleUnlocked += HandleUnlocked; }
+    void OnDisable() { EngagementManager.OnCollectibleUnlocked -= HandleUnlocked; }
+
+    void HandleUnlocked(int itemId)
+    {
+        unlockedIds.Add(itemId);
+        // Refresh card visuals + selected detail panel
+        for (int i = 0; i < cards.Count && i < items.Count; i++)
+        {
+            var item = items[i];
+            bool u = IsUnlocked(item);
+            var cardGO = cards[i].gameObject;
+            var cardBg = cardGO.GetComponent<UnityEngine.UI.Image>();
+            if (cardBg != null) cardBg.color = u ? CardBg : CardBgLocked;
+            var graphic = cardGO.transform.Find("GraphicArea/InstrumentImage")?.GetComponent<UnityEngine.UI.Image>();
+            if (graphic != null) graphic.color = u ? Color.white : new Color(0.55f, 0.55f, 0.55f, 1f);
+        }
+        if (selected != null) UpdateDetail(selected);
+        RefreshProgress();
+    }
+
+    void LoadUnlockedFromSave()
+    {
+        unlockedIds.Clear();
+        var data = SaveSystem.Loaddata() ?? new savedData();
+        if (data.unlockedCollectibles != null)
+            foreach (int id in data.unlockedCollectibles) unlockedIds.Add(id);
+    }
+
+    bool IsUnlocked(GuitarDexItem item) => unlockedIds.Contains(item.id);
 
     public void Select(GuitarDexItem item)
     {
@@ -71,7 +108,7 @@ public class GuitarDexManager : MonoBehaviour
 
     void RefreshProgress()
     {
-        int u=0; foreach(var i in items) if(i.unlocked) u++;
+        int u=0; foreach(var i in items) if(IsUnlocked(i)) u++;
         if(progressLabel) progressLabel.text=$"{u} / {items.Count} COLLECTED";
         if(progressBarFill) progressBarFill.anchorMax=new Vector2(items.Count>0?(float)u/items.Count:0,1);
     }
@@ -88,7 +125,7 @@ public class GuitarDexManager : MonoBehaviour
 
     void UpdateDetail(GuitarDexItem item)
     {
-        bool lk=!item.unlocked;
+        bool lk=!IsUnlocked(item);
         Color rc=RarityColor(item.rarity);
         if(rarityColorBar)    rarityColorBar.color=rc;
         if(detailGraphicImage){

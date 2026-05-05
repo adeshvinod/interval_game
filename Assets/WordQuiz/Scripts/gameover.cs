@@ -46,6 +46,9 @@ public class gameover : MonoBehaviour
         
         loadGame();
         saveGame();
+
+        if (gameData != null)
+            EngagementManager.RegisterLevelEnd(LearningMode.Intervals, (int)gameData.currentIntervalLevel + 1, currentscore);
     }
 
     // Update is called once per frame

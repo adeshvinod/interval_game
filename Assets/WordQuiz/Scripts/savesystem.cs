@@ -38,6 +38,12 @@ public static class SaveSystem
 
         public int[] transposedNotes_audio;
 
+        // Engagement system
+        public int totalXP;
+        public int playerLevel;
+        public int[] unlockedLevels;
+        public int[] unlockedCollectibles;
+
         private const int MAX_PROGRESSIONS = 15;
         private const int MAX_CHORDS = 40;
         private const int MAX_CUSTOM_CHORDS = 20;
@@ -85,6 +91,15 @@ public static class SaveSystem
                 ? (int[])d.transposedNotes_audio.Clone()
                 : new int[6];
 
+            w.totalXP = d.totalXP;
+            w.playerLevel = d.playerLevel;
+            w.unlockedLevels = d.unlockedLevels != null
+                ? (int[])d.unlockedLevels.Clone()
+                : savedData.DefaultUnlockedLevels();
+            w.unlockedCollectibles = d.unlockedCollectibles != null
+                ? (int[])d.unlockedCollectibles.Clone()
+                : savedData.DefaultUnlockedCollectibles();
+
             return w;
         }
 
@@ -129,6 +144,17 @@ public static class SaveSystem
             d.transposedNotes_audio = transposedNotes_audio != null
                 ? (int[])transposedNotes_audio.Clone()
                 : new int[6];
+
+            d.totalXP = totalXP;
+            // Old save files won't have these fields — JsonUtility hands back zero/empty arrays.
+            // Reseed defaults so the constructor's L1-unlocks aren't blown away.
+            d.playerLevel = playerLevel > 0 ? playerLevel : 1;
+            d.unlockedLevels = (unlockedLevels != null && unlockedLevels.Length == 16)
+                ? (int[])unlockedLevels.Clone()
+                : savedData.DefaultUnlockedLevels();
+            d.unlockedCollectibles = (unlockedCollectibles != null && unlockedCollectibles.Length > 0)
+                ? (int[])unlockedCollectibles.Clone()
+                : savedData.DefaultUnlockedCollectibles();
 
             return d;
         }

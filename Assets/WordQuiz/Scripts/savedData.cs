@@ -38,6 +38,16 @@ public class savedData
 
     public int[] transposedNotes_audio = new int[6];
 
+    // ── Engagement system ─────────────────────────────────────────────────
+    // totalXP grows monotonically, playerLevel derived from it on save.
+    // unlockedLevels: length 16 (4 modes × 4 levels), index = (int)mode*4 + (level-1).
+    //   0 = locked, 1 = unlocked. Defaults seed L1 of each mode unlocked.
+    // unlockedCollectibles: list of GuitarDexItem.id values that have been unlocked.
+    public int totalXP = 0;
+    public int playerLevel = 1;
+    public int[] unlockedLevels;
+    public int[] unlockedCollectibles;
+
     public savedData(savedData _modifieddata)
     {
         HighScore = _modifieddata.HighScore;
@@ -72,6 +82,15 @@ public class savedData
         transposedNotes_audio = _modifieddata.transposedNotes_audio != null
             ? (int[])_modifieddata.transposedNotes_audio.Clone()
             : new int[6];
+
+        totalXP = _modifieddata.totalXP;
+        playerLevel = _modifieddata.playerLevel;
+        unlockedLevels = _modifieddata.unlockedLevels != null
+            ? (int[])_modifieddata.unlockedLevels.Clone()
+            : DefaultUnlockedLevels();
+        unlockedCollectibles = _modifieddata.unlockedCollectibles != null
+            ? (int[])_modifieddata.unlockedCollectibles.Clone()
+            : DefaultUnlockedCollectibles();
 }
 
     
@@ -108,9 +127,28 @@ public class savedData
             }
             savedCustomChord_names[i] = null;
         }
-        
-    
+
+        unlockedLevels = DefaultUnlockedLevels();
+        unlockedCollectibles = DefaultUnlockedCollectibles();
 }
+
+    // L1 of each mode unlocked at fresh start. Index = (int)LearningMode * 4 + (level-1).
+    // Enum order: Intervals=0, Notes=1, Progressions=2, Chords=3.
+    public static int[] DefaultUnlockedLevels()
+    {
+        var arr = new int[16];
+        arr[0]  = 1; // Intervals L1
+        arr[4]  = 1; // Notes L1
+        arr[8]  = 1; // Progressions L1
+        arr[12] = 1; // Chords L1
+        return arr;
+    }
+
+    // Items 1-6 are pre-unlocked to mirror current 6-of-14-collected state.
+    public static int[] DefaultUnlockedCollectibles()
+    {
+        return new int[] { 1, 2, 3, 4, 5, 6 };
+    }
    
 
     public void start()

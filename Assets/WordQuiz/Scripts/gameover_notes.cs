@@ -28,6 +28,9 @@ public class gameover_notes : MonoBehaviour
 
         loadGame();
         saveGame();
+
+        if (gameData != null)
+            EngagementManager.RegisterLevelEnd(LearningMode.Notes, (int)gameData.currentLevel + 1, currentscore);
     }
 
     // Update is called once per frame

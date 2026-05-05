@@ -103,6 +103,8 @@ public class gameover_chords : MonoBehaviour
 
         if (highScoreText != null)
             highScoreText.text = chordsGameData.highScore.ToString();
+
+        EngagementManager.RegisterLevelEnd(LearningMode.Chords, (int)chordsGameData.currentChordLevel + 1, chordsGameData.score);
     }
 
     // ── Button callbacks ──────────────────────────────────────────────────────
