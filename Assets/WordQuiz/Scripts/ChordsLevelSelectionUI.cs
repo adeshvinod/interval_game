@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
@@ -24,6 +25,19 @@ public class ChordsLevelSelectionUI : MonoBehaviour
             chordsGameData.LoadHighScores();
             RefreshHighScores();
         }
+
+        ApplyLevelGating();
+    }
+
+    void ApplyLevelGating()
+    {
+        for (int lvl = 1; lvl <= 4; lvl++)
+        {
+            var go = GameObject.Find($"lv{lvl}_btn");
+            if (go == null) continue;
+            var btn = go.GetComponent<Button>();
+            if (btn != null) btn.interactable = EngagementManager.IsLevelUnlocked(LearningMode.Chords, lvl);
+        }
     }
 
     private void RefreshHighScores()
@@ -37,6 +51,9 @@ public class ChordsLevelSelectionUI : MonoBehaviour
     /// <summary>Wire this to each level button (pass 1-4, or 5 for Custom).</summary>
     public void OnChordLevelButtonClicked(int level)
     {
+        // Custom (level 5) is always allowed; 1-4 require unlock.
+        if (level >= 1 && level <= 4 && !EngagementManager.IsLevelUnlocked(LearningMode.Chords, level)) return;
+
         if (chordsGameData != null)
             chordsGameData.SelectChordLevel(level);
 

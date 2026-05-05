@@ -51,6 +51,11 @@ public class gameover_chords : MonoBehaviour
     /// <summary>TMP label that shows the wrong chord name dynamically in feedback mode.</summary>
     [SerializeField] private TextMeshProUGUI weakspotsText;
 
+    [Header("Engagement (optional)")]
+    [SerializeField] private TextMeshProUGUI xpEarned_floating;
+    [SerializeField] private TextMeshProUGUI levelUp_floating;
+    [SerializeField] private TextMeshProUGUI threshold_floating;
+
     // ── Runtime ───────────────────────────────────────────────────────────────
     private GameObject wholeFretboard;
     private prog_button[] progbuttons_;
@@ -104,7 +109,15 @@ public class gameover_chords : MonoBehaviour
         if (highScoreText != null)
             highScoreText.text = chordsGameData.highScore.ToString();
 
-        EngagementManager.RegisterLevelEnd(LearningMode.Chords, (int)chordsGameData.currentChordLevel + 1, chordsGameData.score);
+        int level = (int)chordsGameData.currentChordLevel + 1;
+        bool passed = EngagementManager.RegisterLevelEnd(LearningMode.Chords, level, chordsGameData.score);
+
+        if (xpEarned_floating != null)
+            xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
+        if (levelUp_floating != null)
+            levelUp_floating.text = EngagementManager.DidSessionLevelUp() ? $"LEVEL {EngagementManager.GetPlayerLevel()}!" : "";
+        if (threshold_floating != null && level >= 1 && level <= 4)
+            threshold_floating.text = passed ? "Cleared!" : $"Goal: {EngagementManager.ScoreThreshold(LearningMode.Chords, level)}";
     }
 
     // ── Button callbacks ──────────────────────────────────────────────────────

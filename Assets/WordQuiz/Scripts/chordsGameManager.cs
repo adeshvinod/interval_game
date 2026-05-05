@@ -28,6 +28,9 @@ public class chordsGameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI timerText;
+    [Header("Engagement")]
+    [Tooltip("Optional: 'Goal: N' label shown during play. Null-safe.")]
+    [SerializeField] private TextMeshProUGUI goalText;
 
     [SerializeField] private GameObject gameRunningPanel;
     [SerializeField] private GameObject gameoverPanel;
@@ -89,6 +92,10 @@ public class chordsGameManager : MonoBehaviour
 
     void Start()
     {
+        EngagementManager.StartSession();
+        if (goalText != null && chordsGameData != null)
+            goalText.text = $"Goal: {EngagementManager.ScoreThreshold(LearningMode.Chords, (int)chordsGameData.currentChordLevel + 1)}";
+
         var pb = GameObject.Find("Prog_buttons");
         if (pb != null)
             progbuttons_ = pb.GetComponentsInChildren<prog_button>();

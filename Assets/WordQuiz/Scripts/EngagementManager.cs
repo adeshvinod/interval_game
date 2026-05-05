@@ -42,6 +42,8 @@ public static class EngagementManager
     // ── Session state (resets on app launch, not on scene change) ─────────────
     static int currentStreak = 0;
     static DateTime lastDailyBonusDate = DateTime.MinValue;
+    static int sessionXPEarned = 0;       // XP gained since last StartSession()
+    static int sessionStartLevel = 1;     // player level at last StartSession()
 
     // ── Events ────────────────────────────────────────────────────────────────
     public static event Action<int>           OnXPEarned;            // xp delta
@@ -103,6 +105,19 @@ public static class EngagementManager
     {
         currentStreak = 0;
     }
+
+    /// Call once at the start of a play session (game manager Start).
+    /// Tracks XP/level deltas so gameover can show "+250 XP" / "Level Up!".
+    public static void StartSession()
+    {
+        sessionXPEarned   = 0;
+        sessionStartLevel = GetPlayerLevel();
+        currentStreak     = 0;
+    }
+
+    public static int  GetSessionXPEarned()  => sessionXPEarned;
+    public static int  GetSessionStartLevel() => sessionStartLevel;
+    public static bool DidSessionLevelUp()   => GetPlayerLevel() > sessionStartLevel;
 
     /// Call from gameover scripts after final score is known. Returns true if
     /// player passed the level threshold. Handles next-level unlock + surprise drop.
@@ -193,6 +208,7 @@ public static class EngagementManager
             }
         }
 
+        sessionXPEarned += xp;
         SaveSystem.SavePlayer(data);
         OnXPEarned?.Invoke(xp);
         if (newLevel > oldLevel) OnLevelUp?.Invoke(oldLevel, newLevel);

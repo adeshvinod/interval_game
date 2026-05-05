@@ -35,6 +35,9 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
     public TextMeshProUGUI score_text;
     [SerializeField] public TextMeshProUGUI healthText;
     [SerializeField] public TextMeshProUGUI timer_text;
+    [Header("Engagement")]
+    [Tooltip("Optional: 'Goal: N' label shown during play. Null-safe — leave unwired to hide.")]
+    [SerializeField] private TextMeshProUGUI goalText;
     private Coroutine healthAnimCoroutine;
     private Coroutine scoreAnimCoroutine;
 
@@ -115,6 +118,10 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
 
     void Start()
     {
+        EngagementManager.StartSession();
+        if (goalText != null && gameData != null)
+            goalText.text = $"Goal: {EngagementManager.ScoreThreshold(LearningMode.Intervals, (int)gameData.currentIntervalLevel + 1)}";
+
         InitializeQuestionHistoryArray();
         GameObject originalGameObject = GameObject.Find("Prog_buttons");
         progbuttons_ = originalGameObject.GetComponentsInChildren<prog_button>();

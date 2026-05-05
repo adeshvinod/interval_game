@@ -24,6 +24,19 @@ public class IntervalLevelSelectionUI : MonoBehaviour
             gameData.LoadHighScores();
             UpdateHighScoreDisplays();
         }
+
+        ApplyLevelGating();
+    }
+
+    void ApplyLevelGating()
+    {
+        for (int lvl = 1; lvl <= 4; lvl++)
+        {
+            var go = GameObject.Find($"lv{lvl}_btn");
+            if (go == null) continue;
+            var btn = go.GetComponent<Button>();
+            if (btn != null) btn.interactable = EngagementManager.IsLevelUnlocked(LearningMode.Intervals, lvl);
+        }
     }
 
     private void UpdateHighScoreDisplays()
@@ -67,6 +80,7 @@ public class IntervalLevelSelectionUI : MonoBehaviour
 
     public void OnIntervalLevelButtonClicked(int level)
     {
+        if (!EngagementManager.IsLevelUnlocked(LearningMode.Intervals, level)) return;
         if (intervalsGameData != null)
         {
             intervalsGameData.SelectIntervalLevel(level);

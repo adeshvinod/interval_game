@@ -19,6 +19,9 @@ public class note_challenge : MonoBehaviour
     private Coroutine scoreAnimCoroutine;
     [SerializeField] private GameObject gameover_panel;
     [SerializeField] private GameObject GameRunningPanel;
+    [Header("Engagement")]
+    [Tooltip("Optional: 'Goal: N' label shown during play. Null-safe.")]
+    [SerializeField] private TextMeshProUGUI goalText;
     [SerializeField] private AudioSource correctanswer_audio;
     [SerializeField] private AudioSource wronganswer_audio;
 
@@ -208,6 +211,10 @@ public class note_challenge : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        EngagementManager.StartSession();
+        if (goalText != null && gameData != null)
+            goalText.text = $"Goal: {EngagementManager.ScoreThreshold(LearningMode.Notes, (int)gameData.currentLevel + 1)}";
+
         InitializeQuestionHistoryArray();
         gameData.health = 100f;
         UpdateHealthDisplay();

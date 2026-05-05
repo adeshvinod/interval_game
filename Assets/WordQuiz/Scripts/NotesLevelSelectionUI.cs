@@ -20,11 +20,25 @@ public class NotesLevelSelectionUI : MonoBehaviour
             Debug.LogError("EventManager reference is missing!");
             return;
         }
+
+        ApplyLevelGating();
+    }
+
+    void ApplyLevelGating()
+    {
+        for (int lvl = 1; lvl <= 4; lvl++)
+        {
+            var go = GameObject.Find($"lv{lvl}_btn");
+            if (go == null) continue;
+            var btn = go.GetComponent<Button>();
+            if (btn != null) btn.interactable = EngagementManager.IsLevelUnlocked(LearningMode.Notes, lvl);
+        }
     }
 
     public void OnLevelButtonClicked(int level)
     {
+        if (!EngagementManager.IsLevelUnlocked(LearningMode.Notes, level)) return;
         gameData.SelectLevel(level);
         eventManager.SelectNoteLevel(level);
     }
-} 
+}
