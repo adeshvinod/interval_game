@@ -51,9 +51,6 @@ public class ChordsLevelSelectionUI : MonoBehaviour
     /// <summary>Wire this to each level button (pass 1-4, or 5 for Custom).</summary>
     public void OnChordLevelButtonClicked(int level)
     {
-        // Custom (level 5) is always allowed; 1-4 require unlock.
-        if (level >= 1 && level <= 4 && !EngagementManager.IsLevelUnlocked(LearningMode.Chords, level)) return;
-
         if (chordsGameData != null)
             chordsGameData.SelectChordLevel(level);
 

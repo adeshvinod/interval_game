@@ -158,6 +158,8 @@ public static class EngagementManager
 
     public static bool IsLevelUnlocked(LearningMode mode, int level)
     {
+        // Custom (level 5) is always allowed — never gated.
+        if (level >= 5) return true;
         var data = SaveSystem.Loaddata() ?? new savedData();
         int idx = LevelIndex(mode, level);
         if (idx < 0 || idx >= data.unlockedLevels.Length) return false;

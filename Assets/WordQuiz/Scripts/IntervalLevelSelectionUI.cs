@@ -80,7 +80,6 @@ public class IntervalLevelSelectionUI : MonoBehaviour
 
     public void OnIntervalLevelButtonClicked(int level)
     {
-        if (!EngagementManager.IsLevelUnlocked(LearningMode.Intervals, level)) return;
         if (intervalsGameData != null)
         {
             intervalsGameData.SelectIntervalLevel(level);

@@ -37,7 +37,6 @@ public class NotesLevelSelectionUI : MonoBehaviour
 
     public void OnLevelButtonClicked(int level)
     {
-        if (!EngagementManager.IsLevelUnlocked(LearningMode.Notes, level)) return;
         gameData.SelectLevel(level);
         eventManager.SelectNoteLevel(level);
     }
