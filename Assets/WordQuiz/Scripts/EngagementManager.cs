@@ -1,21 +1,25 @@
 using System;
 using UnityEngine;
 
-/// Static facade for the XP / Player Level / collectible-unlock / score-threshold
-/// system. Save file (player.fun via SaveSystem) is the source of truth — every
+/// XP / avatar-stage / collectible-unlock / score-threshold spine.
+///
+/// Save file (player.fun via SaveSystem) is the source of truth — every
 /// public mutator reads, mutates, persists in one shot so scene transitions
 /// don't lose state.
 ///
-/// Streak and daily-bonus state are session-only and live as static fields here.
+/// Streak, daily-bonus, in-play state are session-level static fields here.
 public static class EngagementManager
 {
-    // ── Tunables ──────────────────────────────────────────────────────────────
-    const int   BASE_XP_PER_CORRECT = 10;
-    const int   FIRST_TIME_BONUS    = 50;
+    // ── XP economy tunables ───────────────────────────────────────────────────
+    const int   BASE_XP_PER_CORRECT = 3;     // Tiny per-correct trickle.
+    const int   FIRST_TIME_BONUS    = 20;
     const float SPEED_BONUS_THRESHOLD_SECS = 3f;
     const float SPEED_MULT          = 1.25f;
     const float SURPRISE_DROP_RATE  = 0.08f;
-    const int   MAX_PLAYER_LEVEL    = 100;
+
+    // Big chunks (the rewards that should *feel* big)
+    const int   LEVEL_PASS_BASE_XP   = 250;   // multiplied by level number → L1=250, L4=1000
+    const int   NEW_HIGH_SCORE_XP    = 200;
 
     // Mode multipliers ordered by LearningMode enum: Intervals, Notes, Progressions, Chords
     static readonly float[] modeMultiplier = { 1.5f, 1f, 1f, 2f };
@@ -25,44 +29,90 @@ public static class EngagementManager
     static readonly int[] intervalsThresholds = { 100, 200, 350, 550 };
     static readonly int[] chordsThresholds    = { 120, 240, 420, 650 };
 
-    // Collectible milestone schedule. Items 1-6 are seeded unlocked on first run
-    // (savedData.DefaultUnlockedCollectibles). Items 7-14 unlock at these player levels.
-    static readonly (int playerLevel, int itemId)[] collectibleMilestones = new[]
+    // ── Avatar stage thresholds ───────────────────────────────────────────────
+    // Stage = 1..10. Stage 1 = fresh install. Stage 2 unlocks at 500 XP, etc.
+    // Front-loaded so first evolution arrives in ~1 great session.
+    static readonly int[] avatarStageXP =
     {
-        (3,  7),
-        (5,  8),
-        (8,  9),
-        (12, 10),
-        (16, 11),
-        (20, 12),
-        (25, 13),
-        (30, 14),
+        0,      // stage 1 (start)
+        500,    // stage 2
+        1500,   // stage 3
+        3000,   // stage 4
+        6000,   // stage 5
+        10000,  // stage 6
+        16000,  // stage 7
+        24000,  // stage 8
+        36000,  // stage 9
+        50000,  // stage 10
+    };
+
+    // ── Collectible XP-unlock schedule ────────────────────────────────────────
+    // Item IDs 1..14, unlocked when totalXP first crosses the threshold. Some
+    // align with avatar stages so a single moment delivers a compound payoff.
+    static readonly (int xp, int itemId)[] collectibleUnlocks = new[]
+    {
+        (100,    1),
+        (300,    2),
+        (700,    3),
+        (1500,   4),
+        (2500,   5),
+        (4000,   6),
+        (6000,   7),   // ~ avatar stage 5
+        (9000,   8),
+        (13000,  9),
+        (18000, 10),   // ~ avatar stage 7
+        (25000, 11),
+        (33000, 12),
+        (42000, 13),
+        (50000, 14),   // legendary, aligns with stage 10
     };
 
     // ── Session state (resets on app launch, not on scene change) ─────────────
-    static int currentStreak = 0;
-    static int sessionXPEarned = 0;       // XP gained since last StartSession()
-    static int sessionStartLevel = 1;     // player level at last StartSession()
+    static int  currentStreak    = 0;
+    static int  sessionXPEarned  = 0;
+    static int  sessionStartStage = 1;
+    static bool isInPlaySession  = false;
 
     // ── Events ────────────────────────────────────────────────────────────────
-    public static event Action<int>           OnXPEarned;            // xp delta
-    public static event Action<int, int>      OnLevelUp;             // (oldLevel, newLevel)
-    public static event Action<int>           OnCollectibleUnlocked; // itemId
-    public static event Action<LearningMode, int, int> OnLevelPassed; // (mode, level, newScore)
+    /// Fired on every XP grant. UI may want to ignore this during gameplay.
+    public static event Action<int>           OnXPEarned;
+    /// Fired when avatar stage advances (oldStage, newStage). Stages are 1..10.
+    public static event Action<int, int>      OnAvatarEvolved;
+    /// Fired the moment a collectible is unlocked. May fire mid-gameplay.
+    public static event Action<int>           OnCollectibleUnlocked;
+    /// Fired from gameover when a level is cleared. (mode, level, score).
+    public static event Action<LearningMode, int, int> OnLevelPassed;
+    /// Fired at the very end of every session (pass or fail). Subscribers can
+    /// flush any deferred UI here.
+    public static event Action OnSessionEnd;
 
-    // ── XP curve ──────────────────────────────────────────────────────────────
-    /// Cumulative XP needed to *reach* level L. L=1 returns 0.
-    public static int XPRequiredForLevel(int L)
+    /// True between StartSession() and EndSession(). UI uses this to defer
+    /// distracting popups until the player isn't focused on gameplay.
+    public static bool IsInPlaySession => isInPlaySession;
+
+    // ── Avatar stage (derived from totalXP) ───────────────────────────────────
+    public static int AvatarStageForXP(int xp)
     {
-        if (L <= 1) return 0;
-        return Mathf.FloorToInt(50f * Mathf.Pow(L, 1.6f));
+        int stage = 1;
+        for (int i = 0; i < avatarStageXP.Length; i++)
+            if (xp >= avatarStageXP[i]) stage = i + 1;
+        return stage;
     }
 
-    public static int LevelForXP(int totalXP)
+    public static int GetAvatarStage()  => AvatarStageForXP(GetTotalXP());
+    public static int GetTotalXP()
     {
-        int L = 1;
-        while (L < MAX_PLAYER_LEVEL && XPRequiredForLevel(L + 1) <= totalXP) L++;
-        return L;
+        var data = SaveSystem.Loaddata() ?? new savedData();
+        return data.totalXP;
+    }
+
+    /// XP needed for the next avatar stage, or -1 if at max.
+    public static int XPToNextAvatarStage()
+    {
+        int xp = GetTotalXP();
+        for (int i = 0; i < avatarStageXP.Length; i++)
+            if (xp < avatarStageXP[i]) return avatarStageXP[i] - xp;
+        return -1;
     }
 
     // ── Score thresholds ──────────────────────────────────────────────────────
@@ -74,7 +124,7 @@ public static class EngagementManager
             case LearningMode.Notes:     return notesThresholds[level - 1];
             case LearningMode.Intervals: return intervalsThresholds[level - 1];
             case LearningMode.Chords:    return chordsThresholds[level - 1];
-            default:                     return int.MaxValue; // Progressions: ignore
+            default:                     return int.MaxValue;
         }
     }
 
@@ -99,61 +149,68 @@ public static class EngagementManager
         return xp;
     }
 
-    /// Call when a question is answered wrong / timed out. Resets streak.
-    public static void RegisterMiss()
-    {
-        currentStreak = 0;
-    }
+    public static void RegisterMiss() => currentStreak = 0;
 
-    /// Call once at the start of a play session (game manager Start).
-    /// Tracks XP/level deltas so gameover can show "+250 XP" / "Level Up!".
+    /// Call once at the start of a play session (game-manager Start).
     public static void StartSession()
     {
-        sessionXPEarned   = 0;
-        sessionStartLevel = GetPlayerLevel();
-        currentStreak     = 0;
+        sessionXPEarned    = 0;
+        sessionStartStage  = GetAvatarStage();
+        currentStreak      = 0;
+        isInPlaySession    = true;
     }
 
-    public static int  GetSessionXPEarned()  => sessionXPEarned;
-    public static int  GetSessionStartLevel() => sessionStartLevel;
-    public static bool DidSessionLevelUp()   => GetPlayerLevel() > sessionStartLevel;
-
-    /// Call from gameover scripts after final score is known. Returns true if
-    /// player passed the level threshold. Handles next-level unlock + surprise drop.
-    public static bool RegisterLevelEnd(LearningMode mode, int level, int finalScore)
+    /// Call from gameover scripts. Awards level-pass + new-HS chunks, unlocks
+    /// next level, rolls surprise drop, and finally fires OnSessionEnd so any
+    /// deferred UI (popups) can flush.
+    public static bool EndSession(LearningMode mode, int level, int finalScore, bool isNewHighScore)
     {
-        if (level < 1 || level > 4) return false;
-        bool passed = finalScore >= ScoreThreshold(mode, level);
-        if (!passed) return false;
+        bool passed = level >= 1 && level <= 4 && finalScore >= ScoreThreshold(mode, level);
 
-        var data = SaveSystem.Loaddata() ?? new savedData();
-        bool dirty = false;
-
-        if (level < 4)
+        if (passed)
         {
-            int idx = LevelIndex(mode, level + 1);
-            if (idx >= 0 && idx < data.unlockedLevels.Length && data.unlockedLevels[idx] == 0)
-            {
-                data.unlockedLevels[idx] = 1;
-                dirty = true;
-            }
+            // Big chunk for clearing — bigger for harder levels.
+            AwardXP(LEVEL_PASS_BASE_XP * level);
         }
 
-        // Surprise collectible drop
-        if (UnityEngine.Random.value < SURPRISE_DROP_RATE)
+        if (isNewHighScore)
         {
-            int rolled = RollLockedItem(data);
-            if (rolled > 0)
-            {
-                data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, rolled);
-                dirty = true;
-                OnCollectibleUnlocked?.Invoke(rolled);
-            }
+            AwardXP(NEW_HIGH_SCORE_XP);
         }
 
-        if (dirty) SaveSystem.SavePlayer(data);
-        OnLevelPassed?.Invoke(mode, level, finalScore);
-        return true;
+        if (passed)
+        {
+            var data = SaveSystem.Loaddata() ?? new savedData();
+            bool dirty = false;
+
+            if (level < 4)
+            {
+                int idx = LevelIndex(mode, level + 1);
+                if (idx >= 0 && idx < data.unlockedLevels.Length && data.unlockedLevels[idx] == 0)
+                {
+                    data.unlockedLevels[idx] = 1;
+                    dirty = true;
+                }
+            }
+
+            if (UnityEngine.Random.value < SURPRISE_DROP_RATE)
+            {
+                int rolled = RollLockedItem(data);
+                if (rolled > 0)
+                {
+                    data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, rolled);
+                    dirty = true;
+                    OnCollectibleUnlocked?.Invoke(rolled);
+                }
+            }
+
+            if (dirty) SaveSystem.SavePlayer(data);
+            OnLevelPassed?.Invoke(mode, level, finalScore);
+        }
+
+        isInPlaySession = false;
+        OnSessionEnd?.Invoke();
+        return passed;
     }
 
     public static bool IsLevelUnlocked(LearningMode mode, int level)
@@ -172,47 +229,36 @@ public static class EngagementManager
         return Array.IndexOf(data.unlockedCollectibles, itemId) >= 0;
     }
 
-    public static int GetTotalXP()
-    {
-        var data = SaveSystem.Loaddata() ?? new savedData();
-        return data.totalXP;
-    }
-
-    public static int GetPlayerLevel()
-    {
-        var data = SaveSystem.Loaddata() ?? new savedData();
-        return data.playerLevel;
-    }
+    public static int GetSessionXPEarned()    => sessionXPEarned;
+    public static int GetSessionStartStage()  => sessionStartStage;
+    public static bool DidSessionAvatarEvolve() => GetAvatarStage() > sessionStartStage;
 
     // ── Internals ─────────────────────────────────────────────────────────────
     static void AwardXP(int xp)
     {
         if (xp <= 0) return;
         var data = SaveSystem.Loaddata() ?? new savedData();
-        int oldLevel = data.playerLevel;
+        int oldXP    = data.totalXP;
+        int oldStage = AvatarStageForXP(oldXP);
         data.totalXP += xp;
-        int newLevel = LevelForXP(data.totalXP);
-        data.playerLevel = newLevel;
+        int newXP    = data.totalXP;
+        int newStage = AvatarStageForXP(newXP);
 
-        if (newLevel > oldLevel)
+        // Unlock any collectibles whose XP threshold was crossed.
+        foreach (var (threshold, itemId) in collectibleUnlocks)
         {
-            for (int L = oldLevel + 1; L <= newLevel; L++)
+            if (oldXP < threshold && newXP >= threshold &&
+                Array.IndexOf(data.unlockedCollectibles, itemId) < 0)
             {
-                foreach (var (lvl, itemId) in collectibleMilestones)
-                {
-                    if (lvl == L && Array.IndexOf(data.unlockedCollectibles, itemId) < 0)
-                    {
-                        data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, itemId);
-                        OnCollectibleUnlocked?.Invoke(itemId);
-                    }
-                }
+                data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, itemId);
+                OnCollectibleUnlocked?.Invoke(itemId);
             }
         }
 
         sessionXPEarned += xp;
         SaveSystem.SavePlayer(data);
         OnXPEarned?.Invoke(xp);
-        if (newLevel > oldLevel) OnLevelUp?.Invoke(oldLevel, newLevel);
+        if (newStage > oldStage) OnAvatarEvolved?.Invoke(oldStage, newStage);
     }
 
     static bool TryConsumeDailyFirst()
@@ -250,17 +296,12 @@ public static class EngagementManager
         return copy;
     }
 
-    /// Returns 0 if no locked items remain.
     static int RollLockedItem(savedData data)
     {
-        // Locked = id in [1..14] not in unlockedCollectibles. Surprise drops only
-        // pick from items not already covered by milestones, so any valid ID works.
         const int totalItemIds = 14;
         var lockedIds = new System.Collections.Generic.List<int>();
         for (int id = 1; id <= totalItemIds; id++)
-        {
             if (Array.IndexOf(data.unlockedCollectibles, id) < 0) lockedIds.Add(id);
-        }
         if (lockedIds.Count == 0) return 0;
         return lockedIds[UnityEngine.Random.Range(0, lockedIds.Count)];
     }

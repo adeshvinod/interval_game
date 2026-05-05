@@ -73,22 +73,22 @@ public class GuitarDexManager : MonoBehaviour
     {
         EngagementManager.OnCollectibleUnlocked += HandleUnlocked;
         EngagementManager.OnXPEarned            += HandleXPEarned;
-        EngagementManager.OnLevelUp             += HandleLevelUp;
+        EngagementManager.OnAvatarEvolved       += HandleAvatarEvolved;
     }
     void OnDisable()
     {
         EngagementManager.OnCollectibleUnlocked -= HandleUnlocked;
         EngagementManager.OnXPEarned            -= HandleXPEarned;
-        EngagementManager.OnLevelUp             -= HandleLevelUp;
+        EngagementManager.OnAvatarEvolved       -= HandleAvatarEvolved;
     }
 
     void HandleXPEarned(int delta) { RefreshXPLabel(); }
-    void HandleLevelUp(int oldL, int newL) { RefreshXPLabel(); }
+    void HandleAvatarEvolved(int oldStage, int newStage) { RefreshXPLabel(); }
 
     void RefreshXPLabel()
     {
         if (coinAmountLabel == null) return;
-        coinAmountLabel.text = $"LV {EngagementManager.GetPlayerLevel()} · {EngagementManager.GetTotalXP()} XP";
+        coinAmountLabel.text = $"AVATAR {EngagementManager.GetAvatarStage()} · {EngagementManager.GetTotalXP()} XP";
     }
 
     void HandleUnlocked(int itemId)

@@ -24,6 +24,7 @@ public class gameover_notes : MonoBehaviour
     public int currentscore;
     public DateTime currentTime;
     public savedData modifiedData;
+    private bool isNewHighScore;
 
     // Start is called before the first frame update
     void Start()
@@ -35,15 +36,13 @@ public class gameover_notes : MonoBehaviour
         saveGame();
 
         int level = gameData != null ? (int)gameData.currentLevel + 1 : 0;
-        bool passed = false;
-        if (level > 0)
-            passed = EngagementManager.RegisterLevelEnd(LearningMode.Notes, level, currentscore);
+        bool passed = EngagementManager.EndSession(LearningMode.Notes, level, currentscore, isNewHighScore);
 
         if (xpEarned_floating != null)
             xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
         if (levelUp_floating != null)
-            levelUp_floating.text = EngagementManager.DidSessionLevelUp() ? $"LEVEL {EngagementManager.GetPlayerLevel()}!" : "";
-        if (threshold_floating != null && level > 0)
+            levelUp_floating.text = EngagementManager.DidSessionAvatarEvolve() ? $"AVATAR STAGE {EngagementManager.GetAvatarStage()}!" : "";
+        if (threshold_floating != null && level >= 1 && level <= 4)
             threshold_floating.text = passed ? "Cleared!" : $"Goal: {EngagementManager.ScoreThreshold(LearningMode.Notes, level)}";
     }
 
@@ -82,6 +81,7 @@ public class gameover_notes : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l1_notes_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
 
@@ -91,6 +91,7 @@ public class gameover_notes : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l2_notes_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
 
@@ -100,6 +101,7 @@ public class gameover_notes : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l3_notes_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
 
@@ -109,6 +111,7 @@ public class gameover_notes : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l4_notes_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
             }

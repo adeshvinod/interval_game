@@ -28,6 +28,7 @@ public class gameover : MonoBehaviour
     public int currentscore;
     public DateTime currentTime;
     public savedData modifiedData = new savedData();
+    private bool isNewHighScore;
 
     private float[] avg_rxntime = new float[12];
     private string[] avg_accuracy = new string[12];
@@ -54,8 +55,10 @@ public class gameover : MonoBehaviour
 
         int level = gameData != null ? (int)gameData.currentIntervalLevel + 1 : 0;
         bool passed = false;
-        if (level > 0)
-            passed = EngagementManager.RegisterLevelEnd(LearningMode.Intervals, level, currentscore);
+        if (level >= 1 && level <= 4)
+            passed = EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
+        else
+            EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
 
         DisplayEngagement(LearningMode.Intervals, level, passed);
     }
@@ -67,13 +70,13 @@ public class gameover : MonoBehaviour
 
         if (levelUp_floating != null)
         {
-            if (EngagementManager.DidSessionLevelUp())
-                levelUp_floating.text = $"LEVEL {EngagementManager.GetPlayerLevel()}!";
+            if (EngagementManager.DidSessionAvatarEvolve())
+                levelUp_floating.text = $"AVATAR STAGE {EngagementManager.GetAvatarStage()}!";
             else
                 levelUp_floating.text = "";
         }
 
-        if (threshold_floating != null && level > 0)
+        if (threshold_floating != null && level >= 1 && level <= 4)
         {
             int goal = EngagementManager.ScoreThreshold(mode, level);
             threshold_floating.text = passed ? "Cleared!" : $"Goal: {goal}";
@@ -120,6 +123,7 @@ public class gameover : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l1_intervals_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
 
@@ -129,6 +133,7 @@ public class gameover : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l2_intervals_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
 
@@ -138,6 +143,7 @@ public class gameover : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l3_intervals_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
 
@@ -147,6 +153,7 @@ public class gameover : MonoBehaviour
                     {
                         gameData.UpdateHighScore();
                         modifiedData.l4_intervals_highscore = currentscore;
+                        isNewHighScore = true;
                     }
                     break;
             }

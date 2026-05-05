@@ -39,12 +39,13 @@ public class savedData
     public int[] transposedNotes_audio = new int[6];
 
     // ── Engagement system ─────────────────────────────────────────────────
-    // totalXP grows monotonically, playerLevel derived from it on save.
+    // totalXP grows monotonically; avatar stage is derived at runtime from XP
+    // thresholds in EngagementManager.
     // unlockedLevels: length 16 (4 modes × 4 levels), index = (int)mode*4 + (level-1).
     //   0 = locked, 1 = unlocked. Defaults seed L1 of each mode unlocked.
     // unlockedCollectibles: list of GuitarDexItem.id values that have been unlocked.
+    //   Default empty — everything starts locked.
     public int totalXP = 0;
-    public int playerLevel = 1;
     public int[] unlockedLevels;
     public int[] unlockedCollectibles;
     // Stored as yyyyMMdd int (UTC). 0 = never claimed.
@@ -86,7 +87,6 @@ public class savedData
             : new int[6];
 
         totalXP = _modifieddata.totalXP;
-        playerLevel = _modifieddata.playerLevel;
         unlockedLevels = _modifieddata.unlockedLevels != null
             ? (int[])_modifieddata.unlockedLevels.Clone()
             : DefaultUnlockedLevels();
@@ -147,10 +147,10 @@ public class savedData
         return arr;
     }
 
-    // Items 1-6 are pre-unlocked to mirror current 6-of-14-collected state.
+    // Fresh install: nothing unlocked. Items unlock through XP thresholds.
     public static int[] DefaultUnlockedCollectibles()
     {
-        return new int[] { 1, 2, 3, 4, 5, 6 };
+        return new int[0];
     }
    
 

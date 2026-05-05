@@ -40,7 +40,6 @@ public static class SaveSystem
 
         // Engagement system
         public int totalXP;
-        public int playerLevel;
         public int[] unlockedLevels;
         public int[] unlockedCollectibles;
         public int lastDailyBonusYmd;
@@ -93,7 +92,6 @@ public static class SaveSystem
                 : new int[6];
 
             w.totalXP = d.totalXP;
-            w.playerLevel = d.playerLevel;
             w.unlockedLevels = d.unlockedLevels != null
                 ? (int[])d.unlockedLevels.Clone()
                 : savedData.DefaultUnlockedLevels();
@@ -150,11 +148,11 @@ public static class SaveSystem
             d.totalXP = totalXP;
             // Old save files won't have these fields — JsonUtility hands back zero/empty arrays.
             // Reseed defaults so the constructor's L1-unlocks aren't blown away.
-            d.playerLevel = playerLevel > 0 ? playerLevel : 1;
             d.unlockedLevels = (unlockedLevels != null && unlockedLevels.Length == 16)
                 ? (int[])unlockedLevels.Clone()
                 : savedData.DefaultUnlockedLevels();
-            d.unlockedCollectibles = (unlockedCollectibles != null && unlockedCollectibles.Length > 0)
+            // Default IS empty array for fresh installs — copy whatever's stored, even empty.
+            d.unlockedCollectibles = unlockedCollectibles != null
                 ? (int[])unlockedCollectibles.Clone()
                 : savedData.DefaultUnlockedCollectibles();
             d.lastDailyBonusYmd = lastDailyBonusYmd;

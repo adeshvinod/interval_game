@@ -5,11 +5,15 @@ using UnityEngine.UI;
 using TMPro;
 
 /// Runtime-bootstrapped toast that subscribes to EngagementManager events and
-/// displays a slide-down notification for each achievement: level-ups,
-/// collectible unlocks, and threshold-pass clears.
+/// displays slide-down notifications.
 ///
-/// No scene wiring needed — auto-spawns before the first scene loads, persists
-/// via DontDestroyOnLoad, builds its own Canvas + UI in code. Beautify later.
+/// Crucially: while EngagementManager.IsInPlaySession is true (between
+/// StartSession and EndSession), incoming events are *deferred* into a buffer
+/// so they don't distract the player mid-gameplay. On OnSessionEnd the buffer
+/// is flushed and shown sequentially.
+///
+/// Auto-spawns BeforeSceneLoad, persists via DontDestroyOnLoad, builds its own
+/// Canvas in code so no scene wiring is needed.
 public class AchievementPopup : MonoBehaviour
 {
     static AchievementPopup instance;
@@ -19,11 +23,15 @@ public class AchievementPopup : MonoBehaviour
     TMP_Text      titleLabel;
     TMP_Text      bodyLabel;
 
-    readonly Queue<(string title, string body, Color tint)> queue = new();
+    // Active queue (toasts to be shown right now)
+    readonly Queue<(string title, string body, Color tint)> liveQueue = new();
+    // Deferred queue (events that fired during gameplay)
+    readonly List<(string title, string body, Color tint)> deferredBuffer = new();
     bool isShowing;
 
     const float SLIDE_DURATION = 0.35f;
     const float HOLD_DURATION  = 2.5f;
+    const float GAP_BETWEEN    = 0.2f;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Bootstrap()
@@ -37,22 +45,23 @@ public class AchievementPopup : MonoBehaviour
     void Awake()
     {
         BuildUI();
-        EngagementManager.OnLevelUp             += HandleLevelUp;
+        EngagementManager.OnAvatarEvolved       += HandleAvatarEvolved;
         EngagementManager.OnCollectibleUnlocked += HandleCollectibleUnlocked;
         EngagementManager.OnLevelPassed         += HandleLevelPassed;
+        EngagementManager.OnSessionEnd          += HandleSessionEnd;
     }
 
     void OnDestroy()
     {
-        EngagementManager.OnLevelUp             -= HandleLevelUp;
+        EngagementManager.OnAvatarEvolved       -= HandleAvatarEvolved;
         EngagementManager.OnCollectibleUnlocked -= HandleCollectibleUnlocked;
         EngagementManager.OnLevelPassed         -= HandleLevelPassed;
+        EngagementManager.OnSessionEnd          -= HandleSessionEnd;
     }
 
     // ── UI construction ──────────────────────────────────────────────────────
     void BuildUI()
     {
-        // Canvas (overlay, sort above gameplay)
         var canvasGO = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         canvasGO.transform.SetParent(transform, false);
         canvas = canvasGO.GetComponent<Canvas>();
@@ -63,7 +72,6 @@ public class AchievementPopup : MonoBehaviour
         scaler.referenceResolution = new Vector2(1080, 1920);
         scaler.matchWidthOrHeight = 0.5f;
 
-        // Panel — top-center, hidden above the screen by default
         var panelGO = new GameObject("Panel", typeof(RectTransform), typeof(Image));
         panelGO.transform.SetParent(canvasGO.transform, false);
         panel = panelGO.GetComponent<RectTransform>();
@@ -71,12 +79,11 @@ public class AchievementPopup : MonoBehaviour
         panel.anchorMax = new Vector2(0.5f, 1f);
         panel.pivot     = new Vector2(0.5f, 1f);
         panel.sizeDelta = new Vector2(900, 200);
-        panel.anchoredPosition = new Vector2(0, 220); // off-screen above
+        panel.anchoredPosition = new Vector2(0, 220);
 
         var bg = panelGO.GetComponent<Image>();
-        bg.color = new Color(10/255f, 29/255f, 39/255f, 0.95f); // ink @ 95%
+        bg.color = new Color(10/255f, 29/255f, 39/255f, 0.95f);
 
-        // Title
         var titleGO = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
         titleGO.transform.SetParent(panel, false);
         var titleRT = titleGO.GetComponent<RectTransform>();
@@ -89,9 +96,8 @@ public class AchievementPopup : MonoBehaviour
         titleLabel.fontSize = 56;
         titleLabel.fontStyle = FontStyles.Bold;
         titleLabel.alignment = TextAlignmentOptions.Center;
-        titleLabel.color = new Color(254/255f, 226/255f, 176/255f); // cream
+        titleLabel.color = new Color(254/255f, 226/255f, 176/255f);
 
-        // Body
         var bodyGO = new GameObject("Body", typeof(RectTransform), typeof(TextMeshProUGUI));
         bodyGO.transform.SetParent(panel, false);
         var bodyRT = bodyGO.GetComponent<RectTransform>();
@@ -107,43 +113,60 @@ public class AchievementPopup : MonoBehaviour
     }
 
     // ── Event handlers ───────────────────────────────────────────────────────
-    void HandleLevelUp(int oldLevel, int newLevel)
+    void HandleAvatarEvolved(int oldStage, int newStage)
     {
-        Enqueue("LEVEL UP!", $"You reached Level {newLevel}", new Color(249/255f, 117/255f, 75/255f));
+        Submit("AVATAR EVOLVED!", $"You reached Stage {newStage}", new Color(249/255f, 117/255f, 75/255f));
     }
 
     void HandleCollectibleUnlocked(int itemId)
     {
-        Enqueue("NEW ITEM!", $"Unlocked item #{itemId:D3} — check your GuitarDex", new Color(115/255f, 193/255f, 206/255f));
+        Submit("NEW ITEM!", $"Unlocked item #{itemId:D3} — check your GuitarDex", new Color(115/255f, 193/255f, 206/255f));
     }
 
     void HandleLevelPassed(LearningMode mode, int level, int score)
     {
-        Enqueue("CLEARED!", $"{mode} • Level {level} • {score} pts", new Color(181/255f, 207/255f, 174/255f));
+        Submit("CLEARED!", $"{mode} • Level {level} • {score} pts", new Color(181/255f, 207/255f, 174/255f));
     }
 
-    // ── Queue + animation ────────────────────────────────────────────────────
-    void Enqueue(string title, string body, Color tint)
+    void HandleSessionEnd()
     {
-        queue.Enqueue((title, body, tint));
+        // Flush deferred buffer to live queue, then start playback if idle.
+        if (deferredBuffer.Count == 0) return;
+        foreach (var item in deferredBuffer) liveQueue.Enqueue(item);
+        deferredBuffer.Clear();
         if (!isShowing) StartCoroutine(ShowNext());
     }
 
+    // ── Submission routing ───────────────────────────────────────────────────
+    void Submit(string title, string body, Color tint)
+    {
+        if (EngagementManager.IsInPlaySession)
+        {
+            // Defer until session ends — don't distract the player.
+            deferredBuffer.Add((title, body, tint));
+        }
+        else
+        {
+            liveQueue.Enqueue((title, body, tint));
+            if (!isShowing) StartCoroutine(ShowNext());
+        }
+    }
+
+    // ── Animation ────────────────────────────────────────────────────────────
     IEnumerator ShowNext()
     {
         isShowing = true;
-        while (queue.Count > 0)
+        while (liveQueue.Count > 0)
         {
-            var (title, body, tint) = queue.Dequeue();
+            var (title, body, tint) = liveQueue.Dequeue();
             titleLabel.text = title;
             bodyLabel.text  = body;
             titleLabel.color = tint;
 
-            // Slide down
             yield return Slide(220, -20, SLIDE_DURATION);
             yield return new WaitForSecondsRealtime(HOLD_DURATION);
-            // Slide back up
             yield return Slide(-20, 220, SLIDE_DURATION);
+            yield return new WaitForSecondsRealtime(GAP_BETWEEN);
         }
         isShowing = false;
     }
@@ -156,7 +179,6 @@ public class AchievementPopup : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / duration);
-            // ease-out cubic
             k = 1f - Mathf.Pow(1f - k, 3f);
             pos.y = Mathf.Lerp(fromY, toY, k);
             panel.anchoredPosition = pos;
