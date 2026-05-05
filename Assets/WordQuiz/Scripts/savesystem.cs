@@ -43,6 +43,7 @@ public static class SaveSystem
         public int playerLevel;
         public int[] unlockedLevels;
         public int[] unlockedCollectibles;
+        public int lastDailyBonusYmd;
 
         private const int MAX_PROGRESSIONS = 15;
         private const int MAX_CHORDS = 40;
@@ -99,6 +100,7 @@ public static class SaveSystem
             w.unlockedCollectibles = d.unlockedCollectibles != null
                 ? (int[])d.unlockedCollectibles.Clone()
                 : savedData.DefaultUnlockedCollectibles();
+            w.lastDailyBonusYmd = d.lastDailyBonusYmd;
 
             return w;
         }
@@ -155,6 +157,7 @@ public static class SaveSystem
             d.unlockedCollectibles = (unlockedCollectibles != null && unlockedCollectibles.Length > 0)
                 ? (int[])unlockedCollectibles.Clone()
                 : savedData.DefaultUnlockedCollectibles();
+            d.lastDailyBonusYmd = lastDailyBonusYmd;
 
             return d;
         }

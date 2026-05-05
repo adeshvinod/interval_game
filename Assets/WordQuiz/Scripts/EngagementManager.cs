@@ -41,7 +41,6 @@ public static class EngagementManager
 
     // ── Session state (resets on app launch, not on scene change) ─────────────
     static int currentStreak = 0;
-    static DateTime lastDailyBonusDate = DateTime.MinValue;
     static int sessionXPEarned = 0;       // XP gained since last StartSession()
     static int sessionStartLevel = 1;     // player level at last StartSession()
 
@@ -216,13 +215,21 @@ public static class EngagementManager
 
     static bool TryConsumeDailyFirst()
     {
-        var today = DateTime.Now.Date;
-        if (lastDailyBonusDate.Date != today)
+        int todayYmd = TodayYmd();
+        var data = SaveSystem.Loaddata() ?? new savedData();
+        if (data.lastDailyBonusYmd != todayYmd)
         {
-            lastDailyBonusDate = today;
+            data.lastDailyBonusYmd = todayYmd;
+            SaveSystem.SavePlayer(data);
             return true;
         }
         return false;
+    }
+
+    static int TodayYmd()
+    {
+        var d = DateTime.Now.Date;
+        return d.Year * 10000 + d.Month * 100 + d.Day;
     }
 
     static int LevelIndex(LearningMode mode, int level)

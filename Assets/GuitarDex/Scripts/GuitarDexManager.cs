@@ -65,11 +65,31 @@ public class GuitarDexManager : MonoBehaviour
             }
         }
         RefreshProgress();
+        RefreshXPLabel();
         if(items.Count>0) Select(items[0]);
     }
 
-    void OnEnable()  { EngagementManager.OnCollectibleUnlocked += HandleUnlocked; }
-    void OnDisable() { EngagementManager.OnCollectibleUnlocked -= HandleUnlocked; }
+    void OnEnable()
+    {
+        EngagementManager.OnCollectibleUnlocked += HandleUnlocked;
+        EngagementManager.OnXPEarned            += HandleXPEarned;
+        EngagementManager.OnLevelUp             += HandleLevelUp;
+    }
+    void OnDisable()
+    {
+        EngagementManager.OnCollectibleUnlocked -= HandleUnlocked;
+        EngagementManager.OnXPEarned            -= HandleXPEarned;
+        EngagementManager.OnLevelUp             -= HandleLevelUp;
+    }
+
+    void HandleXPEarned(int delta) { RefreshXPLabel(); }
+    void HandleLevelUp(int oldL, int newL) { RefreshXPLabel(); }
+
+    void RefreshXPLabel()
+    {
+        if (coinAmountLabel == null) return;
+        coinAmountLabel.text = $"LV {EngagementManager.GetPlayerLevel()} · {EngagementManager.GetTotalXP()} XP";
+    }
 
     void HandleUnlocked(int itemId)
     {

@@ -47,6 +47,8 @@ public class savedData
     public int playerLevel = 1;
     public int[] unlockedLevels;
     public int[] unlockedCollectibles;
+    // Stored as yyyyMMdd int (UTC). 0 = never claimed.
+    public int lastDailyBonusYmd = 0;
 
     public savedData(savedData _modifieddata)
     {
@@ -91,6 +93,7 @@ public class savedData
         unlockedCollectibles = _modifieddata.unlockedCollectibles != null
             ? (int[])_modifieddata.unlockedCollectibles.Clone()
             : DefaultUnlockedCollectibles();
+        lastDailyBonusYmd = _modifieddata.lastDailyBonusYmd;
 }
 
     
