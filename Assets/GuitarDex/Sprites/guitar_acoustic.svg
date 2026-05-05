@@ -1,0 +1,19 @@
+<svg viewBox="0 0 60 110" width="240" height="440" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="30" cy="74" rx="20" ry="24" fill="rgb(200,120,60)"></ellipse>
+      <ellipse cx="30" cy="74" rx="20" ry="24" fill="rgba(0,0,0,0.1)"></ellipse>
+      <ellipse cx="30" cy="44" rx="14" ry="17" fill="rgb(200,120,60)"></ellipse>
+      <ellipse cx="30" cy="44" rx="14" ry="17" fill="rgba(0,0,0,0.1)"></ellipse>
+      <rect x="18" y="56" width="24" height="6" fill="rgb(200,120,60)"></rect>
+      <circle cx="30" cy="58" r="6" fill="rgba(0,0,0,0.4)"></circle>
+      <circle cx="30" cy="58" r="5.2" stroke="rgba(0,0,0,0.08)" stroke-width="0.8" fill="none"></circle>
+      <rect x="27.5" y="8" width="5" height="38" rx="2" fill="rgb(100,70,30)"></rect>
+      <rect x="26" y="2" width="8" height="8" rx="2" fill="rgb(80,55,20)"></rect>
+      <circle cx="27.5" cy="5" r="1.2" fill="rgba(200,180,100,0.7)"></circle>
+      <circle cx="32" cy="5" r="1.2" fill="rgba(200,180,100,0.7)"></circle>
+      <rect x="24" y="80" width="12" height="3" rx="1" fill="rgba(100,65,30,0.8)"></rect>
+      <line x1="27" y1="10" x2="27" y2="82" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"></line>
+      <line x1="29" y1="10" x2="29" y2="82" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"></line>
+      <line x1="31" y1="10" x2="31" y2="82" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"></line>
+      <line x1="33" y1="10" x2="33" y2="82" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"></line>
+      <ellipse cx="30" cy="74" rx="20" ry="24" stroke="rgba(0,0,0,0.08)" stroke-width="0.8" fill="none"></ellipse>
+    </svg>

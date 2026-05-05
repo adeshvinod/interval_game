@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GuitarDex</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=M+PLUS+1+Code:wght@400;500&family=Itim&family=VT323&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{width:100%;height:100%;overflow:hidden;background:rgb(226,216,206);}
+  #stage{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+  #canvas{width:800px;height:360px;transform-origin:center center;overflow:hidden;position:relative;}
+  ::-webkit-scrollbar{width:3px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(17,78,85,0.2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div id="stage"><div id="canvas"><div id="root"></div></div></div>
+<script>
+  function sc(){const s=document.getElementById('stage'),c=document.getElementById('canvas');c.style.transform=`scale(${Math.min(s.clientWidth/800,s.clientHeight/360)})`;}
+  sc();window.addEventListener('resize',sc);
+</script>
+<script type="text/babel">
+
+const { useState } = React;
+
+// ── PALETTE ───────────────────────────────────────────────────
+const BG = 'linear-gradient(150deg, rgb(238,238,238) 0%, rgb(226,216,206) 100%)';
+const TEAL = 'rgb(17,78,85)';
+const ORANGE = 'rgb(249,117,75)';
+const INK = 'rgb(10,29,39)';
+const PAPER = 'rgb(236,231,224)';
+const CREAM = 'rgb(254,226,176)';
+const CREAM_D = 'rgb(213,196,175)';
+const AQUA = 'rgb(115,193,206)';
+const SAGE = 'rgb(181,207,174)';
+
+// Rarity colours — used only as subtle accent, no label shown
+const RC = { C: SAGE, R: AQUA, E: ORANGE, L: CREAM };
+
+// ── INSTRUMENT SVGs ───────────────────────────────────────────
+
+function StratGuitar({ col }) {
+  return <svg viewBox="0 0 60 110" width="60" height="110" fill="none">
+    <path d="M18 55 C10 50 8 40 14 34 C18 30 24 30 28 34 L30 36 L32 34 C36 30 42 30 46 34 C52 40 50 50 42 55 C46 62 46 72 40 78 C36 82 30 84 24 82 C18 80 14 74 14 68 C14 62 16 58 18 55Z" fill={col} />
+    <path d="M18 55 C10 50 8 40 14 34 C18 30 24 30 28 34 L30 36 L32 34 C36 30 42 30 46 34 C52 40 50 50 42 55 C46 62 46 72 40 78 C36 82 30 84 24 82 C18 80 14 74 14 68 C14 62 16 58 18 55Z" fill="rgba(0,0,0,0.14)" />
+    <rect x="27.5" y="10" width="5" height="46" rx="2.5" fill="rgb(120,80,40)" />
+    {[14, 19, 24, 29, 34, 39, 44, 49].map((y) => <rect key={y} x="27" y={y} width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)" />)}
+    <path d="M26 8 L28 2 L32 2 L34 8 Z" fill="rgb(100,65,30)" />
+    <circle cx="28.5" cy="4" r="1.2" fill="rgba(200,180,100,0.8)" />
+    <circle cx="31.5" cy="4" r="1.2" fill="rgba(200,180,100,0.8)" />
+    <rect x="22" y="60" width="16" height="4" rx="1.5" fill="rgba(0,0,0,0.4)" />
+    <rect x="22" y="67" width="16" height="4" rx="1.5" fill="rgba(0,0,0,0.3)" />
+    {[26, 28, 30, 32, 34].map((x) => <line key={x} x1={x} y1="10" x2={x} y2="75" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />)}
+    <path d="M18 55 C10 50 8 40 14 34 C18 30 24 30 28 34 L30 36 L32 34 C36 30 42 30 46 34 C52 40 50 50 42 55 C46 62 46 72 40 78 C36 82 30 84 24 82 C18 80 14 74 14 68 C14 62 16 58 18 55Z" stroke="rgba(0,0,0,0.1)" strokeWidth="0.8" fill="none" />
+  </svg>;
+}
+
+function FlyingV({ col }) {
+  return <svg viewBox="0 0 80 100" width="80" height="100" fill="none">
+    <path d="M40 8 L8 82 L26 82 L40 50 L54 82 L72 82 Z" fill={col} />
+    <path d="M40 8 L8 82 L26 82 L40 50 L54 82 L72 82 Z" fill="rgba(0,0,0,0.14)" />
+    <path d="M40 8 L8 82 L26 82 L40 50 L54 82 L72 82 Z" stroke="rgba(0,0,0,0.1)" strokeWidth="1" fill="none" />
+    <rect x="37.5" y="2" width="5" height="14" rx="2" fill="rgb(100,65,30)" />
+    <rect x="36" y="0" width="8" height="5" rx="1.5" fill="rgb(80,50,20)" />
+    <rect x="32" y="52" width="16" height="4" rx="1.5" fill="rgba(0,0,0,0.4)" />
+    <rect x="32" y="60" width="16" height="4" rx="1.5" fill="rgba(0,0,0,0.3)" />
+    {[37, 39, 41, 43].map((x) => <line key={x} x1={x} y1="4" x2={x} y2="75" stroke="rgba(0,0,0,0.1)" strokeWidth="0.6" />)}
+  </svg>;
+}
+
+function Acoustic({ col }) {
+  return <svg viewBox="0 0 60 110" width="60" height="110" fill="none">
+    <ellipse cx="30" cy="74" rx="20" ry="24" fill={col} />
+    <ellipse cx="30" cy="74" rx="20" ry="24" fill="rgba(0,0,0,0.1)" />
+    <ellipse cx="30" cy="44" rx="14" ry="17" fill={col} />
+    <ellipse cx="30" cy="44" rx="14" ry="17" fill="rgba(0,0,0,0.1)" />
+    <rect x="18" y="56" width="24" height="6" fill={col} />
+    <circle cx="30" cy="58" r="6" fill="rgba(0,0,0,0.4)" />
+    <circle cx="30" cy="58" r="5.2" stroke="rgba(0,0,0,0.08)" strokeWidth="0.8" fill="none" />
+    <rect x="27.5" y="8" width="5" height="38" rx="2" fill="rgb(100,70,30)" />
+    <rect x="26" y="2" width="8" height="8" rx="2" fill="rgb(80,55,20)" />
+    {[27.5, 32].map((x) => <circle key={x} cx={x} cy="5" r="1.2" fill="rgba(200,180,100,0.7)" />)}
+    <rect x="24" y="80" width="12" height="3" rx="1" fill="rgba(100,65,30,0.8)" />
+    {[27, 29, 31, 33].map((x) => <line key={x} x1={x} y1="10" x2={x} y2="82" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />)}
+    <ellipse cx="30" cy="74" rx="20" ry="24" stroke="rgba(0,0,0,0.08)" strokeWidth="0.8" fill="none" />
+  </svg>;
+}
+
+function BassGuitar({ col }) {
+  return <svg viewBox="0 0 65 110" width="65" height="110" fill="none">
+    <path d="M14 50 C8 44 8 34 16 30 C22 27 28 30 30 36 L32 38 C34 32 40 27 46 30 C54 34 54 46 46 52 C50 58 50 70 44 76 C38 82 26 82 20 76 C14 70 14 58 14 50Z" fill={col} />
+    <path d="M14 50 C8 44 8 34 16 30 C22 27 28 30 30 36 L32 38 C34 32 40 27 46 30 C54 34 54 46 46 52 C50 58 50 70 44 76 C38 82 26 82 20 76 C14 70 14 58 14 50Z" fill="rgba(255,255,255,0.05)" />
+    <rect x="28.5" y="6" width="5" height="52" rx="2.5" fill="rgb(18,55,80)" />
+    <rect x="27" y="2" width="8" height="6" rx="1.5" fill="rgb(12,38,58)" />
+    {[8, 13, 18, 23, 28, 33, 38, 43, 48].map((y) => <rect key={y} x="28" y={y} width="6" height="0.7" fill="rgba(115,193,206,0.4)" />)}
+    <rect x="22" y="56" width="16" height="4.5" rx="2" fill="rgba(0,0,0,0.4)" />
+    <rect x="22" y="64" width="16" height="4.5" rx="2" fill="rgba(0,0,0,0.3)" />
+    <circle cx="30" cy="48" r="7" fill="rgb(17,78,85)" />
+    <circle cx="30" cy="48" r="4.5" fill="rgb(115,193,206)" opacity="0.5" />
+    <circle cx="30" cy="48" r="2.5" fill="rgb(10,29,39)" />
+    <circle cx="28.5" cy="46.5" r="1" fill="rgba(255,255,255,0.5)" />
+    {[28, 30, 32, 34].map((x) => <line key={x} x1={x} y1="6" x2={x} y2="74" stroke="rgba(115,193,206,0.15)" strokeWidth="0.6" />)}
+  </svg>;
+}
+
+function ExplorerGuitar({ col, accent = CREAM }) {
+  return <svg viewBox="0 0 80 110" width="80" height="110" fill="none">
+    <path d="M40 10 L60 38 L70 60 L56 74 L46 70 L40 85 L34 70 L24 74 L10 60 L20 38 Z" fill={col} />
+    <path d="M40 10 L60 38 L70 60 L56 74 L46 70 L40 85 L34 70 L24 74 L10 60 L20 38 Z" fill="rgba(0,0,0,0.18)" />
+    <path d="M40 10 L60 38 L70 60 L56 74 L46 70 L40 85 L34 70 L24 74 L10 60 L20 38 Z" stroke={accent} strokeWidth="0.8" strokeOpacity="0.3" fill="none" />
+    <rect x="37.5" y="2" width="5" height="14" rx="2" fill="rgb(70,55,28)" />
+    <rect x="36" y="0" width="8" height="4" rx="1.5" fill="rgb(50,38,16)" />
+    <rect x="30" y="48" width="20" height="4" rx="1.5" fill={accent} opacity="0.5" />
+    <rect x="30" y="55" width="20" height="4" rx="1.5" fill={accent} opacity="0.35" />
+    {[36, 38, 40, 42].map((x) => <line key={x} x1={x} y1="3" x2={x} y2="78" stroke={accent} strokeWidth="0.5" strokeOpacity="0.15" />)}
+    <circle cx="16" cy="40" r="1.4" fill={accent} opacity="0.75" />
+    <circle cx="60" cy="48" r="1" fill={accent} opacity="0.65" />
+    <circle cx="26" cy="66" r="1" fill={accent} opacity="0.55" />
+    <circle cx="58" cy="28" r="1.4" fill={accent} opacity="0.5" />
+  </svg>;
+}
+
+function FuzzPedal({ col, led = SAGE }) {
+  return <svg viewBox="0 0 70 90" width="70" height="90" fill="none">
+    <rect x="8" y="10" width="54" height="68" rx="9" fill={col} />
+    <rect x="8" y="10" width="54" height="68" rx="9" fill="rgba(0,0,0,0.14)" />
+    {[22, 35, 48].map((x) => <g key={x}>
+      <circle cx={x} cy="30" r="9" fill="rgb(20,20,20)" />
+      <circle cx={x} cy="30" r="6.5" fill="rgb(50,50,50)" />
+      <circle cx={x} cy="30" r="3" fill="rgba(0,0,0,0.5)" />
+      <line x1={x} y1="23.5" x2={x} y2="21" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
+    </g>)}
+    <circle cx="35" cy="53" r="4.5" fill={led} />
+    <circle cx="35" cy="53" r="2.5" fill="rgba(255,255,255,0.4)" />
+    <circle cx="35" cy="68" r="11" fill="rgb(25,25,25)" />
+    <circle cx="35" cy="68" r="7.5" fill="rgb(55,55,55)" />
+    <circle cx="35" cy="68" r="4" fill="rgb(80,80,80)" />
+    <rect x="11" y="3" width="6" height="9" rx="2" fill={col} />
+    <rect x="53" y="3" width="6" height="9" rx="2" fill={col} />
+    <circle cx="14" cy="7" r="2" fill="rgb(20,20,20)" />
+    <circle cx="56" cy="7" r="2" fill="rgb(20,20,20)" />
+  </svg>;
+}
+
+function WahPedal({ col }) {
+  return <svg viewBox="0 0 60 110" width="60" height="110" fill="none">
+    <rect x="8" y="12" width="44" height="86" rx="10" fill={col} />
+    <rect x="8" y="12" width="44" height="86" rx="10" fill="rgba(0,0,0,0.15)" />
+    <rect x="12" y="18" width="36" height="62" rx="7" fill="rgba(0,0,0,0.25)" />
+    <rect x="14" y="22" width="32" height="26" rx="5" fill="rgba(255,255,255,0.06)" />
+    <rect x="10" y="54" width="40" height="4" rx="2" fill="rgba(0,0,0,0.4)" />
+    <circle cx="30" cy="92" r="4" fill={ORANGE} />
+    <circle cx="30" cy="92" r="2" fill="rgba(255,255,255,0.4)" />
+    <rect x="12" y="4" width="6" height="10" rx="2" fill={col} />
+    <rect x="42" y="4" width="6" height="10" rx="2" fill={col} />
+    <circle cx="15" cy="9" r="2" fill="rgb(20,20,20)" />
+    <circle cx="45" cy="9" r="2" fill="rgb(20,20,20)" />
+  </svg>;
+}
+
+function DelayPedal({ col, led = CREAM }) {
+  return <svg viewBox="0 0 80 90" width="80" height="90" fill="none">
+    <rect x="6" y="8" width="68" height="70" rx="9" fill={col} />
+    <rect x="6" y="8" width="68" height="70" rx="9" fill="rgba(0,0,0,0.14)" style={{ width: "3px" }} />
+    {[20, 36, 52, 66].map((x) => <g key={x}>
+      <circle cx={x} cy="30" r="9" fill="rgb(18,18,18)" />
+      <circle cx={x} cy="30" r="6" fill="rgb(45,45,45)" />
+      <line x1={x} y1="24" x2={x} y2="21.5" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
+    </g>)}
+    <rect x="14" y="44" width="52" height="12" rx="3" fill="rgba(0,0,0,0.35)" />
+    {[0, 1, 2, 3, 4, 5, 6].map((i) => <rect key={i} x={18 + i * 7} y="47" width="4" height="6" rx="1" fill={led} opacity={(7 - i) / 8} />)}
+    <circle cx="72" cy="56" r="3.5" fill={led} />
+    <circle cx="24" cy="67" r="9" fill="rgb(22,22,22)" />
+    <circle cx="24" cy="67" r="6.5" fill="rgb(50,50,50)" />
+    <circle cx="56" cy="67" r="9" fill="rgb(22,22,22)" />
+    <circle cx="56" cy="67" r="6.5" fill="rgb(50,50,50)" />
+    <rect x="9" y="0" width="6" height="10" rx="2" fill={col} />
+    <rect x="65" y="0" width="6" height="10" rx="2" fill={col} />
+    <circle cx="12" cy="5" r="2" fill="rgb(20,20,20)" />
+    <circle cx="68" cy="5" r="2" fill="rgb(20,20,20)" />
+  </svg>;
+}
+
+function ComboAmp({ col }) {
+  return <svg viewBox="0 0 100 90" width="100" height="90" fill="none">
+    <rect x="4" y="6" width="92" height="80" rx="8" fill={col} />
+    <rect x="4" y="6" width="92" height="80" rx="8" fill="rgba(0,0,0,0.1)" />
+    <rect x="12" y="28" width="56" height="52" rx="5" fill="rgba(0,0,0,0.28)" />
+    <circle cx="40" cy="54" r="20" fill="rgba(0,0,0,0.18)" />
+    <circle cx="40" cy="54" r="14" stroke="rgba(255,255,255,0.06)" strokeWidth="1" fill="rgba(0,0,0,0.1)" />
+    <circle cx="40" cy="54" r="7" fill="rgba(0,0,0,0.22)" />
+    <circle cx="40" cy="54" r="3" fill={col} opacity="0.4" />
+    <rect x="12" y="12" width="76" height="13" rx="3" fill="rgba(0,0,0,0.18)" />
+    {[22, 34, 46, 58, 70].map((x) => <g key={x}>
+      <circle cx={x} cy="18.5" r="4.5" fill="rgb(20,20,20)" />
+      <circle cx={x} cy="18.5" r="3" fill="rgb(50,50,50)" />
+      <line x1={x} y1="14" x2={x} y2="12.5" stroke="rgba(255,255,255,0.45)" strokeWidth="1.2" strokeLinecap="round" />
+    </g>)}
+    <circle cx="80" cy="18.5" r="4" fill={SAGE} />
+    <circle cx="80" cy="18.5" r="2.2" fill="rgba(255,255,255,0.4)" />
+    <path d="M34 6 Q50 0 66 6" stroke="rgba(255,255,255,0.15)" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+    {[[4, 6], [92, 6], [4, 82], [92, 82]].map(([x, y], i) => <rect key={i} x={x - 3} y={y - 3} width="6" height="6" rx="1" fill="rgba(0,0,0,0.4)" />)}
+  </svg>;
+}
+
+function StackAmp({ col }) {
+  return <svg viewBox="0 0 96 100" width="96" height="100" fill="none">
+    <rect x="8" y="4" width="80" height="34" rx="6" fill={col} />
+    <rect x="8" y="4" width="80" height="34" rx="6" fill="rgba(0,0,0,0.15)" />
+    <rect x="14" y="10" width="68" height="14" rx="3" fill="rgba(0,0,0,0.22)" />
+    {[24, 36, 48, 60, 72].map((x) => <g key={x}>
+      <circle cx={x} cy="17" r="4" fill="rgb(20,20,20)" />
+      <circle cx={x} cy="17" r="2.5" fill="rgb(55,55,55)" />
+    </g>)}
+    <circle cx="78" cy="17" r="3.5" fill={ORANGE} opacity="0.9" />
+    <rect x="14" y="28" width="68" height="6" rx="2" fill="rgba(0,0,0,0.18)" />
+    <rect x="4" y="42" width="88" height="56" rx="6" fill={col} />
+    <rect x="4" y="42" width="88" height="56" rx="6" fill="rgba(0,0,0,0.18)" />
+    <rect x="10" y="48" width="76" height="44" rx="5" fill="rgba(0,0,0,0.28)" />
+    {[[28, 64], [28, 78], [68, 64], [68, 78]].map(([cx, cy], i) => <g key={i}>
+      <circle cx={cx} cy={cy} r="11" fill="rgba(0,0,0,0.18)" />
+      <circle cx={cx} cy={cy} r="7" stroke="rgba(255,255,255,0.05)" strokeWidth="0.8" fill="rgba(0,0,0,0.12)" />
+      <circle cx={cx} cy={cy} r="3" fill="rgba(0,0,0,0.3)" />
+    </g>)}
+    {[[4, 42], [88, 42], [4, 94], [88, 94]].map(([x, y], i) => <rect key={i} x={x - 3} y={y - 3} width="6" height="6" rx="1" fill="rgba(0,0,0,0.4)" />)}
+  </svg>;
+}
+
+function MiniAmp({ col }) {
+  return <svg viewBox="0 0 70 80" width="70" height="80" fill="none">
+    <rect x="6" y="8" width="58" height="64" rx="7" fill={col} />
+    <rect x="6" y="8" width="58" height="64" rx="7" fill="rgba(0,0,0,0.1)" />
+    <rect x="12" y="30" width="38" height="36" rx="4" fill="rgba(0,0,0,0.28)" />
+    <circle cx="31" cy="48" r="13" fill="rgba(0,0,0,0.2)" />
+    <circle cx="31" cy="48" r="8" fill="rgba(0,0,0,0.2)" />
+    <circle cx="31" cy="48" r="4" fill={col} opacity="0.35" />
+    <rect x="12" y="14" width="46" height="12" rx="3" fill="rgba(0,0,0,0.18)" />
+    {[22, 32, 42].map((x) => <g key={x}>
+      <circle cx={x} cy="20" r="4" fill="rgb(22,22,22)" />
+      <circle cx={x} cy="20" r="2.5" fill="rgb(50,50,50)" />
+    </g>)}
+    <circle cx="52" cy="20" r="3.5" fill={AQUA} />
+    <circle cx="52" cy="20" r="1.8" fill="rgba(255,255,255,0.4)" />
+    <path d="M22 8 Q35 3 48 8" stroke="rgba(255,255,255,0.15)" strokeWidth="3" fill="none" strokeLinecap="round" />
+  </svg>;
+}
+
+function VoidAmp({ col }) {
+  return <svg viewBox="0 0 96 100" width="96" height="100" fill="none">
+    <rect x="4" y="4" width="88" height="92" rx="8" fill={col} />
+    <rect x="4" y="4" width="88" height="92" rx="8" stroke="rgb(30,20,60)" strokeWidth="1.5" fill="none" />
+    <rect x="10" y="28" width="76" height="62" rx="6" fill="rgb(4,2,10)" />
+    <circle cx="48" cy="59" r="22" fill="rgb(4,2,10)" />
+    {[22, 17, 12, 8].map((r, i) => <circle key={r} cx="48" cy="59" r={r} stroke={`rgba(${60 + i * 20},0,${120 + i * 20},${0.5 - i * 0.08})`} strokeWidth="0.8" fill="none" />)}
+    <circle cx="48" cy="59" r="5" fill="rgb(60,0,130)" opacity="0.9" />
+    <circle cx="48" cy="59" r="2" fill="rgb(140,0,255)" opacity="0.8" />
+    {[[18, 35], [30, 32], [62, 38], [70, 50], [20, 70], [66, 72], [40, 82], [55, 30]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="0.7" fill="rgba(180,160,255,0.8)" />)}
+    <rect x="10" y="8" width="76" height="16" rx="3" fill="rgba(0,0,0,0.4)" />
+    {[22, 36, 50, 64].map((x) => <g key={x}>
+      <circle cx={x} cy="16" r="4" fill="rgb(15,10,25)" />
+      <circle cx={x} cy="16" r="2.5" fill="rgb(30,20,50)" />
+    </g>)}
+    <circle cx="76" cy="16" r="3.5" fill="rgb(100,0,200)" opacity="0.9" />
+  </svg>;
+}
+
+// ── ITEMS (add as many as you like) ───────────────────────────
+const ITEMS = [
+{ id: 1, type: 'guitar', name: "Ol' Faithful", rarity: 'C', unlocked: true, bg: 'rgb(249,117,75)', border: 'rgb(217,80,42)', Gfx: () => <Acoustic col="rgb(200,120,60)" />, flavor: "A beat-up acoustic your uncle left in a closet. Smells like 1987.", unlock: "Starter guitar" },
+{ id: 2, type: 'pedal', name: 'Fuzz Goblin', rarity: 'C', unlocked: true, bg: 'rgb(17,78,85)', border: 'rgb(69,101,109)', Gfx: () => <FuzzPedal col="rgb(17,78,85)" led={SAGE} />, flavor: "Eats batteries. Produces chaos. Zero regrets.", unlock: "Score 300 – Notes Lv.1" },
+{ id: 3, type: 'guitar', name: 'Cosmic Drifter', rarity: 'R', unlocked: true, bg: 'rgb(55,88,100)', border: 'rgb(17,78,85)', Gfx: () => <StratGuitar col="rgb(80,130,150)" />, flavor: "Carved from a tree struck by lightning at a jazz festival in 1974.", unlock: "Score 600 – Notes Lv.1" },
+{ id: 4, type: 'amp', name: 'Screaming Box', rarity: 'R', unlocked: true, bg: 'rgb(140,100,60)', border: 'rgb(100,70,40)', Gfx: () => <ComboAmp col="rgb(160,115,65)" />, flavor: "A 1962 combo amp found under a stage in Liverpool.", unlock: "Complete Intervals Lv.1" },
+{ id: 5, type: 'guitar', name: 'Meteorite Shredder', rarity: 'L', unlocked: true, bg: 'rgb(30,24,18)', border: 'rgb(254,226,176)', Gfx: () => <ExplorerGuitar col="rgb(40,32,20)" />, flavor: "Forged from a meteor that hit Earth 5,000 yrs ago. Tone: inexplicable.", unlock: "Score 1000 – Notes Lv.2" },
+{ id: 6, type: 'pedal', name: 'Delay Djinn', rarity: 'E', unlocked: true, bg: 'rgb(170,60,30)', border: 'rgb(254,226,176)', Gfx: () => <DelayPedal col="rgb(200,70,35)" />, flavor: "Replays notes from your past three lives.", unlock: "Complete Intervals Lv.2" },
+{ id: 7, type: 'guitar', name: 'The Kraken Bass', rarity: 'E', unlocked: false, bg: 'rgb(8,22,38)', border: 'rgb(17,78,85)', Gfx: () => <BassGuitar col="rgb(12,42,65)" />, flavor: "???", unlock: "Score 800 – Progressions Lv.2" },
+{ id: 8, type: 'amp', name: 'Void Stack', rarity: 'L', unlocked: false, bg: 'rgb(6,4,12)', border: 'rgb(60,20,100)', Gfx: () => <VoidAmp col="rgb(10,6,20)" />, flavor: "???", unlock: "S-rank all levels" },
+{ id: 9, type: 'pedal', name: 'Wah of Doom', rarity: 'R', unlocked: false, bg: 'rgb(17,78,85)', border: 'rgb(69,101,109)', Gfx: () => <WahPedal col="rgb(17,78,85)" />, flavor: "???", unlock: "Score 500 – Notes Lv.3" },
+{ id: 10, type: 'guitar', name: 'Sunburst Phantom', rarity: 'E', unlocked: false, bg: 'rgb(170,60,20)', border: 'rgb(249,117,75)', Gfx: () => <FlyingV col="rgb(200,80,30)" />, flavor: "???", unlock: "Earn 3000 total coins" },
+{ id: 11, type: 'amp', name: 'Coral Combo', rarity: 'C', unlocked: false, bg: 'rgb(30,70,85)', border: 'rgb(115,193,206)', Gfx: () => <MiniAmp col="rgb(40,100,120)" />, flavor: "???", unlock: "Score 400 – Progressions Lv.1" },
+{ id: 12, type: 'guitar', name: "Zeus's Axe", rarity: 'L', unlocked: false, bg: 'rgb(30,24,18)', border: 'rgb(254,226,176)', Gfx: () => <ExplorerGuitar col="rgb(60,50,20)" />, flavor: "???", unlock: "Perfect score in any level" },
+{ id: 13, type: 'guitar', name: 'Bone Shaker', rarity: 'E', unlocked: false, bg: 'rgb(90,80,65)', border: 'rgb(140,120,90)', Gfx: () => <FlyingV col="rgb(210,200,175)" />, flavor: "???", unlock: "Complete all Intervals levels" },
+{ id: 14, type: 'pedal', name: 'Haunted Tremolo', rarity: 'R', unlocked: false, bg: 'rgb(50,35,70)', border: 'rgb(100,70,130)', Gfx: () => <FuzzPedal col="rgb(70,50,100)" led={AQUA} />, flavor: "???", unlock: "Score 700 – Notes Lv.3" }];
+
+
+// ── LOCK ──────────────────────────────────────────────────────
+function Lock() {
+  return <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+    <rect x="8" y="18" width="24" height="18" rx="4" fill={INK} opacity="0.45" />
+    <path d="M13 18V14A7 7 0 0127 14V18" stroke={INK} strokeWidth="3.5" fill="none" strokeLinecap="round" opacity="0.45" />
+  </svg>;
+}
+
+// ── GRID CELL ─────────────────────────────────────────────────
+function Cell({ item, selected, onClick }) {
+  const rc = RC[item.rarity];
+  const locked = !item.unlocked;
+
+  return (
+    <div onClick={() => onClick(item)} style={{
+      position: 'relative', cursor: 'pointer',
+      borderRadius: 10,
+      border: `2px solid ${selected ? rc : locked ? 'rgba(17,78,85,0.1)' : 'rgba(17,78,85,0.18)'}`,
+      background: locked ? 'rgba(17,78,85,0.05)' : 'rgba(0,0,0,0.07)',
+      overflow: 'hidden',
+      transition: 'border-color 0.15s, transform 0.12s, box-shadow 0.15s',
+      transform: selected ? 'scale(1.04)' : 'scale(1)',
+      boxShadow: selected ?
+      `0 0 0 2px ${rc}, 0 4px 14px rgba(0,0,0,0.15)` :
+      '0 2px 6px rgba(0,0,0,0.08)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end'
+    }}>
+      {/* Rarity accent — tiny dot only */}
+      <div style={{
+        position: 'absolute', top: 5, right: 5,
+        width: 4, height: 4, borderRadius: '50%',
+        background: rc, opacity: locked ? 0.2 : 0.7
+      }} />
+
+      {/* Graphic */}
+      <div style={{
+        flex: 1, width: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        paddingTop: 6, overflow: 'hidden',
+        filter: locked ? 'grayscale(1) brightness(0.55)' : 'none'
+      }}>
+        <div style={{ transform: 'scale(0.62)', transformOrigin: 'center bottom' }}>
+          <item.Gfx />
+        </div>
+      </div>
+
+      {/* Lock */}
+      {locked &&
+      <div style={{
+        position: 'absolute', top: '38%', left: '50%',
+        transform: 'translate(-50%,-50%)'
+      }}>
+          <Lock />
+        </div>
+      }
+
+      {/* Name strip */}
+      <div style={{
+        width: '100%', padding: '3px 5px 4px',
+        background: 'rgba(17,78,85,0.12)',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontFamily: 'Lilita One', fontSize: 7.5, lineHeight: 1.1,
+          color: locked ? 'rgba(10,29,39,0.3)' : INK,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+        }}>
+          {locked ? '???' : item.name}
+        </div>
+      </div>
+    </div>);
+
+}
+
+// ── APP ───────────────────────────────────────────────────────
+function App() {
+  const [sel, setSel] = useState(ITEMS[0]);
+
+  const unlocked = ITEMS.filter((i) => i.unlocked).length;
+  const rc = RC[sel.rarity];
+  const locked = !sel.unlocked;
+
+  return (
+    <div style={{
+      width: 800, height: 360,
+      background: BG,
+      display: 'flex', flexDirection: 'column',
+      overflow: 'hidden', fontFamily: '"Lilita One"'
+    }}>
+
+      {/* ── HEADER ── */}
+      <div style={{
+        height: 40, flexShrink: 0,
+        display: 'flex', alignItems: 'center', padding: '0 14px', gap: 12,
+        borderBottom: '1px solid rgba(17,78,85,0.1)'
+      }}>
+        {/* Back */}
+        <button style={{
+          width: 28, height: 28, borderRadius: 7, background: TEAL,
+          border: 'none', cursor: 'pointer', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.18)'
+        }}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M8 2.5L4.5 6L8 9.5" stroke={PAPER} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        {/* Title */}
+        <span style={{ fontFamily: 'Lilita One', fontSize: 17, color: INK, letterSpacing: '-0.01em', flexShrink: 0 }}>
+          GUITARDEX
+        </span>
+
+        {/* Progress */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div style={{ height: 4, background: 'rgba(17,78,85,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 2,
+              width: `${unlocked / ITEMS.length * 100}%`,
+              background: `linear-gradient(90deg, ${TEAL}, ${AQUA})`
+            }} />
+          </div>
+          <div style={{ fontFamily: 'M PLUS 1 Code', fontSize: 7, fontWeight: 500, color: 'rgba(10,29,39,0.38)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            {unlocked} / {ITEMS.length} collected
+          </div>
+        </div>
+
+        {/* Coins */}
+        <div style={{
+          background: TEAL, borderRadius: 7, padding: '4px 9px',
+          display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+          boxShadow: '0 2px 5px rgba(0,0,0,0.18)'
+        }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: CREAM }} />
+          <span style={{ fontFamily: 'VT323', fontSize: 15, color: CREAM, lineHeight: 1 }}>1156</span>
+        </div>
+      </div>
+
+      {/* ── BODY ── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* SCROLLABLE GRID */}
+        <div style={{
+          flex: 1, padding: '10px 10px 10px 14px',
+          overflowY: 'auto', overflowX: 'hidden'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, 1fr)',
+            gap: 8
+          }}>
+            {ITEMS.map((item) =>
+            <Cell key={item.id} item={item} selected={sel?.id === item.id} onClick={setSel} />
+            )}
+          </div>
+        </div>
+
+        {/* ── DETAIL PANEL ── */}
+        <div style={{
+          width: 210, flexShrink: 0,
+          borderLeft: '1px solid rgba(17,78,85,0.1)',
+          background: 'rgba(17,78,85,0.04)',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          {sel && <>
+            {/* Rarity colour bar */}
+            <div style={{ height: 3, background: rc, flexShrink: 0 }} />
+
+            {/* Big graphic */}
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              filter: locked ? 'grayscale(1) brightness(0.55)' : 'none',
+              overflow: 'hidden', position: 'relative'
+            }}>
+              <div style={{ transform: 'scale(1.05)', transformOrigin: 'center center' }}>
+                <sel.Gfx />
+              </div>
+              {locked &&
+              <div style={{ position: 'absolute' }}>
+                  <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+                    <rect x="8" y="18" width="24" height="18" rx="4" fill={INK} opacity="0.5" />
+                    <path d="M13 18V14A7 7 0 0127 14V18" stroke={INK} strokeWidth="3.5" fill="none" strokeLinecap="round" opacity="0.5" />
+                  </svg>
+                </div>
+              }
+            </div>
+
+            {/* Info */}
+            <div style={{ padding: '8px 12px 12px', flexShrink: 0 }}>
+              {/* ID */}
+              <div style={{
+                fontFamily: 'M PLUS 1 Code', fontSize: 7.5, fontWeight: 500,
+                color: 'rgba(10,29,39,0.35)', textTransform: 'uppercase',
+                letterSpacing: '0.06em', marginBottom: 3
+              }}>
+                #{String(sel.id).padStart(3, '0')} · {sel.type}
+              </div>
+
+              {/* Name */}
+              <div style={{
+                fontFamily: 'Lilita One', fontSize: 15,
+                color: locked ? 'rgba(10,29,39,0.25)' : INK,
+                lineHeight: 1.1, marginBottom: 5
+              }}>
+                {locked ? '???' : sel.name}
+              </div>
+
+              {/* Flavor */}
+              <div style={{
+                fontFamily: 'Itim', fontSize: 10.5,
+                color: locked ? 'rgba(10,29,39,0.2)' : 'rgba(10,29,39,0.65)',
+                fontStyle: 'italic', lineHeight: 1.5, marginBottom: 8
+              }}>
+                {locked ? 'Keep playing to unlock.' : `"${sel.flavor}"`}
+              </div>
+
+              {/* Unlock */}
+              <div style={{
+                background: 'rgba(17,78,85,0.08)', borderRadius: 7,
+                padding: '6px 8px',
+                display: 'flex', alignItems: 'center', gap: 6
+              }}>
+                <span style={{ fontSize: 11 }}>{locked ? '🔒' : '✓'}</span>
+                <div>
+                  <div style={{ fontFamily: 'M PLUS 1 Code', fontSize: 7, fontWeight: 500, color: 'rgba(10,29,39,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {locked ? 'unlock condition' : 'unlocked by'}
+                  </div>
+                  <div style={{ fontFamily: 'Itim', fontSize: 10.5, color: locked ? 'rgb(217,80,42)' : 'rgba(10,29,39,0.8)' }}>
+                    {sel.unlock}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>}
+        </div>
+      </div>
+    </div>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

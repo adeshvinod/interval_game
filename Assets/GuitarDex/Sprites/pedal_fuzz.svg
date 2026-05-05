@@ -1,0 +1,17 @@
+<svg viewBox="0 0 70 90" width="280" height="360" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="10" width="54" height="68" rx="9" fill="rgb(17,78,85)"></rect>
+      <rect x="8" y="10" width="54" height="68" rx="9" fill="rgba(0,0,0,0.14)"></rect>
+      <circle cx="22" cy="30" r="9" fill="rgb(20,20,20)"></circle>
+      <circle cx="22" cy="30" r="6.5" fill="rgb(50,50,50)"></circle>
+      <circle cx="35" cy="30" r="9" fill="rgb(20,20,20)"></circle>
+      <circle cx="35" cy="30" r="6.5" fill="rgb(50,50,50)"></circle>
+      <circle cx="48" cy="30" r="9" fill="rgb(20,20,20)"></circle>
+      <circle cx="48" cy="30" r="6.5" fill="rgb(50,50,50)"></circle>
+      <circle cx="35" cy="53" r="4.5" fill="rgb(181,207,174)"></circle>
+      <circle cx="35" cy="53" r="2.5" fill="rgba(255,255,255,0.4)"></circle>
+      <circle cx="35" cy="68" r="11" fill="rgb(25,25,25)"></circle>
+      <circle cx="35" cy="68" r="7.5" fill="rgb(55,55,55)"></circle>
+      <circle cx="35" cy="68" r="4" fill="rgb(80,80,80)"></circle>
+      <rect x="11" y="3" width="6" height="9" rx="2" fill="rgb(17,78,85)"></rect>
+      <rect x="53" y="3" width="6" height="9" rx="2" fill="rgb(17,78,85)"></rect>
+    </svg>

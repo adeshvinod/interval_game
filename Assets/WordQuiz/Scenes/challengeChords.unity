@@ -5259,7 +5259,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -211.18001, y: 92.28497}
+  m_AnchoredPosition: {x: -159.9, y: 92.28497}
   m_SizeDelta: {x: 95.63, y: 82.66998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &739254180
@@ -8739,7 +8739,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 243.99998, y: 92.28497}
+  m_AnchoredPosition: {x: 170.25, y: 92.28497}
   m_SizeDelta: {x: 98.18, y: 84.880005}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1254082375
@@ -15860,7 +15860,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 3.0373535, y: -37}
+  m_AnchoredPosition: {x: 3.0373535, y: -36.99997}
   m_SizeDelta: {x: 500.1001, y: 185.92004}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2075056750
@@ -16207,6 +16207,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: scorecard
+      objectReference: {fileID: 0}
+    - target: {fileID: 1072111522242657307, guid: 25ca9af5ed534fb43ab03a56f9b7bb8d,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1072111522642551977, guid: 25ca9af5ed534fb43ab03a56f9b7bb8d,
         type: 3}

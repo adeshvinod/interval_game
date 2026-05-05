@@ -201,7 +201,7 @@ public class chordsGameManager : MonoBehaviour
 
         string chordName = ChordsGameData.ChordNames[currentChordIndex];
         string rootName  = NoteNamesFlats[currentRootNote];
-        questionText.text = $"{rootName} {chordName}";
+        questionText.text = $"{chordName}";
 
         Debug.Log($"Q{currentPoolIndex+1}/{questionPool.Count}: {rootName} {chordName} | {remainingAnswerSiblings.Count} answers needed");
     }

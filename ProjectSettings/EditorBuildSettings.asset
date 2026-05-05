@@ -53,4 +53,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/WordQuiz/Scenes/challengeChords.unity
     guid: 9d9bb8a5bb7e942a7a4eb9d18ddf2380
+  - enabled: 1
+    path: Assets/WordQuiz/Scenes/GuitarDex.unity
+    guid: 8c24d3b62dfc3445dad804dc5bd3a5a9
   m_configObjects: {}

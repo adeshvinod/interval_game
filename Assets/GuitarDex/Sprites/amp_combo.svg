@@ -1,0 +1,18 @@
+<svg viewBox="0 0 100 90" width="400" height="360" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="6" width="92" height="80" rx="8" fill="rgb(160,115,65)"></rect>
+      <rect x="4" y="6" width="92" height="80" rx="8" fill="rgba(0,0,0,0.1)"></rect>
+      <rect x="12" y="28" width="56" height="52" rx="5" fill="rgba(0,0,0,0.28)"></rect>
+      <circle cx="40" cy="54" r="20" fill="rgba(0,0,0,0.18)"></circle>
+      <circle cx="40" cy="54" r="14" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="rgba(0,0,0,0.1)"></circle>
+      <circle cx="40" cy="54" r="7" fill="rgba(0,0,0,0.22)"></circle>
+      <circle cx="40" cy="54" r="3" fill="rgb(160,115,65)" fill-opacity="0.4"></circle>
+      <rect x="12" y="12" width="76" height="13" rx="3" fill="rgba(0,0,0,0.18)"></rect>
+      <circle cx="22" cy="18.5" r="4.5" fill="rgb(20,20,20)"></circle>
+      <circle cx="22" cy="18.5" r="3" fill="rgb(50,50,50)"></circle>
+      <circle cx="34" cy="18.5" r="4.5" fill="rgb(20,20,20)"></circle>
+      <circle cx="34" cy="18.5" r="3" fill="rgb(50,50,50)"></circle>
+      <circle cx="46" cy="18.5" r="4.5" fill="rgb(20,20,20)"></circle>
+      <circle cx="46" cy="18.5" r="3" fill="rgb(50,50,50)"></circle>
+      <circle cx="80" cy="18.5" r="4" fill="rgb(181,207,174)"></circle>
+      <path d="M34 6 Q50 0 66 6" stroke="rgba(255,255,255,0.15)" stroke-width="3.5" fill="none" stroke-linecap="round"></path>
+    </svg>

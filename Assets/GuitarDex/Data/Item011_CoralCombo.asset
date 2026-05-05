@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08da0b62716264a8eb89bb70ef2e7dcd, type: 3}
+  m_Name: Item011_CoralCombo
+  m_EditorClassIdentifier: Assembly-CSharp::GuitarDexItem
+  id: 11
+  itemName: Coral Combo
+  type: 2
+  rarity: 0
+  unlocked: 0
+  flavorText: Small but mighty. Mostly small.
+  unlockCondition: Score 400 - Progressions Lv.1
+  graphic: {fileID: 3286163911610860551, guid: 9c9095593f0cf48298694e65c96b92c3, type: 3}
+  cardBgColor: {r: 0.11764706, g: 0.27450982, b: 0.33333334, a: 1}

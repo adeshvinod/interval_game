@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: fretnoodle
-  productName: test6
+  productName: chordGame
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -164,7 +164,7 @@ PlayerSettings:
   androidMaxAspectRatio: 2.1
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.fretnoodle.test1
+    Android: com.fretnoodle.chordGame
     Standalone: com.Company.ProductName
   buildNumber:
     Standalone: 0
@@ -484,7 +484,10 @@ PlayerSettings:
       m_Height: 1024
       m_Kind: 4
       m_SubKind: App Store
-  m_BuildTargetBatching: []
+  m_BuildTargetBatching:
+  - m_BuildTarget: Android
+    m_StaticBatching: 1
+    m_DynamicBatching: 0
   m_BuildTargetShaderSettings: []
   m_BuildTargetGraphicsJobs:
   - m_BuildTarget: GameCoreScarlettSupport
@@ -549,7 +552,10 @@ PlayerSettings:
   m_BuildTargetGroupLightmapSettings: []
   m_BuildTargetGroupLoadStoreDebugModeSettings: []
   m_BuildTargetNormalMapEncoding: []
-  m_BuildTargetDefaultTextureCompressionFormat: []
+  m_BuildTargetDefaultTextureCompressionFormat:
+  - serializedVersion: 3
+    m_BuildTarget: Android
+    m_Formats: 01000000
   playModeTestRunnerEnabled: 0
   runPlayModeTestAsEditModeTest: 0
   actionOnDotNetUnhandledException: 1
@@ -816,23 +822,25 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: UNITY_POST_PROCESSING_STACK_V2
-    EmbeddedLinux: UNITY_POST_PROCESSING_STACK_V2
-    GameCoreScarlett: UNITY_POST_PROCESSING_STACK_V2
-    GameCoreXboxOne: UNITY_POST_PROCESSING_STACK_V2
-    Kepler: UNITY_POST_PROCESSING_STACK_V2
-    LinuxHeadlessSimulation: UNITY_POST_PROCESSING_STACK_V2
-    Nintendo Switch: UNITY_POST_PROCESSING_STACK_V2
-    Nintendo Switch 2: UNITY_POST_PROCESSING_STACK_V2
-    PS4: UNITY_POST_PROCESSING_STACK_V2
-    PS5: UNITY_POST_PROCESSING_STACK_V2
-    QNX: UNITY_POST_PROCESSING_STACK_V2
-    Standalone: UNITY_POST_PROCESSING_STACK_V2
-    VisionOS: UNITY_POST_PROCESSING_STACK_V2
-    WebGL: UNITY_POST_PROCESSING_STACK_V2
-    Windows Store Apps: UNITY_POST_PROCESSING_STACK_V2
-    XboxOne: UNITY_POST_PROCESSING_STACK_V2
-    tvOS: UNITY_POST_PROCESSING_STACK_V2
+    Android: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    EmbeddedLinux: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    GameCoreScarlett: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    GameCoreXboxOne: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    Kepler: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    LinuxHeadlessSimulation: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    Nintendo Switch: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    Nintendo Switch 2: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    PS4: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    PS5: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    QNX: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    Server: UNITY_MCP_READY
+    Standalone: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    VisionOS: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    WebGL: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    Windows Store Apps: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    XboxOne: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
+    iPhone: UNITY_MCP_READY
+    tvOS: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

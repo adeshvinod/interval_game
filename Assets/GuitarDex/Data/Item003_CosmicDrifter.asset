@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08da0b62716264a8eb89bb70ef2e7dcd, type: 3}
+  m_Name: Item003_CosmicDrifter
+  m_EditorClassIdentifier: Assembly-CSharp::GuitarDexItem
+  id: 3
+  itemName: Cosmic Drifter
+  type: 0
+  rarity: 1
+  unlocked: 1
+  flavorText: Carved from a tree struck by lightning at a jazz festival in 1974.
+  unlockCondition: Score 600 - Notes Lv.1
+  graphic: {fileID: 3286163911610860551, guid: 4125be71fba1946f3af255730a6bd927, type: 3}
+  cardBgColor: {r: 0.21568628, g: 0.34509805, b: 0.39215687, a: 1}

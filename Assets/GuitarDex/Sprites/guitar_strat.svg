@@ -1,0 +1,16 @@
+<svg viewBox="0 0 60 110" width="240" height="440" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 55 C10 50 8 40 14 34 C18 30 24 30 28 34 L30 36 L32 34 C36 30 42 30 46 34 C52 40 50 50 42 55 C46 62 46 72 40 78 C36 82 30 84 24 82 C18 80 14 74 14 68 C14 62 16 58 18 55Z" fill="rgb(80,130,150)"></path>
+      <path d="M18 55 C10 50 8 40 14 34 C18 30 24 30 28 34 L30 36 L32 34 C36 30 42 30 46 34 C52 40 50 50 42 55 C46 62 46 72 40 78 C36 82 30 84 24 82 C18 80 14 74 14 68 C14 62 16 58 18 55Z" fill="rgba(0,0,0,0.14)"></path>
+      <rect x="27.5" y="10" width="5" height="46" rx="2.5" fill="rgb(120,80,40)"></rect>
+      <rect x="27" y="14" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <rect x="27" y="19" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <rect x="27" y="24" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <rect x="27" y="29" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <rect x="27" y="34" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <rect x="27" y="39" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <rect x="27" y="44" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <rect x="27" y="49" width="6" height="0.8" rx="0.4" fill="rgba(220,200,150,0.7)"></rect>
+      <path d="M26 8 L28 2 L32 2 L34 8 Z" fill="rgb(100,65,30)"></path>
+      <rect x="22" y="60" width="16" height="4" rx="1.5" fill="rgba(0,0,0,0.4)"></rect>
+      <rect x="22" y="67" width="16" height="4" rx="1.5" fill="rgba(0,0,0,0.3)"></rect>
+    </svg>
