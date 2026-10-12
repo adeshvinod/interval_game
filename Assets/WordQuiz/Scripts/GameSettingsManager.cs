@@ -9,6 +9,7 @@ public class GameSettingsManager : MonoBehaviour
     [SerializeField] private GameObject settingsPanel;
 
     [SerializeField] private GameObject AvatarButton; //a button to show the different avatars on home screen
+    [SerializeField] private AvatarGallery avatarGallery;
     [SerializeField] private List<GameObject> avatarImages = new List<GameObject>(); // List of child avatar images
     
     private int currentAvatarIndex = 0;
@@ -67,9 +68,29 @@ public class GameSettingsManager : MonoBehaviour
                              $"({EngagementManager.AvatarNameForStage(stage)}); showing index {index}.");
     }
 
+    // The tuning sheet is a modal too: lift its canvas over the menu's other
+    // canvases while it is open, and put it back afterwards.
+    const int ModalSortingOrder = 150;
+    int settingsPreviousOrder = int.MinValue;
+
     public void ToggleSettingsPanel(bool show)
     {
         settingsPanel.SetActive(show);
+
+        var canvas = settingsPanel.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            if (show)
+            {
+                if (settingsPreviousOrder == int.MinValue) settingsPreviousOrder = canvas.sortingOrder;
+                canvas.sortingOrder = ModalSortingOrder;
+            }
+            else if (settingsPreviousOrder != int.MinValue)
+            {
+                canvas.sortingOrder = settingsPreviousOrder;
+            }
+        }
+
         UpdateStringNotesDisplay();
     }
 
@@ -120,20 +141,19 @@ public class GameSettingsManager : MonoBehaviour
         gameSettings.SetLearningMode(modeIndex);
     }
 
-    /// Tapping the avatar explains who you are and what evolves you next.
-    /// (It used to cycle through every avatar, which implied they were all
-    /// already unlocked.)
+    /// Tapping the avatar opens the gallery: every stage side by side, locked
+    /// ones as silhouettes, plus the rule for evolving. A one-line toast was
+    /// not enough to explain "all three modes".
     public void ShowAvatarButton()
     {
+        if (avatarGallery != null) { avatarGallery.Open(); return; }
+
+        // Fallback if the gallery is not wired in this scene.
         string missing = EngagementManager.DescribeMissingModes();
         int needed = EngagementManager.LevelNeededForNextAvatar();
-
-        if (string.IsNullOrEmpty(missing) || needed == 0)
-            AchievementPopup.Notify(EngagementManager.GetAvatarName(), "Fully evolved - every level cleared!");
-        else
-            AchievementPopup.Notify(EngagementManager.GetAvatarName(),
-                $"Clear Level {needed} in {missing} to become " +
-                $"{EngagementManager.AvatarNameForStage(EngagementManager.GetAvatarStage() + 1)}");
+        AchievementPopup.Notify(EngagementManager.GetAvatarName(),
+            needed == 0 ? "Fully evolved - every level cleared!"
+                        : $"Clear Level {needed} in {missing} to evolve");
     }
 
     // Public method to get current avatar index

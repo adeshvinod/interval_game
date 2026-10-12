@@ -16,6 +16,10 @@ public class gameover : MonoBehaviour
 
     [Header("Engagement (optional)")]
     [SerializeField] private TMP_Text levelUp_floating;
+    // The ticket's big word: "VICTORY!" when the goal was beaten, else "TRY AGAIN".
+    [SerializeField] private TMP_Text outcome_heading;
+    // The ticket's small top title: "GAME OVER" reads wrong on a win.
+    [SerializeField] private TMP_Text title_heading;
     // The scorecard's "target" column. It shipped with a hardcoded 600;
     // this makes it show the level's real required score.
     [SerializeField] private TMP_Text targetScore_number;
@@ -55,12 +59,12 @@ public class gameover : MonoBehaviour
         saveGame();
 
         int level = gameData != null ? (int)gameData.currentIntervalLevel + 1 : 0;
-        EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
+        bool passedLevel = EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
 
-        DisplayEngagement(level);
+        DisplayEngagement(level, passedLevel);
     }
 
-    void DisplayEngagement(int level)
+    void DisplayEngagement(int level, bool passedLevel)
     {
 
         if (targetScore_number != null)
@@ -69,21 +73,25 @@ public class gameover : MonoBehaviour
             targetScore_number.text = goal == int.MaxValue ? "-" : goal.ToString();
         }
 
+        if (outcome_heading != null)
+            outcome_heading.text = passedLevel ? "VICTORY!" : "TRY AGAIN";
+        if (title_heading != null)
+            title_heading.text = passedLevel ? "LEVEL CLEARED" : "GAME OVER";
+
         if (levelUp_floating != null)
         {
             if (EngagementManager.DidSessionAvatarEvolve())
             {
-                levelUp_floating.text = $"NEW AVATAR: {EngagementManager.GetAvatarName()}!";
+                levelUp_floating.text = $"NEW AVATAR: {EngagementManager.GetAvatarName()}";
             }
             else
             {
-                // The avatar only evolves once the same level is cleared in all
-                // three modes, so say which ones are still outstanding.
-                string missing = EngagementManager.DescribeMissingModes();
-                int needed = EngagementManager.LevelNeededForNextAvatar();
-                levelUp_floating.text = string.IsNullOrEmpty(missing)
+                // Keep this short - it sits inside the ticket's coral block.
+                // The full explanation goes in the popup, not here.
+                var missing = EngagementManager.ModesMissingForNextAvatar();
+                levelUp_floating.text = missing.Count == 0
                     ? ""
-                    : $"Clear Level {needed} in {missing} to evolve your avatar";
+                    : "NEXT: " + string.Join(" + ", missing).ToUpper();
             }
         }
 

@@ -58,9 +58,42 @@ public class AchievementPopup : MonoBehaviour
         EngagementManager.OnSessionEnd          -= HandleSessionEnd;
     }
 
+    // ── Game palette ─────────────────────────────────────────────────────────
+    // Sampled from the main menu so the toast belongs to the same game:
+    // dark teal icon buttons, coral action buttons, off-white page.
+    static readonly Color Teal  = new Color(0x1B/255f, 0x4D/255f, 0x55/255f, 1f);
+    static readonly Color Coral = new Color(0xF2/255f, 0x78/255f, 0x4F/255f, 1f);
+    static readonly Color Cream = new Color(0xF4/255f, 0xF1/255f, 0xEC/255f, 1f);
+
+    static TMP_FontAsset gameFont;
+    static Sprite roundedSprite;
+
+    static void LoadAssets()
+    {
+        if (gameFont == null)
+        {
+            // MPLUS1Code is what the main-menu buttons use, so the toast reads
+            // as part of the same app. Keys verified against the TMP Resources
+            // folder - a wrong key silently falls back to LiberationSans.
+            gameFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/MPLUS1Code-VariableFont_wght")
+                    ?? Resources.Load<TMP_FontAsset>("Fonts & Materials/MPLUS2-Regular")
+                    ?? Resources.Load<TMP_FontAsset>("Fonts & Materials/vt323/VT323-Regular");
+            if (gameFont == null) Debug.LogWarning("AchievementPopup: no game font found, using TMP default.");
+        }
+        if (roundedSprite == null)
+        {
+            // 9-sliced rounded rect already used elsewhere in the game.
+            var all = Resources.FindObjectsOfTypeAll<Sprite>();
+            foreach (var sp in all)
+                if (sp != null && sp.name == "SquareCurveCorner") { roundedSprite = sp; break; }
+        }
+    }
+
     // ── UI construction ──────────────────────────────────────────────────────
     void BuildUI()
     {
+        LoadAssets();
+
         var canvasGO = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         canvasGO.transform.SetParent(transform, false);
         canvas = canvasGO.GetComponent<Canvas>();
@@ -68,7 +101,9 @@ public class AchievementPopup : MonoBehaviour
         canvas.sortingOrder = 9999;
         var scaler = canvasGO.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1080, 1920);
+        // The game plays in landscape, so match the landscape reference the
+        // rest of the UI is authored against.
+        scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.matchWidthOrHeight = 0.5f;
 
         var panelGO = new GameObject("Panel", typeof(RectTransform), typeof(Image));
@@ -77,38 +112,52 @@ public class AchievementPopup : MonoBehaviour
         panel.anchorMin = new Vector2(0.5f, 1f);
         panel.anchorMax = new Vector2(0.5f, 1f);
         panel.pivot     = new Vector2(0.5f, 1f);
-        panel.sizeDelta = new Vector2(900, 200);
-        panel.anchoredPosition = new Vector2(0, 220);
+        panel.sizeDelta = new Vector2(760, 150);
+        panel.anchoredPosition = new Vector2(0, 40);
 
         var bg = panelGO.GetComponent<Image>();
-        bg.color = new Color(10/255f, 29/255f, 39/255f, 0.95f);
+        bg.color = Teal;
+        if (roundedSprite != null) { bg.sprite = roundedSprite; bg.type = Image.Type.Sliced; }
 
-        var titleGO = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
-        titleGO.transform.SetParent(panel, false);
-        var titleRT = titleGO.GetComponent<RectTransform>();
-        titleRT.anchorMin = new Vector2(0, 0.55f);
-        titleRT.anchorMax = new Vector2(1, 1f);
-        titleRT.offsetMin = new Vector2(20, 0);
-        titleRT.offsetMax = new Vector2(-20, -10);
-        titleLabel = titleGO.GetComponent<TMP_Text>();
-        titleLabel.text = "";
-        titleLabel.fontSize = 56;
-        titleLabel.fontStyle = FontStyles.Bold;
-        titleLabel.alignment = TextAlignmentOptions.Center;
-        titleLabel.color = new Color(254/255f, 226/255f, 176/255f);
+        // A coral rule under the title ties it to the menu buttons.
+        var ruleGO = new GameObject("Rule", typeof(RectTransform), typeof(Image));
+        ruleGO.transform.SetParent(panel, false);
+        var ruleRT = ruleGO.GetComponent<RectTransform>();
+        ruleRT.anchorMin = new Vector2(0.5f, 1f);
+        ruleRT.anchorMax = new Vector2(0.5f, 1f);
+        ruleRT.pivot     = new Vector2(0.5f, 1f);
+        ruleRT.sizeDelta = new Vector2(120, 5);
+        ruleRT.anchoredPosition = new Vector2(0, -74);
+        var ruleImg = ruleGO.GetComponent<Image>();
+        ruleImg.color = Coral;
+        ruleImg.raycastTarget = false;
 
-        var bodyGO = new GameObject("Body", typeof(RectTransform), typeof(TextMeshProUGUI));
-        bodyGO.transform.SetParent(panel, false);
-        var bodyRT = bodyGO.GetComponent<RectTransform>();
-        bodyRT.anchorMin = new Vector2(0, 0f);
-        bodyRT.anchorMax = new Vector2(1, 0.55f);
-        bodyRT.offsetMin = new Vector2(20, 10);
-        bodyRT.offsetMax = new Vector2(-20, 0);
-        bodyLabel = bodyGO.GetComponent<TMP_Text>();
-        bodyLabel.text = "";
-        bodyLabel.fontSize = 36;
-        bodyLabel.alignment = TextAlignmentOptions.Center;
-        bodyLabel.color = Color.white;
+        titleLabel = MakeLabel("Title", panel, new Vector2(0, 0.52f), new Vector2(1, 1f),
+                               new Vector2(28, 0), new Vector2(-28, -14), 46f, Coral);
+        bodyLabel  = MakeLabel("Body",  panel, new Vector2(0, 0f),     new Vector2(1, 0.52f),
+                               new Vector2(28, 16), new Vector2(-28, -6), 30f, Cream);
+    }
+
+    TMP_Text MakeLabel(string name, RectTransform parent, Vector2 aMin, Vector2 aMax,
+                       Vector2 offMin, Vector2 offMax, float size, Color color)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(parent, false);
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = aMin; rt.anchorMax = aMax;
+        rt.offsetMin = offMin; rt.offsetMax = offMax;
+
+        var t = go.GetComponent<TMP_Text>();
+        if (gameFont != null) t.font = gameFont;
+        t.text = "";
+        t.alignment = TextAlignmentOptions.Center;
+        t.color = color;
+        t.raycastTarget = false;
+        // Long sentences must shrink rather than spill out of the panel.
+        t.enableAutoSizing = true;
+        t.fontSizeMax = size;
+        t.fontSizeMin = size * 0.5f;
+        return t;
     }
 
     // ── Event handlers ───────────────────────────────────────────────────────
@@ -181,7 +230,6 @@ public class AchievementPopup : MonoBehaviour
             var (title, body, tint) = liveQueue.Dequeue();
             titleLabel.text = title;
             bodyLabel.text  = body;
-            titleLabel.color = tint;
 
             yield return Slide(220, -20, SLIDE_DURATION);
             yield return new WaitForSecondsRealtime(HOLD_DURATION);
