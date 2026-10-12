@@ -42,6 +42,14 @@ public class GameSettings : ScriptableObject
             for (int i = 0; i < 6; i++)
                 transposedNotes_audio[i] = 0;
         }
+
+        // The fretboard dictionaries are plain Dictionary fields, so Unity does
+        // NOT serialise them: they are empty every time this asset is loaded.
+        // Build them here so every scene works on its own. Previously the only
+        // caller was GameSettingsManager.Start(), which exists solely in the
+        // main menu, so entering any other scene directly left Intervals and
+        // Notes with an empty table and every button resolving to -1.
+        InitializeFretboard();
     }
 
     
@@ -463,8 +471,13 @@ public class GameSettings : ScriptableObject
         // Determine which dictionary to use based on current learning mode
         Dictionary<int, int> targetDictionary;
         
+        // Rebuild if the table for this mode is empty. Chords already did this;
+        // Intervals and Notes did not, which is why only they broke when the
+        // asset was loaded without the main menu having run.
         if (currentLearningMode == LearningMode.Intervals)
         {
+            if (fretboardNoteValues_IntervalsMode == null || fretboardNoteValues_IntervalsMode.Count == 0)
+                InitializeFretboard();
             targetDictionary = fretboardNoteValues_IntervalsMode;
         }
         else if (currentLearningMode == LearningMode.Chords)
@@ -475,6 +488,8 @@ public class GameSettings : ScriptableObject
         }
         else
         {
+            if (fretboardNoteValues == null || fretboardNoteValues.Count == 0)
+                InitializeFretboard();
             targetDictionary = fretboardNoteValues;
         }
         
@@ -575,13 +590,8 @@ public class GameSettings : ScriptableObject
         }
     }
 
-    void Start()
-    {
-        for(int i=0;i<6;i++)
-        {
-            transposedNotes_audio[i]=0;
-        }
-        
-        InitializeFretboard(); // Initialize the fretboard on start
-    }
+    // NOTE: this class is a ScriptableObject, so Unity never calls Start() on it.
+    // A Start() used to live here calling InitializeFretboard (and zeroing the
+    // tuning); it never ran. That work now happens in OnEnable above, which
+    // ScriptableObjects *do* receive.
 } 

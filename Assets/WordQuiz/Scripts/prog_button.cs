@@ -637,7 +637,18 @@ public class prog_button : MonoBehaviour
     {
         // Use the pre-calculated dictionary instead of runtime calculation
         notevalue = gameSettings.GetFretboardNoteValue(buttonNumber);
-        
+
+        // -1 means the lookup failed. Indexing the note dictionaries with it
+        // throws KeyNotFoundException, which used to abort Awake and leave the
+        // whole fretboard half-built. Bail out loudly but without exploding.
+        if (notevalue < 0)
+        {
+            Debug.LogError($"prog_button '{name}': no note value for button {buttonNumber} " +
+                           $"in {gameSettings.currentLearningMode} mode; leaving it blank.");
+            if (text != null) text.text = "";
+            return;
+        }
+
         // Update text display
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
