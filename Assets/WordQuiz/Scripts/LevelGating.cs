@@ -45,7 +45,23 @@ public static class LevelGating
             if (label == null) continue;
 
             int score = (highScores != null && i < highScores.Length) ? highScores[i] : 0;
-            label.text = unlocked ? score.ToString() : LockedLabel;
+            SetFitted(label, unlocked ? score.ToString() : LockedLabel);
         }
+    }
+
+    // The knob labels are ~108px wide and were authored at a fixed 36pt with
+    // wrapping on, which is fine for "300" but splits "LOCKED" across two lines.
+    // Force one line and let TMP shrink only as far as it needs to.
+    const float FontSizeMin = 14f;
+    const float FontSizeMax = 36f;
+
+    static void SetFitted(TextMeshProUGUI label, string text)
+    {
+        label.text              = text;
+        label.textWrappingMode  = TextWrappingModes.NoWrap;
+        label.overflowMode      = TextOverflowModes.Overflow;
+        label.enableAutoSizing  = true;
+        label.fontSizeMin       = FontSizeMin;
+        label.fontSizeMax       = FontSizeMax;
     }
 }

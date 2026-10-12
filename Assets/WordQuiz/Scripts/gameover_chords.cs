@@ -54,6 +54,9 @@ public class gameover_chords : MonoBehaviour
     [Header("Engagement (optional)")]
     [SerializeField] private TextMeshProUGUI xpEarned_floating;
     [SerializeField] private TextMeshProUGUI levelUp_floating;
+    // The scorecard's "target" column. It shipped with a hardcoded 600;
+    // this makes it show the level's real required score.
+    [SerializeField] private TextMeshProUGUI targetScore_number;
 
     // ── Runtime ───────────────────────────────────────────────────────────────
     private GameObject wholeFretboard;
@@ -114,6 +117,12 @@ public class gameover_chords : MonoBehaviour
 
         if (xpEarned_floating != null)
             xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
+
+        if (targetScore_number != null)
+        {
+            int goal = EngagementManager.ScoreThreshold(LearningMode.Chords, level);
+            targetScore_number.text = goal == int.MaxValue ? "-" : goal.ToString();
+        }
         if (levelUp_floating != null)
             levelUp_floating.text = EngagementManager.DidSessionAvatarEvolve() ? $"AVATAR STAGE {EngagementManager.GetAvatarStage()}!" : "";
     }

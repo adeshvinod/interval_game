@@ -17,6 +17,9 @@ public class gameover : MonoBehaviour
     [Header("Engagement (optional)")]
     [SerializeField] private TMP_Text xpEarned_floating;
     [SerializeField] private TMP_Text levelUp_floating;
+    // The scorecard's "target" column. It shipped with a hardcoded 600;
+    // this makes it show the level's real required score.
+    [SerializeField] private TMP_Text targetScore_number;
     //[SerializeField] private TMP_Text heading_text_floating;
     //[SerializeField] private TMP_Text subheading_text_floating;
     [SerializeField] private GameObject wholefretboard;
@@ -55,13 +58,19 @@ public class gameover : MonoBehaviour
         int level = gameData != null ? (int)gameData.currentIntervalLevel + 1 : 0;
         EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
 
-        DisplayEngagement();
+        DisplayEngagement(level);
     }
 
-    void DisplayEngagement()
+    void DisplayEngagement(int level)
     {
         if (xpEarned_floating != null)
             xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
+
+        if (targetScore_number != null)
+        {
+            int goal = EngagementManager.ScoreThreshold(LearningMode.Intervals, level);
+            targetScore_number.text = goal == int.MaxValue ? "-" : goal.ToString();
+        }
 
         if (levelUp_floating != null)
         {
