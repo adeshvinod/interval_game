@@ -46,7 +46,8 @@ public class AchievementPopup : MonoBehaviour
     {
         BuildUI();
         EngagementManager.OnAvatarEvolved       += HandleAvatarEvolved;
-        EngagementManager.OnCollectibleUnlocked += HandleCollectibleUnlocked;
+        // PARKED (lite build): no GuitarDex to send the player to.
+        // EngagementManager.OnCollectibleUnlocked += HandleCollectibleUnlocked;
         EngagementManager.OnLevelPassed         += HandleLevelPassed;
         EngagementManager.OnSessionEnd          += HandleSessionEnd;
     }
@@ -54,7 +55,7 @@ public class AchievementPopup : MonoBehaviour
     void OnDestroy()
     {
         EngagementManager.OnAvatarEvolved       -= HandleAvatarEvolved;
-        EngagementManager.OnCollectibleUnlocked -= HandleCollectibleUnlocked;
+        // EngagementManager.OnCollectibleUnlocked -= HandleCollectibleUnlocked;
         EngagementManager.OnLevelPassed         -= HandleLevelPassed;
         EngagementManager.OnSessionEnd          -= HandleSessionEnd;
     }
@@ -118,10 +119,11 @@ public class AchievementPopup : MonoBehaviour
         Submit("AVATAR EVOLVED!", $"You reached Stage {newStage}", new Color(249/255f, 117/255f, 75/255f));
     }
 
-    void HandleCollectibleUnlocked(int itemId)
-    {
-        Submit("NEW ITEM!", $"Unlocked item #{itemId:D3} — check your GuitarDex", new Color(115/255f, 193/255f, 206/255f));
-    }
+    // PARKED (lite build): collectibles have no display surface.
+    // void HandleCollectibleUnlocked(int itemId)
+    // {
+    //     Submit("NEW ITEM!", $"Unlocked item #{itemId:D3} — check your GuitarDex", new Color(115/255f, 193/255f, 206/255f));
+    // }
 
     void HandleLevelPassed(LearningMode mode, int level, int score)
     {

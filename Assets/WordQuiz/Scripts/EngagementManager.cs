@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
 
-/// XP / avatar-stage / collectible-unlock / score-threshold spine.
+/// XP / avatar-stage / level-unlock / score-threshold spine.
+/// (Collectible unlocks are parked in the lite build — see note below.)
 ///
 /// Save file (player.fun via SaveSystem) is the source of truth — every
 /// public mutator reads, mutates, persists in one shot so scene transitions
@@ -15,7 +16,7 @@ public static class EngagementManager
     const int   FIRST_TIME_BONUS    = 20;
     const float SPEED_BONUS_THRESHOLD_SECS = 3f;
     const float SPEED_MULT          = 1.25f;
-    const float SURPRISE_DROP_RATE  = 0.08f;
+    // const float SURPRISE_DROP_RATE  = 0.08f;   // PARKED (lite build)
 
     // Big chunks (the rewards that should *feel* big)
     const int   LEVEL_PASS_BASE_XP   = 250;   // multiplied by level number → L1=250, L4=1000
@@ -46,26 +47,19 @@ public static class EngagementManager
         50000,  // stage 10
     };
 
-    // ── Collectible XP-unlock schedule ────────────────────────────────────────
-    // Item IDs 1..14, unlocked when totalXP first crosses the threshold. Some
-    // align with avatar stages so a single moment delivers a compound payoff.
-    static readonly (int xp, int itemId)[] collectibleUnlocks = new[]
-    {
-        (100,    1),
-        (300,    2),
-        (700,    3),
-        (1500,   4),
-        (2500,   5),
-        (4000,   6),
-        (6000,   7),   // ~ avatar stage 5
-        (9000,   8),
-        (13000,  9),
-        (18000, 10),   // ~ avatar stage 7
-        (25000, 11),
-        (33000, 12),
-        (42000, 13),
-        (50000, 14),   // legendary, aligns with stage 10
-    };
+    // ── Collectible XP-unlock schedule ──────────── PARKED (lite build) ──────
+    // The only surface that ever displayed collectibles was the GuitarDex scene,
+    // which is excluded from the lite build. Unlocking items with nowhere to see
+    // them would silently burn the reward, so the whole path is switched off.
+    // The `unlockedCollectibles` save field and the OnCollectibleUnlocked event
+    // are deliberately KEPT so re-enabling this is just uncommenting.
+    //
+    // static readonly (int xp, int itemId)[] collectibleUnlocks = new[]
+    // {
+    //     (100,    1), (300,    2), (700,    3), (1500,   4), (2500,   5),
+    //     (4000,   6), (6000,   7), (9000,   8), (13000,  9), (18000, 10),
+    //     (25000, 11), (33000, 12), (42000, 13), (50000, 14),
+    // };
 
     // ── Session state (resets on app launch, not on scene change) ─────────────
     static int  currentStreak    = 0;
@@ -78,7 +72,8 @@ public static class EngagementManager
     public static event Action<int>           OnXPEarned;
     /// Fired when avatar stage advances (oldStage, newStage). Stages are 1..10.
     public static event Action<int, int>      OnAvatarEvolved;
-    /// Fired the moment a collectible is unlocked. May fire mid-gameplay.
+    /// Fired the moment a collectible is unlocked. Never fires in the lite
+    /// build (collectibles are parked); kept so GuitarDex still compiles.
     public static event Action<int>           OnCollectibleUnlocked;
     /// Fired from gameover when a level is cleared. (mode, level, score).
     public static event Action<LearningMode, int, int> OnLevelPassed;
@@ -161,8 +156,8 @@ public static class EngagementManager
     }
 
     /// Call from gameover scripts. Awards level-pass + new-HS chunks, unlocks
-    /// next level, rolls surprise drop, and finally fires OnSessionEnd so any
-    /// deferred UI (popups) can flush.
+    /// next level, and finally fires OnSessionEnd so any deferred UI (popups)
+    /// can flush.
     public static bool EndSession(LearningMode mode, int level, int finalScore, bool isNewHighScore)
     {
         bool passed = level >= 1 && level <= 4 && finalScore >= ScoreThreshold(mode, level);
@@ -193,16 +188,17 @@ public static class EngagementManager
                 }
             }
 
-            if (UnityEngine.Random.value < SURPRISE_DROP_RATE)
-            {
-                int rolled = RollLockedItem(data);
-                if (rolled > 0)
-                {
-                    data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, rolled);
-                    dirty = true;
-                    OnCollectibleUnlocked?.Invoke(rolled);
-                }
-            }
+            // PARKED (lite build): surprise collectible drop. See note above.
+            // if (UnityEngine.Random.value < SURPRISE_DROP_RATE)
+            // {
+            //     int rolled = RollLockedItem(data);
+            //     if (rolled > 0)
+            //     {
+            //         data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, rolled);
+            //         dirty = true;
+            //         OnCollectibleUnlocked?.Invoke(rolled);
+            //     }
+            // }
 
             if (dirty) SaveSystem.SavePlayer(data);
             OnLevelPassed?.Invoke(mode, level, finalScore);
@@ -244,16 +240,16 @@ public static class EngagementManager
         int newXP    = data.totalXP;
         int newStage = AvatarStageForXP(newXP);
 
-        // Unlock any collectibles whose XP threshold was crossed.
-        foreach (var (threshold, itemId) in collectibleUnlocks)
-        {
-            if (oldXP < threshold && newXP >= threshold &&
-                Array.IndexOf(data.unlockedCollectibles, itemId) < 0)
-            {
-                data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, itemId);
-                OnCollectibleUnlocked?.Invoke(itemId);
-            }
-        }
+        // PARKED (lite build): collectible threshold unlocks. See note above.
+        // foreach (var (threshold, itemId) in collectibleUnlocks)
+        // {
+        //     if (oldXP < threshold && newXP >= threshold &&
+        //         Array.IndexOf(data.unlockedCollectibles, itemId) < 0)
+        //     {
+        //         data.unlockedCollectibles = AppendUnique(data.unlockedCollectibles, itemId);
+        //         OnCollectibleUnlocked?.Invoke(itemId);
+        //     }
+        // }
 
         sessionXPEarned += xp;
         SaveSystem.SavePlayer(data);
@@ -296,13 +292,14 @@ public static class EngagementManager
         return copy;
     }
 
-    static int RollLockedItem(savedData data)
-    {
-        const int totalItemIds = 14;
-        var lockedIds = new System.Collections.Generic.List<int>();
-        for (int id = 1; id <= totalItemIds; id++)
-            if (Array.IndexOf(data.unlockedCollectibles, id) < 0) lockedIds.Add(id);
-        if (lockedIds.Count == 0) return 0;
-        return lockedIds[UnityEngine.Random.Range(0, lockedIds.Count)];
-    }
+    // PARKED (lite build): only the surprise-drop path called this.
+    // static int RollLockedItem(savedData data)
+    // {
+    // const int totalItemIds = 14;
+    // var lockedIds = new System.Collections.Generic.List<int>();
+    // for (int id = 1; id <= totalItemIds; id++)
+    // if (Array.IndexOf(data.unlockedCollectibles, id) < 0) lockedIds.Add(id);
+    // if (lockedIds.Count == 0) return 0;
+    // return lockedIds[UnityEngine.Random.Range(0, lockedIds.Count)];
+    // }
 }
