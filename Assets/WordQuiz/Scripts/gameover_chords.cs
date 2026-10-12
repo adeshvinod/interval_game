@@ -52,7 +52,6 @@ public class gameover_chords : MonoBehaviour
     [SerializeField] private TextMeshProUGUI weakspotsText;
 
     [Header("Engagement (optional)")]
-    [SerializeField] private TextMeshProUGUI xpEarned_floating;
     [SerializeField] private TextMeshProUGUI levelUp_floating;
     // The scorecard's "target" column. It shipped with a hardcoded 600;
     // this makes it show the level's real required score.
@@ -115,8 +114,6 @@ public class gameover_chords : MonoBehaviour
         int level = (int)chordsGameData.currentChordLevel + 1;
         EngagementManager.EndSession(LearningMode.Chords, level, chordsGameData.score, isNewHighScore);
 
-        if (xpEarned_floating != null)
-            xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
 
         if (targetScore_number != null)
         {
@@ -124,7 +121,22 @@ public class gameover_chords : MonoBehaviour
             targetScore_number.text = goal == int.MaxValue ? "-" : goal.ToString();
         }
         if (levelUp_floating != null)
-            levelUp_floating.text = EngagementManager.DidSessionAvatarEvolve() ? $"AVATAR STAGE {EngagementManager.GetAvatarStage()}!" : "";
+        {
+            if (EngagementManager.DidSessionAvatarEvolve())
+            {
+                levelUp_floating.text = $"NEW AVATAR: {EngagementManager.GetAvatarName()}!";
+            }
+            else
+            {
+                // The avatar only evolves once the same level is cleared in all
+                // three modes, so say which ones are still outstanding.
+                string missing = EngagementManager.DescribeMissingModes();
+                int needed = EngagementManager.LevelNeededForNextAvatar();
+                levelUp_floating.text = string.IsNullOrEmpty(missing)
+                    ? ""
+                    : $"Clear Level {needed} in {missing} to evolve your avatar";
+            }
+        }
     }
 
     // ── Button callbacks ──────────────────────────────────────────────────────

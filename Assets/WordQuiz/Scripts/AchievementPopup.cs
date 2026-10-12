@@ -5,7 +5,8 @@ using UnityEngine.UI;
 using TMPro;
 
 /// Runtime-bootstrapped toast that subscribes to EngagementManager events and
-/// displays slide-down notifications.
+/// displays slide-down notifications (level cleared, next-avatar goal, avatar
+/// evolved). There is no XP or currency to report.
 ///
 /// Crucially: while EngagementManager.IsInPlaySession is true (between
 /// StartSession and EndSession), incoming events are *deferred* into a buffer
@@ -113,13 +114,31 @@ public class AchievementPopup : MonoBehaviour
     // ── Event handlers ───────────────────────────────────────────────────────
     void HandleAvatarEvolved(int oldStage, int newStage)
     {
-        Submit("AVATAR EVOLVED!", $"You reached Stage {newStage}", new Color(249/255f, 117/255f, 75/255f));
+        // Only reached once the same level is cleared in all three modes.
+        Submit("AVATAR EVOLVED!",
+               $"You are now {EngagementManager.AvatarNameForStage(newStage)}",
+               new Color(249/255f, 117/255f, 75/255f));
     }
 
 
     void HandleLevelPassed(LearningMode mode, int level, int score)
     {
-        Submit("CLEARED!", $"{mode} • Level {level} • {score} pts", new Color(181/255f, 207/255f, 174/255f));
+        Submit($"{mode.ToString().ToUpper()} LEVEL {level} CLEARED!",
+               $"{score} pts",
+               new Color(181/255f, 207/255f, 174/255f));
+
+        // Clearing one mode is not enough to evolve the avatar, so spell out
+        // what is still missing. Nothing is shown once the avatar is maxed, or
+        // when this clear completed the set (HandleAvatarEvolved covers that).
+        string missing = EngagementManager.DescribeMissingModes();
+        int needed = EngagementManager.LevelNeededForNextAvatar();
+        if (!string.IsNullOrEmpty(missing) && needed > 0)
+        {
+            Submit("NEXT AVATAR",
+                   $"Clear Level {needed} in {missing} to become " +
+                   $"{EngagementManager.AvatarNameForStage(EngagementManager.GetAvatarStage() + 1)}",
+                   new Color(115/255f, 193/255f, 206/255f));
+        }
     }
 
     void HandleSessionEnd()
@@ -129,6 +148,13 @@ public class AchievementPopup : MonoBehaviour
         foreach (var item in deferredBuffer) liveQueue.Enqueue(item);
         deferredBuffer.Clear();
         if (!isShowing) StartCoroutine(ShowNext());
+    }
+
+    /// Post a toast from anywhere (e.g. tapping the avatar on the main menu).
+    /// Respects the in-session deferral like every other notification.
+    public static void Notify(string title, string body)
+    {
+        if (instance != null) instance.Submit(title, body, new Color(115/255f, 193/255f, 206/255f));
     }
 
     // ── Submission routing ───────────────────────────────────────────────────

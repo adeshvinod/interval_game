@@ -15,7 +15,6 @@ public class gameover : MonoBehaviour
     [SerializeField] private TMP_Text accuracies_floating;
 
     [Header("Engagement (optional)")]
-    [SerializeField] private TMP_Text xpEarned_floating;
     [SerializeField] private TMP_Text levelUp_floating;
     // The scorecard's "target" column. It shipped with a hardcoded 600;
     // this makes it show the level's real required score.
@@ -63,8 +62,6 @@ public class gameover : MonoBehaviour
 
     void DisplayEngagement(int level)
     {
-        if (xpEarned_floating != null)
-            xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
 
         if (targetScore_number != null)
         {
@@ -75,9 +72,19 @@ public class gameover : MonoBehaviour
         if (levelUp_floating != null)
         {
             if (EngagementManager.DidSessionAvatarEvolve())
-                levelUp_floating.text = $"AVATAR STAGE {EngagementManager.GetAvatarStage()}!";
+            {
+                levelUp_floating.text = $"NEW AVATAR: {EngagementManager.GetAvatarName()}!";
+            }
             else
-                levelUp_floating.text = "";
+            {
+                // The avatar only evolves once the same level is cleared in all
+                // three modes, so say which ones are still outstanding.
+                string missing = EngagementManager.DescribeMissingModes();
+                int needed = EngagementManager.LevelNeededForNextAvatar();
+                levelUp_floating.text = string.IsNullOrEmpty(missing)
+                    ? ""
+                    : $"Clear Level {needed} in {missing} to evolve your avatar";
+            }
         }
 
     }

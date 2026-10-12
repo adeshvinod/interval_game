@@ -598,7 +598,6 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
             AnimateScoreIncrease(oldScore_guess, gameData.score);
 
             bool firstTime = gameData.questionHistory_accuracy[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] == 0;
-            EngagementManager.RegisterCorrectAnswer(LearningMode.Intervals, 10f - gameData.timer, firstTime);
 
             // Update performance data
             UpdatePerformanceData(true);
@@ -612,7 +611,6 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
             wronganswer_audio.Play();
             TakeDamage(25f);
 
-            EngagementManager.RegisterMiss();
 
             // Update performance data for wrong answer
             UpdatePerformanceData(false);
@@ -682,7 +680,6 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 AnimateScoreIncrease(oldScore_press, gameData.score);
 
                 bool firstTime = gameData.questionHistory_accuracy[gameData.currentQuestion_Question_node, gameData.currentQuestion_Answer_node] == 0;
-                EngagementManager.RegisterCorrectAnswer(LearningMode.Intervals, 10f - gameData.timer, firstTime);
 
                 // Update performance data
                 UpdatePerformanceData(true);
@@ -700,7 +697,6 @@ public class intervalsGameManager : MonoBehaviour, IPointerClickHandler
                 TakeDamage(25f);
                 correctnode.SetActiveCircle(1);
 
-                EngagementManager.RegisterMiss();
 
                 // Update performance data for wrong answer
                 UpdatePerformanceData(false);

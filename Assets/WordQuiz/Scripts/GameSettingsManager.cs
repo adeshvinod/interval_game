@@ -40,22 +40,31 @@ public class GameSettingsManager : MonoBehaviour
         }
     }
 
+    /// Shows the avatar the player has actually earned. Stage 1 is the fresh
+    /// install, and the avatar only advances when the same level has been
+    /// cleared in all three modes — see EngagementManager.
     private void InitializeAvatarImages()
     {
-        // Initialize all avatar images to inactive
-        foreach (GameObject avatar in avatarImages)
-        {
-            if (avatar != null)
-            {
-                avatar.SetActive(false);
-            }
-        }
+        int stage = EngagementManager.GetAvatarStage();   // 1..5
+        ShowAvatarForStage(stage);
+    }
 
-        // Show the first avatar by default
-        if (avatarImages.Count > 0 && avatarImages[0] != null)
-        {
-            avatarImages[0].SetActive(true);
-        }
+    private void ShowAvatarForStage(int stage)
+    {
+        if (avatarImages.Count == 0) return;
+
+        // Clamp, so a missing art slot shows the highest one that exists
+        // rather than nothing at all.
+        int index = Mathf.Clamp(stage - 1, 0, avatarImages.Count - 1);
+
+        for (int i = 0; i < avatarImages.Count; i++)
+            if (avatarImages[i] != null) avatarImages[i].SetActive(i == index);
+
+        currentAvatarIndex = index;
+
+        if (stage - 1 >= avatarImages.Count)
+            Debug.LogWarning($"No avatar art for stage {stage} " +
+                             $"({EngagementManager.AvatarNameForStage(stage)}); showing index {index}.");
     }
 
     public void ToggleSettingsPanel(bool show)
@@ -111,30 +120,20 @@ public class GameSettingsManager : MonoBehaviour
         gameSettings.SetLearningMode(modeIndex);
     }
 
+    /// Tapping the avatar explains who you are and what evolves you next.
+    /// (It used to cycle through every avatar, which implied they were all
+    /// already unlocked.)
     public void ShowAvatarButton()
     {
-        // Deactivate all avatar images first
-        foreach (GameObject avatar in avatarImages)
-        {
-            if (avatar != null)
-            {
-                avatar.SetActive(false);
-            }
-        }
+        string missing = EngagementManager.DescribeMissingModes();
+        int needed = EngagementManager.LevelNeededForNextAvatar();
 
-        // Move to next avatar
-        currentAvatarIndex = (currentAvatarIndex + 1) % avatarImages.Count;
-
-        // Activate the current avatar
-        if (avatarImages[currentAvatarIndex] != null)
-        {
-            avatarImages[currentAvatarIndex].SetActive(true);
-            Debug.Log($"Showing avatar {currentAvatarIndex + 1} of {avatarImages.Count}");
-        }
+        if (string.IsNullOrEmpty(missing) || needed == 0)
+            AchievementPopup.Notify(EngagementManager.GetAvatarName(), "Fully evolved - every level cleared!");
         else
-        {
-            Debug.LogWarning($"Avatar image at index {currentAvatarIndex} is null");
-        }
+            AchievementPopup.Notify(EngagementManager.GetAvatarName(),
+                $"Clear Level {needed} in {missing} to become " +
+                $"{EngagementManager.AvatarNameForStage(EngagementManager.GetAvatarStage() + 1)}");
     }
 
     // Public method to get current avatar index
@@ -164,9 +163,6 @@ public class GameSettingsManager : MonoBehaviour
         // Set the new avatar
         currentAvatarIndex = index;
         if (avatarImages[currentAvatarIndex] != null)
-        {
             avatarImages[currentAvatarIndex].SetActive(true);
-            Debug.Log($"Set avatar to index {currentAvatarIndex}");
-        }
     }
 } 

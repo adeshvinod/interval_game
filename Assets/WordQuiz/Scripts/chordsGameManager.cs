@@ -346,7 +346,6 @@ public class chordsGameManager : MonoBehaviour
             chordsGameData.score += 10;
             AnimateScoreChange(oldScore, chordsGameData.score);
 
-            EngagementManager.RegisterCorrectAnswer(LearningMode.Chords, 20f - chordsGameData.timer, false);
 
             if (interval == 0)
             {
@@ -375,7 +374,6 @@ public class chordsGameManager : MonoBehaviour
             wrongAnswerAudio.Play();
             failedQuestionKeys.Add((currentChordIndex, currentRootNote));
             TakeDamage(wrongAnswerDamage);
-            EngagementManager.RegisterMiss();
         }
     }
 
@@ -398,7 +396,6 @@ public class chordsGameManager : MonoBehaviour
     {
         failedQuestionKeys.Add((currentChordIndex, currentRootNote));
         TakeDamage(timerExpiryDamage);
-        EngagementManager.RegisterMiss();
 
         // Deduct 5 points per missing note
         int missingNotes = remainingAnswerSiblings.Count;

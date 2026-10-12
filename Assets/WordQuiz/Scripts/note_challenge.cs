@@ -580,7 +580,6 @@ public class note_challenge : MonoBehaviour
             value.text.text = notename_sharps[value.notevalue];
 
             bool firstTime = gameData.accuracies[value.buttonNumber] == 0;
-            EngagementManager.RegisterCorrectAnswer(LearningMode.Notes, 10f - gameData.timer, firstTime);
 
             // Update performance data using timer-based approach
             gameData.accuracies[value.buttonNumber]++;
@@ -595,7 +594,6 @@ public class note_challenge : MonoBehaviour
             togglesound = true;
 
             TakeDamage(25f);
-            EngagementManager.RegisterMiss();
 
             // Update performance data for wrong answer using timer-based approach
             if (value.selectedRegion)
@@ -640,7 +638,6 @@ public class note_challenge : MonoBehaviour
             AnimateScoreIncrease(oldScore_guess2, gameData.score);
 
             bool firstTime = gameData.accuracies[gameData.currentQuestion_Answer_node] == 0;
-            EngagementManager.RegisterCorrectAnswer(LearningMode.Notes, 10f - gameData.timer, firstTime);
 
             // Update performance data using timer-based approach
             gameData.accuracies[gameData.currentQuestion_Answer_node]++;
@@ -661,7 +658,6 @@ public class note_challenge : MonoBehaviour
             togglesound = true;
 
             TakeDamage(25f);
-            EngagementManager.RegisterMiss();
 
             // Update performance data for wrong answer using timer-based approach
             gameData.reactiontimes[gameData.currentQuestion_Answer_node] += (10f - gameData.timer);

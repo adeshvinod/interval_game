@@ -7,6 +7,8 @@
 /// array instead.
 ///
 /// Three modes only: Intervals, Notes, Chords (see <see cref="LearningMode"/>).
+/// There is no XP or currency: the avatar is derived from the high scores
+/// below meeting EngagementManager's thresholds, so it needs no field here.
 /// </summary>
 [System.Serializable]
 public class savedData
@@ -39,18 +41,11 @@ public class savedData
     public int[] transposedNotes_audio;
 
     // ── Progression ──────────────────────────────────────────────────────────
-    /// The single progression number. Avatar stage is derived from this at
-    /// runtime by EngagementManager — it is deliberately not stored.
-    public int totalXP;
-
     /// Length MODE_COUNT * LEVELS_PER_MODE. Index = (int)mode * LEVELS_PER_MODE
     /// + (level - 1). 0 = locked, 1 = unlocked. Only L1 of each mode starts
     /// unlocked; L2-L4 are earned by clearing the level before them.
     public int[] unlockedLevels;
 
-    /// yyyyMMdd of the last day the first-answer-of-the-day bonus was given.
-    /// 0 = never.
-    public int lastDailyBonusYmd;
 
     public savedData()
     {

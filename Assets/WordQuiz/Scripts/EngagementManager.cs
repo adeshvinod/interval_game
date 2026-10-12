@@ -1,95 +1,69 @@
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
-/// The whole progression system: XP, avatar stage, level unlocks, score goals.
+/// Progression: level unlocks, score goals, and the avatar.
 ///
-/// There is exactly one number the player sees grow: total XP. Avatar stage is
-/// derived from it, never stored. Three modes only — Intervals, Notes, Chords.
+/// There is no XP and no currency. The only thing that advances the player is
+/// clearing levels, and the avatar is the single visible reward.
 ///
-/// The save file is the source of truth. Every mutator loads, changes and
-/// persists in one go, so nothing is lost across a scene change.
+/// **The avatar rule:** the avatar evolves only when the same level number has
+/// been cleared in *all three* modes. Clearing Notes level 1 alone does nothing
+/// — Intervals and Chords level 1 are needed too. So there are five avatars for
+/// four levels:
+///
+///   Stage 1  Guitar Novice     fresh install
+///   Stage 2  Riff Rager        level 1 cleared in all three modes
+///   Stage 3  Guitar Sorcerer   level 2 cleared in all three modes
+///   Stage 4  Fretboard King    level 3 cleared in all three modes
+///   Stage 5  Fretboard Zeus    level 4 cleared in all three modes
+///
+/// "Cleared" is derived from the stored high score meeting the level's
+/// threshold, so it needs no extra save field and stays correct if a high
+/// score is beaten later.
 /// </summary>
 public static class EngagementManager
 {
-    // ── XP economy ───────────────────────────────────────────────────────────
-    const int   BASE_XP_PER_CORRECT = 3;
-    const int   FIRST_TIME_BONUS    = 20;
-    const float SPEED_BONUS_SECS    = 3f;
-    const float SPEED_MULT          = 1.25f;
+    /// Avatar names in stage order. Index 0 = stage 1.
+    public static readonly string[] AvatarNames =
+    {
+        "Guitar Novice",
+        "Riff Rager",
+        "Guitar Sorcerer",
+        "Fretboard King",
+        "Fretboard Zeus",
+    };
 
-    // The chunks that should actually feel like a reward.
-    const int   LEVEL_PASS_BASE_XP  = 250;   // × level, so L1=250 ... L4=1000
-    const int   NEW_HIGH_SCORE_XP   = 200;
-
-    /// Indexed by LearningMode: Intervals, Notes, Chords.
-    static readonly float[] modeMultiplier = { 1.5f, 1f, 2f };
+    /// The three modes, in the order they are shown to the player.
+    public static readonly LearningMode[] AllModes =
+    {
+        LearningMode.Notes, LearningMode.Intervals, LearningMode.Chords,
+    };
 
     /// Score needed to clear each level, [level-1]. Tune from playtests.
     static readonly int[] notesThresholds     = {  80, 150, 250, 400 };
     static readonly int[] intervalsThresholds = { 100, 200, 350, 550 };
     static readonly int[] chordsThresholds    = { 120, 240, 420, 650 };
 
-    /// Total XP required for avatar stages 1-10. Front-loaded so the first
-    /// evolution lands after roughly one good session.
-    static readonly int[] avatarStageXP =
-    {
-        0,      //  stage 1 (fresh install)
-        500,    //  stage 2
-        1500,   //  stage 3
-        3000,   //  stage 4
-        6000,   //  stage 5
-        10000,  //  stage 6
-        16000,  //  stage 7
-        24000,  //  stage 8
-        36000,  //  stage 9
-        50000,  //  stage 10
-    };
-
-    // ── Session state (per app launch, not per scene) ────────────────────────
-    static int  currentStreak     = 0;
-    static int  sessionXPEarned   = 0;
+    // ── Session state (per app launch) ───────────────────────────────────────
     static int  sessionStartStage = 1;
     static bool isInPlaySession   = false;
 
     // ── Events ───────────────────────────────────────────────────────────────
-    /// Every XP grant. Fires during gameplay too, so UI should stay quiet.
-    public static event Action<int>      OnXPEarned;
-    /// Avatar stage advanced (oldStage, newStage), both 1-10.
-    public static event Action<int, int> OnAvatarEvolved;
-    /// A level was cleared (mode, level, score).
+    /// A level was cleared (mode, level, score). Fires before OnAvatarEvolved.
     public static event Action<LearningMode, int, int> OnLevelPassed;
+    /// The avatar advanced (oldStage, newStage), both 1..5.
+    public static event Action<int, int> OnAvatarEvolved;
     /// End of every session, pass or fail. Deferred UI flushes here.
     public static event Action OnSessionEnd;
 
-    /// True between StartSession and EndSession. UI uses this to hold back
-    /// popups while the player is under time pressure.
+    /// True between StartSession and EndSession, so UI can hold back popups
+    /// while the player is under time pressure.
     public static bool IsInPlaySession => isInPlaySession;
 
-    // ── Avatar stage ─────────────────────────────────────────────────────────
-    public static int AvatarStageForXP(int xp)
-    {
-        int stage = 1;
-        for (int i = 0; i < avatarStageXP.Length; i++)
-            if (xp >= avatarStageXP[i]) stage = i + 1;
-        return stage;
-    }
-
-    public static int GetAvatarStage() => AvatarStageForXP(GetTotalXP());
-
-    public static int GetTotalXP() => Load().totalXP;
-
-    /// XP still needed for the next stage, or -1 at max stage.
-    public static int XPToNextAvatarStage()
-    {
-        int xp = GetTotalXP();
-        for (int i = 0; i < avatarStageXP.Length; i++)
-            if (xp < avatarStageXP[i]) return avatarStageXP[i] - xp;
-        return -1;
-    }
-
     // ── Score goals ──────────────────────────────────────────────────────────
-    /// Score needed to clear this level, or int.MaxValue for ungated levels.
+    /// Score needed to clear this level, or int.MaxValue for ungated levels
+    /// (Custom, or anything outside 1..4).
     public static int ScoreThreshold(LearningMode mode, int level)
     {
         if (level < 1 || level > savedData.LEVELS_PER_MODE) return int.MaxValue;
@@ -102,52 +76,102 @@ public static class EngagementManager
         }
     }
 
-    // ── Gameplay hooks ───────────────────────────────────────────────────────
-    /// Call on every correct answer. Returns the XP awarded.
-    public static int RegisterCorrectAnswer(LearningMode mode, float secondsToAnswer, bool firstTimeOnPosition)
+    // ── Cleared / unlocked ───────────────────────────────────────────────────
+    /// A level is cleared once its stored high score meets the threshold.
+    public static bool IsLevelCleared(LearningMode mode, int level)
     {
-        currentStreak++;
-        float streakMult =
-            currentStreak >= 20 ? 3f :
-            currentStreak >= 10 ? 2f :
-            currentStreak >= 5  ? 1.5f : 1f;
-
-        float speedMult = secondsToAnswer < SPEED_BONUS_SECS ? SPEED_MULT : 1f;
-        float modeMult  = modeMultiplier[(int)mode];
-        float dailyMult = TryConsumeDailyFirst() ? 2f : 1f;
-
-        int xp = Mathf.RoundToInt(BASE_XP_PER_CORRECT * streakMult * speedMult * modeMult * dailyMult);
-        if (firstTimeOnPosition) xp += FIRST_TIME_BONUS;
-
-        AwardXP(xp);
-        return xp;
+        if (level < 1 || level > savedData.LEVELS_PER_MODE) return false;
+        return HighScore(Load(), mode, level) >= ScoreThreshold(mode, level);
     }
 
-    public static void RegisterMiss() => currentStreak = 0;
+    /// Custom (level 5) is always playable. Level 1 is unlocked on install.
+    public static bool IsLevelUnlocked(LearningMode mode, int level)
+    {
+        int idx = savedData.LevelIndex(mode, level);
+        if (idx < 0) return true;
+        var data = Load();
+        return idx < data.unlockedLevels.Length && data.unlockedLevels[idx] == 1;
+    }
 
+    // ── Avatar ───────────────────────────────────────────────────────────────
+    /// 1..5. Advances one step per level number cleared in every mode.
+    public static int GetAvatarStage()
+    {
+        var data = Load();
+        int stage = 1;
+        for (int level = 1; level <= savedData.LEVELS_PER_MODE; level++)
+        {
+            if (!ClearedInAllModes(data, level)) break;   // tiers are consecutive
+            stage++;
+        }
+        return stage;
+    }
+
+    public static string GetAvatarName() => AvatarNameForStage(GetAvatarStage());
+
+    public static string AvatarNameForStage(int stage)
+    {
+        int i = Math.Max(0, Math.Min(AvatarNames.Length - 1, stage - 1));
+        return AvatarNames[i];
+    }
+
+    /// The level number the player is currently working towards across all
+    /// modes, i.e. the one that will trigger the next evolution. 0 when maxed.
+    public static int LevelNeededForNextAvatar()
+    {
+        int stage = GetAvatarStage();
+        return stage > savedData.LEVELS_PER_MODE ? 0 : stage;
+    }
+
+    /// Which modes still need <see cref="LevelNeededForNextAvatar"/> cleared.
+    /// Empty when the avatar is fully evolved.
+    public static List<LearningMode> ModesMissingForNextAvatar()
+    {
+        var missing = new List<LearningMode>();
+        int level = LevelNeededForNextAvatar();
+        if (level == 0) return missing;
+
+        var data = Load();
+        foreach (var m in AllModes)
+            if (HighScore(data, m, level) < ScoreThreshold(m, level)) missing.Add(m);
+        return missing;
+    }
+
+    /// "Intervals and Chords", "Chords", or "" — ready for a sentence.
+    public static string DescribeMissingModes()
+    {
+        var missing = ModesMissingForNextAvatar();
+        if (missing.Count == 0) return "";
+        if (missing.Count == 1) return missing[0].ToString();
+        if (missing.Count == 2) return $"{missing[0]} and {missing[1]}";
+        return $"{missing[0]}, {missing[1]} and {missing[2]}";
+    }
+
+    // ── Session hooks ────────────────────────────────────────────────────────
     /// Call from each game manager's Start.
     public static void StartSession()
     {
-        sessionXPEarned   = 0;
         sessionStartStage = GetAvatarStage();
-        currentStreak     = 0;
         isInPlaySession   = true;
     }
 
-    /// Call from each gameover screen. Awards the pass and high-score chunks,
-    /// unlocks the next level, then fires OnSessionEnd so deferred UI can show.
-    /// Returns true if the level was cleared.
+    /// Call from each gameover screen. Unlocks the next level, then reports a
+    /// clear and any avatar evolution. Returns true if the level was cleared.
+    ///
+    /// The gameover scripts persist the new high score *before* calling this,
+    /// which is what lets IsLevelCleared see it.
     public static bool EndSession(LearningMode mode, int level, int finalScore, bool isNewHighScore)
     {
         bool passed = finalScore >= ScoreThreshold(mode, level);
-
-        if (passed)         AwardXP(LEVEL_PASS_BASE_XP * level);
-        if (isNewHighScore) AwardXP(NEW_HIGH_SCORE_XP);
 
         if (passed)
         {
             UnlockLevel(mode, level + 1);
             OnLevelPassed?.Invoke(mode, level, finalScore);
+
+            int newStage = GetAvatarStage();
+            if (newStage > sessionStartStage)
+                OnAvatarEvolved?.Invoke(sessionStartStage, newStage);
         }
 
         isInPlaySession = false;
@@ -155,14 +179,17 @@ public static class EngagementManager
         return passed;
     }
 
-    // ── Level unlocks ────────────────────────────────────────────────────────
-    /// Custom (level 5) is always playable. L1 is unlocked on a fresh install.
-    public static bool IsLevelUnlocked(LearningMode mode, int level)
+    public static int  GetSessionStartStage()   => sessionStartStage;
+    public static bool DidSessionAvatarEvolve() => GetAvatarStage() > sessionStartStage;
+
+    // ── Internals ────────────────────────────────────────────────────────────
+    static savedData Load() => SaveSystem.Loaddata() ?? new savedData();
+
+    static bool ClearedInAllModes(savedData data, int level)
     {
-        int idx = savedData.LevelIndex(mode, level);
-        if (idx < 0) return true;              // Custom / out of range: never gated
-        var data = Load();
-        return idx < data.unlockedLevels.Length && data.unlockedLevels[idx] == 1;
+        foreach (var m in AllModes)
+            if (HighScore(data, m, level) < ScoreThreshold(m, level)) return false;
+        return true;
     }
 
     static void UnlockLevel(LearningMode mode, int level)
@@ -177,45 +204,40 @@ public static class EngagementManager
         SaveSystem.SavePlayer(data);
     }
 
-    // ── Session readouts for the gameover screen ─────────────────────────────
-    public static int  GetSessionXPEarned()     => sessionXPEarned;
-    public static int  GetSessionStartStage()   => sessionStartStage;
-    public static bool DidSessionAvatarEvolve() => GetAvatarStage() > sessionStartStage;
-
-    // ── Internals ────────────────────────────────────────────────────────────
-    static savedData Load() => SaveSystem.Loaddata() ?? new savedData();
-
-    static void AwardXP(int xp)
+    /// The stored high score for one mode/level. Verbose on purpose — the save
+    /// fields are individually named rather than an array.
+    static int HighScore(savedData d, LearningMode mode, int level)
     {
-        if (xp <= 0) return;
-
-        var data = Load();
-        int oldStage = AvatarStageForXP(data.totalXP);
-        data.totalXP += xp;
-        int newStage = AvatarStageForXP(data.totalXP);
-
-        sessionXPEarned += xp;
-        SaveSystem.SavePlayer(data);
-
-        OnXPEarned?.Invoke(xp);
-        if (newStage > oldStage) OnAvatarEvolved?.Invoke(oldStage, newStage);
-    }
-
-    /// True once per real-world day, for the first-answer-of-the-day bonus.
-    static bool TryConsumeDailyFirst()
-    {
-        int today = TodayYmd();
-        var data = Load();
-        if (data.lastDailyBonusYmd == today) return false;
-
-        data.lastDailyBonusYmd = today;
-        SaveSystem.SavePlayer(data);
-        return true;
-    }
-
-    static int TodayYmd()
-    {
-        var d = DateTime.Now.Date;
-        return d.Year * 10000 + d.Month * 100 + d.Day;
+        switch (mode)
+        {
+            case LearningMode.Intervals:
+                switch (level)
+                {
+                    case 1: return d.l1_intervals_highscore;
+                    case 2: return d.l2_intervals_highscore;
+                    case 3: return d.l3_intervals_highscore;
+                    case 4: return d.l4_intervals_highscore;
+                }
+                break;
+            case LearningMode.Notes:
+                switch (level)
+                {
+                    case 1: return d.l1_notes_highscore;
+                    case 2: return d.l2_notes_highscore;
+                    case 3: return d.l3_notes_highscore;
+                    case 4: return d.l4_notes_highscore;
+                }
+                break;
+            case LearningMode.Chords:
+                switch (level)
+                {
+                    case 1: return d.l1_chords_highscore;
+                    case 2: return d.l2_chords_highscore;
+                    case 3: return d.l3_chords_highscore;
+                    case 4: return d.l4_chords_highscore;
+                }
+                break;
+        }
+        return 0;
     }
 }
