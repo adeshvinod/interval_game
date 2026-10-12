@@ -30,6 +30,13 @@ public class AchievementPopup : MonoBehaviour
     readonly List<(string title, string body, Color tint)> deferredBuffer = new();
     bool isShowing;
 
+    // The panel's resting place is OFF screen. It is anchored to the top with a
+    // top pivot, so a positive Y parks it above the screen edge; it must exceed
+    // the panel height or a strip of empty panel stays visible.
+    const float PANEL_HEIGHT = 150f;
+    const float HIDDEN_Y     = PANEL_HEIGHT + 50f;   // fully above the edge
+    const float SHOWN_Y      = -24f;
+
     const float SLIDE_DURATION = 0.35f;
     const float HOLD_DURATION  = 2.5f;
     const float GAP_BETWEEN    = 0.2f;
@@ -112,8 +119,8 @@ public class AchievementPopup : MonoBehaviour
         panel.anchorMin = new Vector2(0.5f, 1f);
         panel.anchorMax = new Vector2(0.5f, 1f);
         panel.pivot     = new Vector2(0.5f, 1f);
-        panel.sizeDelta = new Vector2(760, 150);
-        panel.anchoredPosition = new Vector2(0, 40);
+        panel.sizeDelta = new Vector2(760, PANEL_HEIGHT);
+        panel.anchoredPosition = new Vector2(0, HIDDEN_Y);
 
         var bg = panelGO.GetComponent<Image>();
         bg.color = Teal;
@@ -136,6 +143,10 @@ public class AchievementPopup : MonoBehaviour
                                new Vector2(28, 0), new Vector2(-28, -14), 46f, Coral);
         bodyLabel  = MakeLabel("Body",  panel, new Vector2(0, 0f),     new Vector2(1, 0.52f),
                                new Vector2(28, 16), new Vector2(-28, -6), 30f, Cream);
+
+        // Idle state: switched off entirely, so nothing can appear until a
+        // toast is actually queued.
+        panelGO.SetActive(false);
     }
 
     TMP_Text MakeLabel(string name, RectTransform parent, Vector2 aMin, Vector2 aMax,
@@ -231,9 +242,11 @@ public class AchievementPopup : MonoBehaviour
             titleLabel.text = title;
             bodyLabel.text  = body;
 
-            yield return Slide(220, -20, SLIDE_DURATION);
+            panel.gameObject.SetActive(true);
+            yield return Slide(HIDDEN_Y, SHOWN_Y, SLIDE_DURATION);
             yield return new WaitForSecondsRealtime(HOLD_DURATION);
-            yield return Slide(-20, 220, SLIDE_DURATION);
+            yield return Slide(SHOWN_Y, HIDDEN_Y, SLIDE_DURATION);
+            panel.gameObject.SetActive(false);
             yield return new WaitForSecondsRealtime(GAP_BETWEEN);
         }
         isShowing = false;
