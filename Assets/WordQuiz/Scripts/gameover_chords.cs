@@ -54,7 +54,6 @@ public class gameover_chords : MonoBehaviour
     [Header("Engagement (optional)")]
     [SerializeField] private TextMeshProUGUI xpEarned_floating;
     [SerializeField] private TextMeshProUGUI levelUp_floating;
-    [SerializeField] private TextMeshProUGUI threshold_floating;
 
     // ── Runtime ───────────────────────────────────────────────────────────────
     private GameObject wholeFretboard;
@@ -111,14 +110,12 @@ public class gameover_chords : MonoBehaviour
             highScoreText.text = chordsGameData.highScore.ToString();
 
         int level = (int)chordsGameData.currentChordLevel + 1;
-        bool passed = EngagementManager.EndSession(LearningMode.Chords, level, chordsGameData.score, isNewHighScore);
+        EngagementManager.EndSession(LearningMode.Chords, level, chordsGameData.score, isNewHighScore);
 
         if (xpEarned_floating != null)
             xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
         if (levelUp_floating != null)
             levelUp_floating.text = EngagementManager.DidSessionAvatarEvolve() ? $"AVATAR STAGE {EngagementManager.GetAvatarStage()}!" : "";
-        if (threshold_floating != null && level >= 1 && level <= 4)
-            threshold_floating.text = passed ? "Cleared!" : $"Goal: {EngagementManager.ScoreThreshold(LearningMode.Chords, level)}";
     }
 
     // ── Button callbacks ──────────────────────────────────────────────────────

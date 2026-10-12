@@ -94,18 +94,5 @@ public class interval_option : MonoBehaviour
                 eventManager.SelectIntervalOption(this);
             }
         }
-        else if (scene.name == "pre-arpeggio")
-        {
-            if (this.isSelected)
-            {
-                settings_arpgame.instance.myCustomChord_intervalList.Add(intervalValue);
-                Debug.Log(intervalValue + "added");
-            }
-            else
-            {
-                settings_arpgame.instance.myCustomChord_intervalList.Remove(intervalValue);
-                Debug.Log(intervalValue + "removed");
-            }
-        }
     }
 }

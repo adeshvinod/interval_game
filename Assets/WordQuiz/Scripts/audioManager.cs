@@ -464,13 +464,6 @@ private string GetNoteName(int noteValue, int x_coord, int stringNumber, int tra
             return;
         }
 
-     /*   // Get the transposition value for this string
-        int transposedStringValue = 0;
-        if (global_settings.instance != null && global_settings.instance.transposed_notes_dict != null)
-        {
-            transposedStringValue = global_settings.instance.transposed_notes_dict[stringNumber];
-        }
-*/
         string noteName = instance.GetNoteName(noteValue, x_coord, stringNumber, transposedStringValue);
         
         if (instance.noteSources.ContainsKey(noteName))

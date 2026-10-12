@@ -17,7 +17,6 @@ public class gameover : MonoBehaviour
     [Header("Engagement (optional)")]
     [SerializeField] private TMP_Text xpEarned_floating;
     [SerializeField] private TMP_Text levelUp_floating;
-    [SerializeField] private TMP_Text threshold_floating;
     //[SerializeField] private TMP_Text heading_text_floating;
     //[SerializeField] private TMP_Text subheading_text_floating;
     [SerializeField] private GameObject wholefretboard;
@@ -54,16 +53,12 @@ public class gameover : MonoBehaviour
         saveGame();
 
         int level = gameData != null ? (int)gameData.currentIntervalLevel + 1 : 0;
-        bool passed = false;
-        if (level >= 1 && level <= 4)
-            passed = EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
-        else
-            EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
+        EngagementManager.EndSession(LearningMode.Intervals, level, currentscore, isNewHighScore);
 
-        DisplayEngagement(LearningMode.Intervals, level, passed);
+        DisplayEngagement();
     }
 
-    void DisplayEngagement(LearningMode mode, int level, bool passed)
+    void DisplayEngagement()
     {
         if (xpEarned_floating != null)
             xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
@@ -76,11 +71,6 @@ public class gameover : MonoBehaviour
                 levelUp_floating.text = "";
         }
 
-        if (threshold_floating != null && level >= 1 && level <= 4)
-        {
-            int goal = EngagementManager.ScoreThreshold(mode, level);
-            threshold_floating.text = passed ? "Cleared!" : $"Goal: {goal}";
-        }
     }
 
     // Update is called once per frame

@@ -1,206 +1,59 @@
-using UnityEngine;
+using System;
 using System.IO;
+using UnityEngine;
 
+/// <summary>
+/// Reads and writes <see cref="savedData"/> as JSON at
+/// <c>{persistentDataPath}/player.fun</c>.
+///
+/// <see cref="Loaddata"/> returns null when there is no usable save; every
+/// caller treats null as "fresh install" via <c>?? new savedData()</c>.
+/// </summary>
 public static class SaveSystem
 {
     private static string Path => Application.persistentDataPath + "/player.fun";
 
-    // JsonUtility cannot serialize int[,] multidimensional arrays, so we use this
-    // internal wrapper that flattens them to int[] for JSON, then reconstructs
-    // them on load. savedData and all callers are unchanged.
-    [System.Serializable]
-    private class SaveDataWrapper
+    public static void SavePlayer(savedData data)
     {
-        public int HighScore;
-        public int l1_intervals_highscore;
-        public int l2_intervals_highscore;
-        public int l3_intervals_highscore;
-        public int l4_intervals_highscore;
-        public int l1_notes_highscore;
-        public int l2_notes_highscore;
-        public int l3_notes_highscore;
-        public int l4_notes_highscore;
-        public int l1_chords_highscore;
-        public int l2_chords_highscore;
-        public int l3_chords_highscore;
-        public int l4_chords_highscore;
-        public int totalProgressions;
-        public int totalCustomChordtypes;
-
-        // int[15, 40] flattened to int[600]
-        public int[] savedProgressions_tonics_flat;
-        public int[] savedProgressions_chordtypes_flat;
-        public string[] savedProgression_names;
-
-        // int[20, 12] flattened to int[240]
-        public int[] savedCustomChordTypes_flat;
-        public string[] savedCustomChord_names;
-
-        public int[] transposedNotes_audio;
-
-        // Engagement system
-        public int totalXP;
-        public int[] unlockedLevels;
-        public int[] unlockedCollectibles;
-        public int lastDailyBonusYmd;
-
-        private const int MAX_PROGRESSIONS = 15;
-        private const int MAX_CHORDS = 40;
-        private const int MAX_CUSTOM_CHORDS = 20;
-        private const int MAX_INTERVALS = 12;
-
-        public static SaveDataWrapper FromSavedData(savedData d)
-        {
-            var w = new SaveDataWrapper();
-
-            w.HighScore = d.HighScore;
-            w.l1_intervals_highscore = d.l1_intervals_highscore;
-            w.l2_intervals_highscore = d.l2_intervals_highscore;
-            w.l3_intervals_highscore = d.l3_intervals_highscore;
-            w.l4_intervals_highscore = d.l4_intervals_highscore;
-            w.l1_notes_highscore = d.l1_notes_highscore;
-            w.l2_notes_highscore = d.l2_notes_highscore;
-            w.l3_notes_highscore = d.l3_notes_highscore;
-            w.l4_notes_highscore = d.l4_notes_highscore;
-            w.l1_chords_highscore = d.l1_chords_highscore;
-            w.l2_chords_highscore = d.l2_chords_highscore;
-            w.l3_chords_highscore = d.l3_chords_highscore;
-            w.l4_chords_highscore = d.l4_chords_highscore;
-            w.totalProgressions = d.totalProgressions;
-            w.totalCustomChordtypes = d.totalCustomChordtypes;
-
-            w.savedProgressions_tonics_flat = new int[MAX_PROGRESSIONS * MAX_CHORDS];
-            w.savedProgressions_chordtypes_flat = new int[MAX_PROGRESSIONS * MAX_CHORDS];
-            for (int i = 0; i < MAX_PROGRESSIONS; i++)
-                for (int j = 0; j < MAX_CHORDS; j++)
-                {
-                    w.savedProgressions_tonics_flat[i * MAX_CHORDS + j] = d.savedProgressions_tonics[i, j];
-                    w.savedProgressions_chordtypes_flat[i * MAX_CHORDS + j] = d.savedProgressions_chordtypes[i, j];
-                }
-
-            w.savedProgression_names = d.savedProgression_names;
-
-            w.savedCustomChordTypes_flat = new int[MAX_CUSTOM_CHORDS * MAX_INTERVALS];
-            for (int i = 0; i < MAX_CUSTOM_CHORDS; i++)
-                for (int j = 0; j < MAX_INTERVALS; j++)
-                    w.savedCustomChordTypes_flat[i * MAX_INTERVALS + j] = d.savedCustomChordTypes[i, j];
-
-            w.savedCustomChord_names = d.savedCustomChord_names;
-
-            w.transposedNotes_audio = d.transposedNotes_audio != null
-                ? (int[])d.transposedNotes_audio.Clone()
-                : new int[6];
-
-            w.totalXP = d.totalXP;
-            w.unlockedLevels = d.unlockedLevels != null
-                ? (int[])d.unlockedLevels.Clone()
-                : savedData.DefaultUnlockedLevels();
-            w.unlockedCollectibles = d.unlockedCollectibles != null
-                ? (int[])d.unlockedCollectibles.Clone()
-                : savedData.DefaultUnlockedCollectibles();
-            w.lastDailyBonusYmd = d.lastDailyBonusYmd;
-
-            return w;
-        }
-
-        public savedData ToSavedData()
-        {
-            var d = new savedData();
-
-            d.HighScore = HighScore;
-            d.l1_intervals_highscore = l1_intervals_highscore;
-            d.l2_intervals_highscore = l2_intervals_highscore;
-            d.l3_intervals_highscore = l3_intervals_highscore;
-            d.l4_intervals_highscore = l4_intervals_highscore;
-            d.l1_notes_highscore = l1_notes_highscore;
-            d.l2_notes_highscore = l2_notes_highscore;
-            d.l3_notes_highscore = l3_notes_highscore;
-            d.l4_notes_highscore = l4_notes_highscore;
-            d.l1_chords_highscore = l1_chords_highscore;
-            d.l2_chords_highscore = l2_chords_highscore;
-            d.l3_chords_highscore = l3_chords_highscore;
-            d.l4_chords_highscore = l4_chords_highscore;
-            d.totalProgressions = totalProgressions;
-            d.totalCustomChordtypes = totalCustomChordtypes;
-
-            d.savedProgressions_tonics = new int[MAX_PROGRESSIONS, MAX_CHORDS];
-            d.savedProgressions_chordtypes = new int[MAX_PROGRESSIONS, MAX_CHORDS];
-            for (int i = 0; i < MAX_PROGRESSIONS; i++)
-                for (int j = 0; j < MAX_CHORDS; j++)
-                {
-                    d.savedProgressions_tonics[i, j] = savedProgressions_tonics_flat[i * MAX_CHORDS + j];
-                    d.savedProgressions_chordtypes[i, j] = savedProgressions_chordtypes_flat[i * MAX_CHORDS + j];
-                }
-
-            d.savedProgression_names = savedProgression_names;
-
-            d.savedCustomChordTypes = new int[MAX_CUSTOM_CHORDS, MAX_INTERVALS];
-            for (int i = 0; i < MAX_CUSTOM_CHORDS; i++)
-                for (int j = 0; j < MAX_INTERVALS; j++)
-                    d.savedCustomChordTypes[i, j] = savedCustomChordTypes_flat[i * MAX_INTERVALS + j];
-
-            d.savedCustomChord_names = savedCustomChord_names;
-
-            d.transposedNotes_audio = transposedNotes_audio != null
-                ? (int[])transposedNotes_audio.Clone()
-                : new int[6];
-
-            d.totalXP = totalXP;
-            // Old save files won't have these fields — JsonUtility hands back zero/empty arrays.
-            // Reseed defaults so the constructor's L1-unlocks aren't blown away.
-            d.unlockedLevels = (unlockedLevels != null && unlockedLevels.Length == 16)
-                ? (int[])unlockedLevels.Clone()
-                : savedData.DefaultUnlockedLevels();
-            // Default IS empty array for fresh installs — copy whatever's stored, even empty.
-            d.unlockedCollectibles = unlockedCollectibles != null
-                ? (int[])unlockedCollectibles.Clone()
-                : savedData.DefaultUnlockedCollectibles();
-            d.lastDailyBonusYmd = lastDailyBonusYmd;
-
-            return d;
-        }
+        if (data == null) return;
+        File.WriteAllText(Path, JsonUtility.ToJson(data));
     }
 
-    public static void SavePlayer(savedData modifieddata)
-    {
-        SaveDataWrapper wrapper = SaveDataWrapper.FromSavedData(modifieddata);
-        string json = JsonUtility.ToJson(wrapper);
-        File.WriteAllText(Path, json);
-    }
-
-    public static void saveProgression()
-    {
-    }
-
+    /// Returns the save, or null if it is missing, empty or unreadable.
     public static savedData Loaddata()
     {
-        if (!File.Exists(Path))
-        {
-            Debug.Log("No save file found at " + Path);
-            return null;
-        }
-
-        string json = File.ReadAllText(Path);
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            Debug.Log("Save file is empty, starting fresh.");
-            return null;
-        }
+        if (!File.Exists(Path)) return null;
 
         try
         {
-            SaveDataWrapper wrapper = JsonUtility.FromJson<SaveDataWrapper>(json);
-            if (wrapper == null)
-            {
-                Debug.LogWarning("Save file could not be parsed, starting fresh.");
-                return null;
-            }
-            return wrapper.ToSavedData();
+            string json = File.ReadAllText(Path);
+            if (string.IsNullOrWhiteSpace(json)) return null;
+
+            savedData data = JsonUtility.FromJson<savedData>(json);
+            if (data == null) return null;
+
+            // A save written before a field existed comes back with that field
+            // null or the wrong length. Repair rather than discard the file.
+            if (data.transposedNotes_audio == null ||
+                data.transposedNotes_audio.Length != savedData.STRING_COUNT)
+                data.transposedNotes_audio = new int[savedData.STRING_COUNT];
+
+            if (data.unlockedLevels == null ||
+                data.unlockedLevels.Length != savedData.MODE_COUNT * savedData.LEVELS_PER_MODE)
+                data.unlockedLevels = savedData.DefaultUnlockedLevels();
+
+            return data;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            Debug.LogWarning("Save file invalid (possibly old binary format), starting fresh. Error: " + e.Message);
+            Debug.LogWarning("Save file unreadable, starting fresh. " + e.Message);
             return null;
         }
+    }
+
+    /// Wipes the save so the next launch behaves like a fresh install.
+    public static void DeleteSave()
+    {
+        if (File.Exists(Path)) File.Delete(Path);
     }
 }

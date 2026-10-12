@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 
+/// The three game modes. Values are persisted indirectly: savedData.unlockedLevels
+/// is indexed by (int)mode, so reordering or inserting a value invalidates saves.
 public enum LearningMode
 {
-    Intervals,
-    Notes,
-    Progressions,
-    Chords
+    Intervals = 0,
+    Notes     = 1,
+    Chords    = 2
 }
 
 [CreateAssetMenu(fileName = "GameSettings", menuName = "Settings/Game Settings")]
@@ -404,7 +405,7 @@ public class GameSettings : ScriptableObject
     public int[] transposedNotes_audio = new int[6];// Will store the transposition for each string for audio, these value can be negative numbers
 
     [Header("Pre-calculated Note Values")]
-    public Dictionary<int, int> fretboardNoteValues = new Dictionary<int, int>(); // buttonNumber -> noteValue (for Notes/Progressions mode)
+    public Dictionary<int, int> fretboardNoteValues = new Dictionary<int, int>(); // buttonNumber -> noteValue (Notes mode: 13 frets x 6 strings)
     public Dictionary<int, int> fretboardNoteValues_IntervalsMode = new Dictionary<int, int>(); // buttonNumber -> noteValue (for Intervals mode)
     public Dictionary<int, int> fretboardNoteValues_ChordsMode = new Dictionary<int, int>(); // buttonNumber -> noteValue (for Chords mode, 5-fret stride)
 
@@ -423,7 +424,7 @@ public class GameSettings : ScriptableObject
         fretboardNoteValues.Clear();
         fretboardNoteValues_IntervalsMode.Clear();
         
-        // Initialize Notes/Progressions mode (78 buttons: 13 frets × 6 strings)
+        // Initialize Notes mode (78 buttons: 13 frets × 6 strings)
         for (int buttonNumber = 0; buttonNumber < 78; buttonNumber++)
         {
             int x_coord = buttonNumber % 13;  // fret position (0-12)
@@ -454,7 +455,7 @@ public class GameSettings : ScriptableObject
             fretboardNoteValues_ChordsMode[buttonNumber] = noteValue;
         }
 
-        Debug.Log($"Fretboard initialized - Notes/Progressions: {fretboardNoteValues.Count}, Intervals: {fretboardNoteValues_IntervalsMode.Count}, Chords: {fretboardNoteValues_ChordsMode.Count}");
+        Debug.Log($"Fretboard initialized - Notes: {fretboardNoteValues.Count}, Intervals: {fretboardNoteValues_IntervalsMode.Count}, Chords: {fretboardNoteValues_ChordsMode.Count}");
     }
 
     public int GetFretboardNoteValue(int buttonNumber)

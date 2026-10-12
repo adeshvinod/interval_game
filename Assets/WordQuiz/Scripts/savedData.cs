@@ -1,161 +1,77 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
+/// <summary>
+/// Everything the game persists, in one flat object.
+///
+/// JsonUtility serialises this type directly — there is no wrapper class and no
+/// array flattening, because no field here is a multidimensional array. If you
+/// ever add an <c>int[,]</c>, JsonUtility will silently drop it; use a flat
+/// array instead.
+///
+/// Three modes only: Intervals, Notes, Chords (see <see cref="LearningMode"/>).
+/// </summary>
 [System.Serializable]
 public class savedData
 {
-    public int HighScore = 0;
+    /// Levels per mode (1-4). Level 5 is "Custom" and is never gated or scored.
+    public const int LEVELS_PER_MODE = 4;
+    /// Number of LearningMode values. Keep in sync with the enum.
+    public const int MODE_COUNT = 3;
+    /// Guitar strings, for the tuning array.
+    public const int STRING_COUNT = 6;
 
-    public float[] ReactionTimes;
-    public float[] Acurracies;
+    // ── Per-level high scores ────────────────────────────────────────────────
+    public int l1_intervals_highscore;
+    public int l2_intervals_highscore;
+    public int l3_intervals_highscore;
+    public int l4_intervals_highscore;
 
-    public int l1_intervals_highscore = 0;
-    public int l2_intervals_highscore = 0;
-    public int l3_intervals_highscore = 0;
-    public int l4_intervals_highscore = 0;
+    public int l1_notes_highscore;
+    public int l2_notes_highscore;
+    public int l3_notes_highscore;
+    public int l4_notes_highscore;
 
-    public int l1_notes_highscore = 0;
-    public int l2_notes_highscore = 0;
-    public int l3_notes_highscore = 0;
-    public int l4_notes_highscore = 0;
+    public int l1_chords_highscore;
+    public int l2_chords_highscore;
+    public int l3_chords_highscore;
+    public int l4_chords_highscore;
 
-    public int l1_chords_highscore = 0;
-    public int l2_chords_highscore = 0;
-    public int l3_chords_highscore = 0;
-    public int l4_chords_highscore = 0;
+    // ── Tuning ───────────────────────────────────────────────────────────────
+    /// Semitone offset per string, index 0 = high E.
+    public int[] transposedNotes_audio;
 
-    // public List<settings_arpgame.chord_Progression> savedProgressions;
-    public int[,] savedProgressions_tonics;   //tonics here does not refer to the key centres but rather just the Root notes of the chords  
-    public int[,] savedProgressions_chordtypes;
-    public string[] savedProgression_names;
-    public int totalProgressions = 0;
+    // ── Progression ──────────────────────────────────────────────────────────
+    /// The single progression number. Avatar stage is derived from this at
+    /// runtime by EngagementManager — it is deliberately not stored.
+    public int totalXP;
 
-    public int[,] savedCustomChordTypes;
-    public string[] savedCustomChord_names;
-    public int totalCustomChordtypes = 0;
-
-    public int[] transposedNotes_audio = new int[6];
-
-    // ── Engagement system ─────────────────────────────────────────────────
-    // totalXP grows monotonically; avatar stage is derived at runtime from XP
-    // thresholds in EngagementManager.
-    // unlockedLevels: length 16 (4 modes × 4 levels), index = (int)mode*4 + (level-1).
-    //   0 = locked, 1 = unlocked. Defaults seed L1 of each mode unlocked.
-    // unlockedCollectibles: list of GuitarDexItem.id values that have been unlocked.
-    //   Default empty — everything starts locked.
-    public int totalXP = 0;
+    /// Length MODE_COUNT * LEVELS_PER_MODE. Index = (int)mode * LEVELS_PER_MODE
+    /// + (level - 1). 0 = locked, 1 = unlocked. Only L1 of each mode starts
+    /// unlocked; L2-L4 are earned by clearing the level before them.
     public int[] unlockedLevels;
-    public int[] unlockedCollectibles;
-    // Stored as yyyyMMdd int (UTC). 0 = never claimed.
-    public int lastDailyBonusYmd = 0;
 
-    public savedData(savedData _modifieddata)
-    {
-        HighScore = _modifieddata.HighScore;
+    /// yyyyMMdd of the last day the first-answer-of-the-day bonus was given.
+    /// 0 = never.
+    public int lastDailyBonusYmd;
 
-        l1_intervals_highscore = _modifieddata.l1_intervals_highscore;
-        l2_intervals_highscore = _modifieddata.l2_intervals_highscore;
-        l3_intervals_highscore = _modifieddata.l3_intervals_highscore;
-        l4_intervals_highscore = _modifieddata.l4_intervals_highscore;
-
-        l1_notes_highscore = _modifieddata.l1_notes_highscore;
-        l2_notes_highscore = _modifieddata.l2_notes_highscore;
-        l3_notes_highscore = _modifieddata.l3_notes_highscore;
-        l4_notes_highscore = _modifieddata.l4_notes_highscore;
-
-        l1_chords_highscore = _modifieddata.l1_chords_highscore;
-        l2_chords_highscore = _modifieddata.l2_chords_highscore;
-        l3_chords_highscore = _modifieddata.l3_chords_highscore;
-        l4_chords_highscore = _modifieddata.l4_chords_highscore;
-
-
-
-
-        savedProgressions_tonics = _modifieddata.savedProgressions_tonics;
-        savedProgressions_chordtypes = _modifieddata.savedProgressions_chordtypes;
-        savedProgression_names = _modifieddata.savedProgression_names;
-        totalProgressions = _modifieddata.totalProgressions;
-
-        savedCustomChordTypes=_modifieddata.savedCustomChordTypes;
-        savedCustomChord_names=_modifieddata.savedCustomChord_names;
-        totalCustomChordtypes = _modifieddata.totalCustomChordtypes;
-
-        transposedNotes_audio = _modifieddata.transposedNotes_audio != null
-            ? (int[])_modifieddata.transposedNotes_audio.Clone()
-            : new int[6];
-
-        totalXP = _modifieddata.totalXP;
-        unlockedLevels = _modifieddata.unlockedLevels != null
-            ? (int[])_modifieddata.unlockedLevels.Clone()
-            : DefaultUnlockedLevels();
-        unlockedCollectibles = _modifieddata.unlockedCollectibles != null
-            ? (int[])_modifieddata.unlockedCollectibles.Clone()
-            : DefaultUnlockedCollectibles();
-        lastDailyBonusYmd = _modifieddata.lastDailyBonusYmd;
-}
-
-    
     public savedData()
     {
-        int maximum_progressions = 15;
-        int maximum_chords_in_prog = 40;
-         savedProgressions_tonics = new int[maximum_progressions, maximum_chords_in_prog];
-    savedProgressions_chordtypes = new int[maximum_progressions, maximum_chords_in_prog];
-     savedProgression_names = new string[maximum_progressions];
-    Debug.Log("saved data constructor called)+ "+savedProgressions_tonics[0,0]);
-        
-        int maximum_custom_chords = 20;
-     savedCustomChordTypes=new int[maximum_custom_chords,12];
-    savedCustomChord_names=new string[maximum_custom_chords];
-
-        for(int i=0;i<maximum_progressions;i++)
-        {
-            for(int j=0;j<maximum_chords_in_prog;j++)
-            {
-                savedProgressions_chordtypes[i,j] = 0;
-                savedProgressions_tonics[i, j] = 0;
-                
-
-            }
-            savedProgression_names[i] = null;
-        }
-
-        for(int i=0;i<maximum_custom_chords;i++)
-        {
-            for(int j=0;j<12;j++)
-            {
-                savedCustomChordTypes[i, j] = -1;
-            }
-            savedCustomChord_names[i] = null;
-        }
-
+        transposedNotes_audio = new int[STRING_COUNT];
         unlockedLevels = DefaultUnlockedLevels();
-        unlockedCollectibles = DefaultUnlockedCollectibles();
-}
+    }
 
-    // L1 of each mode unlocked at fresh start. Index = (int)LearningMode * 4 + (level-1).
-    // Enum order: Intervals=0, Notes=1, Progressions=2, Chords=3.
+    /// Fresh install: only level 1 of each mode is playable.
     public static int[] DefaultUnlockedLevels()
     {
-        var arr = new int[16];
-        arr[0]  = 1; // Intervals L1
-        arr[4]  = 1; // Notes L1
-        arr[8]  = 1; // Progressions L1
-        arr[12] = 1; // Chords L1
+        var arr = new int[MODE_COUNT * LEVELS_PER_MODE];
+        for (int mode = 0; mode < MODE_COUNT; mode++)
+            arr[mode * LEVELS_PER_MODE] = 1;
         return arr;
     }
 
-    // Fresh install: nothing unlocked. Items unlock through XP thresholds.
-    public static int[] DefaultUnlockedCollectibles()
+    /// Flat index into <see cref="unlockedLevels"/>, or -1 for a level that is
+    /// never gated (Custom, or anything out of range).
+    public static int LevelIndex(LearningMode mode, int level)
     {
-        return new int[0];
-    }
-   
-
-    public void start()
-    {
-
+        if (level < 1 || level > LEVELS_PER_MODE) return -1;
+        return (int)mode * LEVELS_PER_MODE + (level - 1);
     }
 }

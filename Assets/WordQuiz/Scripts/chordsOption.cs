@@ -17,6 +17,12 @@ public class chordsOption : MonoBehaviour
     private static readonly Color SelectedColor   = new Color(0.2f, 0.8f, 0.4f, 1f);
     private static readonly Color DeselectedColor = new Color(0.15f, 0.15f, 0.15f, 0.85f);
 
+    // Long names ("Harmonic Minor", "Major Scale") used to wrap onto a second
+    // line and spill outside the button. Force one line and let TMP shrink the
+    // font to fit instead.
+    private const float LabelFontSizeMin = 10f;
+    private const float LabelFontSizeMax = 34f;
+
     private Button button;
 
     void Awake()
@@ -25,9 +31,8 @@ public class chordsOption : MonoBehaviour
         if (button == null) button = GetComponentInChildren<Button>();
         if (button != null) button.onClick.AddListener(OnClicked);
 
-        // Set display name
-        if (label != null && chordTypeIndex >= 0 && chordTypeIndex < ChordsGameData.ChordNames.Length)
-            label.text = ChordsGameData.ChordNames[chordTypeIndex];
+        if (chordTypeIndex >= 0 && chordTypeIndex < ChordsGameData.ChordNames.Length)
+            SetLabel(ChordsGameData.ChordNames[chordTypeIndex]);
 
         SetVisualState(false);
     }
@@ -40,7 +45,22 @@ public class chordsOption : MonoBehaviour
     public void Setup(int index)
     {
         chordTypeIndex = index;
-        if (label != null) label.text = ChordsGameData.ChordNames[index];
+        if (index >= 0 && index < ChordsGameData.ChordNames.Length)
+            SetLabel(ChordsGameData.ChordNames[index]);
+    }
+
+    /// Writes the text and keeps it inside the button on one line.
+    private void SetLabel(string text)
+    {
+        if (label == null) return;
+
+        label.text = text;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.overflowMode     = TextOverflowModes.Overflow;
+        label.enableAutoSizing = true;
+        label.fontSizeMin      = LabelFontSizeMin;
+        label.fontSizeMax      = LabelFontSizeMax;
+        label.alignment        = TextAlignmentOptions.Center;
     }
 
     private void OnClicked()

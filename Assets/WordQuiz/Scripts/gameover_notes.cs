@@ -18,7 +18,6 @@ public class gameover_notes : MonoBehaviour
     [Header("Engagement (optional)")]
     [SerializeField] private TMP_Text xpEarned_floating;
     [SerializeField] private TMP_Text levelUp_floating;
-    [SerializeField] private TMP_Text threshold_floating;
    
     
     public int currentscore;
@@ -36,14 +35,12 @@ public class gameover_notes : MonoBehaviour
         saveGame();
 
         int level = gameData != null ? (int)gameData.currentLevel + 1 : 0;
-        bool passed = EngagementManager.EndSession(LearningMode.Notes, level, currentscore, isNewHighScore);
+        EngagementManager.EndSession(LearningMode.Notes, level, currentscore, isNewHighScore);
 
         if (xpEarned_floating != null)
             xpEarned_floating.text = $"+{EngagementManager.GetSessionXPEarned()} XP";
         if (levelUp_floating != null)
             levelUp_floating.text = EngagementManager.DidSessionAvatarEvolve() ? $"AVATAR STAGE {EngagementManager.GetAvatarStage()}!" : "";
-        if (threshold_floating != null && level >= 1 && level <= 4)
-            threshold_floating.text = passed ? "Cleared!" : $"Goal: {EngagementManager.ScoreThreshold(LearningMode.Notes, level)}";
     }
 
     // Update is called once per frame

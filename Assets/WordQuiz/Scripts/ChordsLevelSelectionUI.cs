@@ -20,32 +20,23 @@ public class ChordsLevelSelectionUI : MonoBehaviour
 
     private void Start()
     {
-        if (chordsGameData != null)
-        {
-            chordsGameData.LoadHighScores();
-            RefreshHighScores();
-        }
+        // Gating must run even if the data reference is unwired, otherwise
+        // every level would stay tappable. It reads the save, not this field.
+        if (chordsGameData != null) chordsGameData.LoadHighScores();
+        else Debug.LogError("ChordsLevelSelectionUI: ChordsGameData reference is missing!");
 
-        ApplyLevelGating();
+        ApplyGating();
     }
 
-    void ApplyLevelGating()
+    private void ApplyGating()
     {
-        for (int lvl = 1; lvl <= 4; lvl++)
-        {
-            var go = GameObject.Find($"lv{lvl}_btn");
-            if (go == null) continue;
-            var btn = go.GetComponent<Button>();
-            if (btn != null) btn.interactable = EngagementManager.IsLevelUnlocked(LearningMode.Chords, lvl);
-        }
-    }
+        var labels = new[] { level1HighScoreText, level2HighScoreText, level3HighScoreText, level4HighScoreText };
+        var scores = chordsGameData != null
+            ? new[] { chordsGameData.level1HighScore, chordsGameData.level2HighScore,
+                      chordsGameData.level3HighScore, chordsGameData.level4HighScore }
+            : new[] { 0, 0, 0, 0 };
 
-    private void RefreshHighScores()
-    {
-        if (level1HighScoreText != null) level1HighScoreText.text = chordsGameData.level1HighScore.ToString();
-        if (level2HighScoreText != null) level2HighScoreText.text = chordsGameData.level2HighScore.ToString();
-        if (level3HighScoreText != null) level3HighScoreText.text = chordsGameData.level3HighScore.ToString();
-        if (level4HighScoreText != null) level4HighScoreText.text = chordsGameData.level4HighScore.ToString();
+        LevelGating.Apply(LearningMode.Chords, labels, scores);
     }
 
     /// <summary>Wire this to each level button (pass 1-4, or 5 for Custom).</summary>

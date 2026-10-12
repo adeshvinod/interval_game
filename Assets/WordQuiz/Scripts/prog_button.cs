@@ -283,9 +283,6 @@ public class prog_button : MonoBehaviour
         // Initialize based on current learning mode
         switch (gameSettings.currentLearningMode)
         {
-            case LearningMode.Progressions:
-                button_initialisation_progression();
-                break;
             case LearningMode.Intervals:
                 button_initialisation_intervals();
                 break;
@@ -308,9 +305,6 @@ public class prog_button : MonoBehaviour
 
         switch (gameSettings.currentLearningMode)
         {
-            case LearningMode.Progressions:
-                ButtonSelected_progressions();
-                break;
             case LearningMode.Intervals:
                 ButtonSelected_intervals();
                 break;
@@ -323,21 +317,6 @@ public class prog_button : MonoBehaviour
         }
     }
 
-    private void button_initialisation_progression()
-    {
-        // Calculate coordinates for progressions mode (13 frets, 6 strings)
-        this.x_coord = buttonNumber % 13;
-        this.y_coord = buttonNumber / 13;
-        stringnum = this.y_coord;
-
-        getNoteValue(this.x_coord,this.y_coord);
-        notename_sharp = notename_sharps[notevalue];
-        notename_flat = notename_flats[notevalue];
-        text.text = notename_sharp;
-
-        // Set initial circle state to transparent
-        circleIndex = 0;
-    }
 
     private void button_initialisation_intervals()
     {
@@ -366,7 +345,7 @@ public class prog_button : MonoBehaviour
         // Calculate coordinates for notes mode (specific to notes mode layout)
         // TODO: Add notes-specific coordinate calculation
        // Debug.Log("Initializing button for notes mode");
-       // Calculate coordinates for progressions mode (13 frets, 6 strings)
+       // Calculate coordinates for notes mode (13 frets, 6 strings)
         this.x_coord = buttonNumber % 13;
         this.y_coord = buttonNumber / 13;
         stringnum = this.y_coord;
@@ -410,34 +389,6 @@ public class prog_button : MonoBehaviour
         }
     }
 
-    void ButtonSelected_progressions()
-    {
-        
-         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Next)return;
-         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Gameover)return;
-        
-        if(selectedRegion == false && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.RegionalFretboard)
-        {
-            #if UNITY_EDITOR
-            Debug.LogError("Button not in selected region");
-            #endif
-            return;
-        }
-        
-        #if UNITY_EDITOR
-        Debug.Log("Button selected on " + gameObject.name);
-        #endif
-        SetActiveCircle(circleIndex);
-        
-        // Play the sound for this button - use transposed notes from gameSettings
-        int transposedStringValue = gameSettings.transposedNotes_audio[stringnum];
-        #if UNITY_EDITOR
-        Debug.Log($"Playing note: buttonNumber={buttonNumber}, x_coord={x_coord}, stringnum={stringnum}, notevalue={notevalue}, transposedStringValue={transposedStringValue}");
-        #endif
-        audioManager.PlayNote(notevalue, x_coord, stringnum, transposedStringValue);
-
-        arpeggio_manager.instance.Selected_prog_button(this);
-    }
 
     void ButtonSelected_intervals()
     {
@@ -635,28 +586,6 @@ public class prog_button : MonoBehaviour
             text.color = textColor;
         }
     }
-    /*
-
-    void ButtonSelected()
-    {
-         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Next)return;
-         if(arpeggio_manager.instance.gameStatus==arpeggio_manager.GameStatus.Gameover)return;
-       
-        if(selectedRegion==false && arpeggio_manager.instance.gameMode==arpeggio_manager.GameMode.RegionalFretboard)
-        {
-            Debug.Log("Button not in selected region");
-            return;
-        }
-        
-        Debug.Log("Button selected on " + gameObject.name);
-        SetActiveCircle(circleIndex);
-        
-        // Play the sound for this button
-        audioManager.PlayNote(notevalue, x_coord, stringnum,transposed_notes_dict[stringnum]);
-
-        arpeggio_manager.instance.Selected_prog_button(this);
-    }
-*/
     void OnDestroy()
     {
         // Remove the event listener when the object is destroyed
@@ -713,11 +642,7 @@ public class prog_button : MonoBehaviour
         notename_sharp = notename_sharps[notevalue];
         notename_flat = notename_flats[notevalue];
         
-        if(gameSettings.currentLearningMode == LearningMode.Progressions)
-        {
-            text.text = notename_sharp;
-        }
-        else if(gameSettings.currentLearningMode == LearningMode.Intervals)
+        if(gameSettings.currentLearningMode == LearningMode.Intervals)
         {
             text.text = intervalname[notevalue];
         }
@@ -761,22 +686,7 @@ public class prog_button : MonoBehaviour
         Debug.Log("notevalue is:"+notevalue+" stringnum is:"+stringnum+" buttonnumber is:"+buttonNumber+" baseNoteValue is:"+baseNoteValue+" transposed notes are:"+gameSettings.transposedNotes[stringnum]);
     }
 */
-    void Start()
-    { /*
-       if (global_settings.instance.transposed_notes_dict!=null)
-        {
-
-            transposed_notes_dict = global_settings.instance.transposed_notes_dict;
-             Debug.Log("transposed_notes_dict found from global settings singletonl");
-             
-
-        }
-        else
-        {
-            Debug.Log("transposed_notes_dict is null");
-        }
-        */
-    }
+    // (no per-frame or start-up work needed; initialisation happens in Awake)
 
     private void UpdateNoteDisplay()
     {
