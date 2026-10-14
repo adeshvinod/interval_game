@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
@@ -24,15 +25,49 @@ using System.Collections.Generic;
 /// </summary>
 public static class EngagementManager
 {
-    /// Avatar names in stage order. Index 0 = stage 1.
+    /// Avatar names in unlock order. Index 0 = stage 1.
+    /// Stage 1 is free, stage 2 is earned by finishing a first game, and
+    /// stages 3-14 are one per level cleared (12 levels in total), so the last
+    /// avatar means every level in every mode has been beaten.
     public static readonly string[] AvatarNames =
     {
-        "Guitar Novice",
-        "Riff Rager",
-        "Guitar Sorcerer",
-        "Fretboard King",
-        "Fretboard Zeus",
+        "Guitar Novice",      //  1  start
+        "Captain Capo",       //  2  finish your first game
+        "Rodeo Rose",         //  3  1 level cleared
+        "Disco Duchess",      //  4  2
+        "Mohawk Maven",       //  5  3
+        "Riff Rager",         //  6  4
+        "Midnight Bluesman",  //  7  5
+        "Shred Samurai",      //  8  6
+        "Count Shredula",     //  9  7
+        "Bone Shredder",      // 10  8
+        "Robo Riffer",        // 11  9
+        "Guitar Sorcerer",    // 12  10
+        "Fretboard King",     // 13  11
+        "Fretboard Zeus",     // 14  all 12
     };
+
+    /// Sprite file name per stage, so the gallery and the menu agree on which
+    /// art belongs to which stage.
+    public static readonly string[] AvatarSprites =
+    {
+        "novice2 2",
+        "captain_capo",
+        "rodeo_rose",
+        "disco_duchess",
+        "mohawk_maven",
+        "riff_rager",
+        "midnight_bluesman",
+        "shred_samurai",
+        "count_shredula",
+        "bone_shredder",
+        "robo_riffer",
+        "wizard2-removebg-preview 1",
+        "fretboard_king",
+        "DALL_E_2024-06-05_14.57.43_-_A_minimalistic_cartoon_illustration_of_the_Greek_god_Zeus_playing_an_electric_guitar__standing_against_a_white_background 1",
+    };
+
+    public static int AvatarCount => AvatarNames.Length;
 
     /// The three modes, in the order they are shown to the player.
     public static readonly LearningMode[] AllModes =
@@ -94,17 +129,32 @@ public static class EngagementManager
     }
 
     // ── Avatar ───────────────────────────────────────────────────────────────
-    /// 1..5. Advances one step per level number cleared in every mode.
+    /// How many of the 12 levels have been cleared, in any order.
+    public static int CountLevelsCleared()
+    {
+        var data = Load();
+        int n = 0;
+        foreach (var m in AllModes)
+            for (int level = 1; level <= savedData.LEVELS_PER_MODE; level++)
+                if (HighScore(data, m, level) >= ScoreThreshold(m, level)) n++;
+        return n;
+    }
+
+    public static bool HasFinishedAGame() => Load().hasFinishedAGame;
+
+    /// 1..14. One avatar per level cleared, plus one for finishing a first
+    /// game, so the player is rewarded before clearing anything.
     public static int GetAvatarStage()
     {
         var data = Load();
-        int stage = 1;
-        for (int level = 1; level <= savedData.LEVELS_PER_MODE; level++)
-        {
-            if (!ClearedInAllModes(data, level)) break;   // tiers are consecutive
-            stage++;
-        }
-        return stage;
+
+        int cleared = 0;
+        foreach (var m in AllModes)
+            for (int level = 1; level <= savedData.LEVELS_PER_MODE; level++)
+                if (HighScore(data, m, level) >= ScoreThreshold(m, level)) cleared++;
+
+        int stage = 1 + (data.hasFinishedAGame ? 1 : 0) + cleared;
+        return Mathf.Clamp(stage, 1, AvatarCount);
     }
 
     public static string GetAvatarName() => AvatarNameForStage(GetAvatarStage());
@@ -115,37 +165,24 @@ public static class EngagementManager
         return AvatarNames[i];
     }
 
-    /// The level number the player is currently working towards across all
-    /// modes, i.e. the one that will trigger the next evolution. 0 when maxed.
-    public static int LevelNeededForNextAvatar()
+    /// One line describing what earns the next avatar, or "" when maxed.
+    public static string NextAvatarRequirement()
     {
         int stage = GetAvatarStage();
-        return stage > savedData.LEVELS_PER_MODE ? 0 : stage;
+        if (stage >= AvatarCount) return "";
+
+        if (!HasFinishedAGame())
+            return "Finish a game to unlock " + AvatarNameForStage(2);
+
+        int remaining = savedData.MODE_COUNT * savedData.LEVELS_PER_MODE - CountLevelsCleared();
+        string next = AvatarNameForStage(stage + 1);
+        return remaining == 1
+            ? $"Clear the last level to unlock {next}"
+            : $"Clear any level to unlock {next}";
     }
 
-    /// Which modes still need <see cref="LevelNeededForNextAvatar"/> cleared.
-    /// Empty when the avatar is fully evolved.
-    public static List<LearningMode> ModesMissingForNextAvatar()
-    {
-        var missing = new List<LearningMode>();
-        int level = LevelNeededForNextAvatar();
-        if (level == 0) return missing;
-
-        var data = Load();
-        foreach (var m in AllModes)
-            if (HighScore(data, m, level) < ScoreThreshold(m, level)) missing.Add(m);
-        return missing;
-    }
-
-    /// "Intervals and Chords", "Chords", or "" — ready for a sentence.
-    public static string DescribeMissingModes()
-    {
-        var missing = ModesMissingForNextAvatar();
-        if (missing.Count == 0) return "";
-        if (missing.Count == 1) return missing[0].ToString();
-        if (missing.Count == 2) return $"{missing[0]} and {missing[1]}";
-        return $"{missing[0]}, {missing[1]} and {missing[2]}";
-    }
+    /// Progress towards the full set, for a "7 / 14" style readout.
+    public static int LevelsClearedOutOf => savedData.MODE_COUNT * savedData.LEVELS_PER_MODE;
 
     // ── Session hooks ────────────────────────────────────────────────────────
     /// Call from each game manager's Start.
@@ -163,6 +200,14 @@ public static class EngagementManager
     public static bool EndSession(LearningMode mode, int level, int finalScore, bool isNewHighScore)
     {
         bool passed = finalScore >= ScoreThreshold(mode, level);
+
+        // Reaching a gameover screen at all earns the second avatar.
+        var start = Load();
+        if (!start.hasFinishedAGame)
+        {
+            start.hasFinishedAGame = true;
+            SaveSystem.SavePlayer(start);
+        }
 
         if (passed)
         {

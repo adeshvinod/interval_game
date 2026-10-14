@@ -46,6 +46,11 @@ public class savedData
     /// unlocked; L2-L4 are earned by clearing the level before them.
     public int[] unlockedLevels;
 
+    /// True once the player has reached a gameover screen at least once, win or
+    /// lose. Earns the second avatar, so the very first session is rewarded
+    /// before anything has been cleared.
+    public bool hasFinishedAGame;
+
 
     public savedData()
     {

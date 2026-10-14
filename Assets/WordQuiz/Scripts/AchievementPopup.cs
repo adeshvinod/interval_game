@@ -187,18 +187,10 @@ public class AchievementPopup : MonoBehaviour
                $"{score} pts",
                new Color(181/255f, 207/255f, 174/255f));
 
-        // Clearing one mode is not enough to evolve the avatar, so spell out
-        // what is still missing. Nothing is shown once the avatar is maxed, or
-        // when this clear completed the set (HandleAvatarEvolved covers that).
-        string missing = EngagementManager.DescribeMissingModes();
-        int needed = EngagementManager.LevelNeededForNextAvatar();
-        if (!string.IsNullOrEmpty(missing) && needed > 0)
-        {
-            Submit("NEXT AVATAR",
-                   $"Clear Level {needed} in {missing} to become " +
-                   $"{EngagementManager.AvatarNameForStage(EngagementManager.GetAvatarStage() + 1)}",
-                   new Color(115/255f, 193/255f, 206/255f));
-        }
+        // Every clear earns an avatar, so this only points at the one after.
+        string requirement = EngagementManager.NextAvatarRequirement();
+        if (!string.IsNullOrEmpty(requirement))
+            Submit("NEXT AVATAR", requirement, new Color(115/255f, 193/255f, 206/255f));
     }
 
     void HandleSessionEnd()

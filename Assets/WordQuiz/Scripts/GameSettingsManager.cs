@@ -149,11 +149,9 @@ public class GameSettingsManager : MonoBehaviour
         if (avatarGallery != null) { avatarGallery.Open(); return; }
 
         // Fallback if the gallery is not wired in this scene.
-        string missing = EngagementManager.DescribeMissingModes();
-        int needed = EngagementManager.LevelNeededForNextAvatar();
+        string requirement = EngagementManager.NextAvatarRequirement();
         AchievementPopup.Notify(EngagementManager.GetAvatarName(),
-            needed == 0 ? "Fully evolved - every level cleared!"
-                        : $"Clear Level {needed} in {missing} to evolve");
+            string.IsNullOrEmpty(requirement) ? "Every level cleared!" : requirement);
     }
 
     // Public method to get current avatar index

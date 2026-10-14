@@ -138,11 +138,9 @@ public class gameover_chords : MonoBehaviour
             else
             {
                 // Keep this short - it sits inside the ticket's coral block.
-                // The full explanation goes in the popup, not here.
-                var missing = EngagementManager.ModesMissingForNextAvatar();
-                levelUp_floating.text = missing.Count == 0
-                    ? ""
-                    : "NEXT: " + string.Join(" + ", missing).ToUpper();
+                int cleared = EngagementManager.CountLevelsCleared();
+                levelUp_floating.text =
+                    $"{cleared}/{EngagementManager.LevelsClearedOutOf} LEVELS CLEARED";
             }
         }
     }

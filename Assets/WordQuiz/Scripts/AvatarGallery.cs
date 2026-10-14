@@ -5,36 +5,38 @@ using TMPro;
 /// <summary>
 /// The panel that opens when the player taps their avatar on the main menu.
 ///
-/// Shows all five avatars side by side. Earned ones are in full colour; the
-/// rest are dark silhouettes, so the player can see what is coming without
-/// being told what it looks like. A caption spells out the rule, which is the
-/// part that was not obvious: the avatar only evolves when the SAME level is
-/// cleared in all three modes.
+/// Shows all 14 avatars in a horizontally scrollable strip. Earned ones are in
+/// full colour with their name; the rest are **pure black silhouettes with a
+/// "?"**, so the shape teases what is coming without giving the art away.
+///
+/// Slots are built at runtime from EngagementManager.AvatarSprites, so adding a
+/// character means editing that array only.
 /// </summary>
 public class AvatarGallery : MonoBehaviour
 {
     [SerializeField] private GameObject panelRoot;
+    [SerializeField] private RectTransform content;      // ScrollRect content strip
+    [SerializeField] private ScrollRect   scrollRect;
+    [SerializeField] private TextMeshProUGUI caption;
+    [SerializeField] private TextMeshProUGUI progressLabel;
+
+    [Header("Built at runtime, one per avatar")]
+    [SerializeField] private Image[] slotImages;
+    [SerializeField] private TextMeshProUGUI[] slotNames;
+    [SerializeField] private GameObject[] slotLocks;     // the "?" overlay
+
+    // Pure black: Image tint multiplies, so black x art = solid silhouette
+    // while the alpha channel still carries the shape.
+    static readonly Color Silhouette = Color.black;
+    static readonly Color Earned     = Color.white;
+    static readonly Color NameEarned = new Color(0xF2 / 255f, 0x78 / 255f, 0x4F / 255f, 1f);
+    static readonly Color NameLocked = new Color(1f, 1f, 1f, 0.40f);
 
     /// While open this is a modal, so the canvas it lives on is lifted above
-    /// the menu's other canvases (help / settings sit at order 1) and dropped
-    /// back on close. Doing it here beats a nested Canvas, which Unity kept
-    /// creating as a WorldSpace root instead of an overriding child.
+    /// the menu's other canvases and dropped back on close.
     const int ModalSortingOrder = 200;
     Canvas owningCanvas;
     int previousSortingOrder;
-
-    [Header("One per stage, in order (5)")]
-    [SerializeField] private Image[] slotImages;
-    [SerializeField] private TextMeshProUGUI[] slotNames;
-
-    [Header("Explanation line at the bottom")]
-    [SerializeField] private TextMeshProUGUI caption;
-
-    /// Locked avatars are flattened to this, so only the shape reads.
-    static readonly Color Silhouette = new Color(0.10f, 0.20f, 0.23f, 1f);
-    static readonly Color Earned     = Color.white;
-    static readonly Color NameEarned = new Color(0xF2 / 255f, 0x78 / 255f, 0x4F / 255f, 1f);
-    static readonly Color NameLocked = new Color(1f, 1f, 1f, 0.45f);
 
     void Awake()
     {
@@ -52,6 +54,7 @@ public class AvatarGallery : MonoBehaviour
             owningCanvas.sortingOrder = ModalSortingOrder;
         }
         if (panelRoot != null) panelRoot.SetActive(true);
+        ScrollToCurrent();
     }
 
     public void Close()
@@ -62,41 +65,47 @@ public class AvatarGallery : MonoBehaviour
 
     public void Refresh()
     {
-        int stage = EngagementManager.GetAvatarStage();   // 1..5
+        int stage = EngagementManager.GetAvatarStage();
 
-        if (slotImages != null)
-            for (int i = 0; i < slotImages.Length; i++)
+        for (int i = 0; i < slotImages.Length; i++)
+        {
+            bool earned = (i + 1) <= stage;
+
+            if (slotImages[i] != null)
             {
-                if (slotImages[i] == null) continue;
-                bool earned = (i + 1) <= stage;
                 slotImages[i].color = earned ? Earned : Silhouette;
                 slotImages[i].preserveAspect = true;
             }
+            if (slotLocks != null && i < slotLocks.Length && slotLocks[i] != null)
+                slotLocks[i].SetActive(!earned);
 
-        if (slotNames != null)
-            for (int i = 0; i < slotNames.Length; i++)
+            if (slotNames != null && i < slotNames.Length && slotNames[i] != null)
             {
-                if (slotNames[i] == null) continue;
-                bool earned = (i + 1) <= stage;
-                // Don't spoil the names of avatars that are still locked.
-                slotNames[i].text = earned ? EngagementManager.AvatarNameForStage(i + 1).ToUpper() : "? ? ?";
+                // Names stay visible even when locked - knowing you are two
+                // clears away from "Count Shredula" is the hook.
+                slotNames[i].text  = EngagementManager.AvatarNameForStage(i + 1).ToUpper();
                 slotNames[i].color = earned ? NameEarned : NameLocked;
             }
+        }
+
+        if (progressLabel != null)
+            progressLabel.text = $"{stage} / {EngagementManager.AvatarCount} UNLOCKED";
 
         if (caption != null)
         {
-            int needed = EngagementManager.LevelNeededForNextAvatar();
-            var missing = EngagementManager.ModesMissingForNextAvatar();
-
-            if (needed == 0)
-                caption.text = "Every level cleared. You are " +
-                               EngagementManager.AvatarNameForStage(stage) + ".";
-            else if (missing.Count == 0)
-                caption.text = $"Clear Level {needed} in all three modes to evolve.";
-            else
-                caption.text =
-                    $"Your avatar evolves when you clear Level {needed} in ALL THREE modes.\n" +
-                    $"Still to clear: {string.Join(", ", missing).ToUpper()}";
+            string requirement = EngagementManager.NextAvatarRequirement();
+            caption.text = string.IsNullOrEmpty(requirement)
+                ? "Every level cleared. You are " + EngagementManager.GetAvatarName() + "."
+                : requirement;
         }
+    }
+
+    /// Park the strip on the newest unlocked avatar rather than at the start.
+    void ScrollToCurrent()
+    {
+        if (scrollRect == null || slotImages == null || slotImages.Length < 2) return;
+        int stage = EngagementManager.GetAvatarStage();
+        float t = (stage - 1) / (float)(slotImages.Length - 1);
+        scrollRect.horizontalNormalizedPosition = Mathf.Clamp01(t);
     }
 }
