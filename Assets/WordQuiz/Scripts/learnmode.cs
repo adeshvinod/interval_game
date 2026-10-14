@@ -180,7 +180,9 @@ public class learnmode : MonoBehaviour
         }
     }
 
-    void setrootbutton(int siblingindex_root, bool Wait=true, bool scalingAnimation=true)
+    /// <param name="playRootAudio">Sound the new root note. Off by default so
+    /// initial setup is silent; shiftroot turns it on.</param>
+    void setrootbutton(int siblingindex_root, bool Wait=true, bool scalingAnimation=true, bool playRootAudio=false)
     {
         if (progbuttons_ == null || progbuttons_.Length == 0)
         {
@@ -214,6 +216,18 @@ public class learnmode : MonoBehaviour
         // Immediately set the root button
         currentRootProgButton.SetActiveCircle(3, scalingAnimation);
         currentRootProgButton.text.text = "R";
+
+        // Hearing the new root is the point of shifting it, so play that fret's
+        // note with this string's transposition applied.
+        if (playRootAudio && gameSettings != null)
+        {
+            audioManager.PlayNote(
+                currentRootProgButton.notevalue,
+                currentRootProgButton.x_coord,
+                currentRootProgButton.stringnum,
+                gameSettings.transposedNotes_audio[currentRootProgButton.stringnum]);
+            StartCoroutine(currentRootProgButton.PulseScale());
+        }
 
         currentTransitionCoroutine = StartCoroutine(DelayedSetOtherButtons(siblingindex_root, Wait, scalingAnimation));
     }
@@ -297,7 +311,7 @@ public class learnmode : MonoBehaviour
             }
         }
         
-        setrootbutton(selectedButton);
+        setrootbutton(selectedButton, playRootAudio: true);
     }
 
     public void SetSelectedIntervals(List<int> intervals)
