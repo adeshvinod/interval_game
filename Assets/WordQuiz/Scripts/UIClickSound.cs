@@ -92,6 +92,15 @@ public class UIClickSound : MonoBehaviour
 #endif
     }
 
+    /// For buttons created at runtime, after the scene-load hook has run
+    /// (the tutorial builds each screen on the fly).
+    public static void Attach(Button btn)
+    {
+        if (instance == null || instance.source == null || btn == null) return;
+        btn.onClick.RemoveListener(instance.Play);
+        btn.onClick.AddListener(instance.Play);
+    }
+
     static bool ShouldSkip(Button btn)
     {
         // Check the button and its parents: the fretboard buttons carry

@@ -1,0 +1,1585 @@
+{
+ "notes": [
+  "A",
+  "A#",
+  "B",
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#"
+ ],
+ "intervals": [
+  "R",
+  "b2",
+  "M2",
+  "b3",
+  "M3",
+  "P4",
+  "b5",
+  "P5",
+  "b6",
+  "M6",
+  "b7",
+  "M7"
+ ],
+ "tuningTopToBottom": [
+  "E",
+  "B",
+  "G",
+  "D",
+  "A",
+  "E"
+ ],
+ "parts": [
+  "INSTRUMENT",
+  "NOTES",
+  "INTERVALS",
+  "CHORDS",
+  "HOW TO PLAY"
+ ],
+ "markerTuple": "[stringIndex 0=high E top .. 5=low E bottom, fret 0=open .. N-1, label ('@' = auto note name), kind ('n' green note | 'r' coral root | 'g' dashed ghost step | default n)]",
+ "screens": [
+  {
+   "index": 1,
+   "p": 0,
+   "light": 1,
+   "kicker": "PART A",
+   "title": "THE INSTRUMENT",
+   "sub": "Strings, frets, and how to read the board.",
+   "topics": [
+    "The 6 strings and standard tuning",
+    "Frets and semitones",
+    "Reading FretNoodle’s board",
+    "Try it: play your first note"
+   ],
+   "guides": [
+    "boy"
+   ],
+   "next": "START"
+  },
+  {
+   "index": 2,
+   "p": 0,
+   "title": "SIX STRINGS",
+   "body": "Each string plays a note — a single musical sound with a letter name. Thicker strings vibrate slower, so they sound lower. Standard tuning, thickest to thinnest: E A D G B E.",
+   "tip": "Remember it: Eddie Ate Dynamite, Good Bye Eddie.",
+   "boards": [
+    {
+     "frets": 6,
+     "w": 1100,
+     "h": 300,
+     "names": 1,
+     "marks": [
+      [
+       0,
+       0,
+       "E"
+      ],
+      [
+       1,
+       0,
+       "B"
+      ],
+      [
+       2,
+       0,
+       "G"
+      ],
+      [
+       3,
+       0,
+       "D"
+      ],
+      [
+       4,
+       0,
+       "A"
+      ],
+      [
+       5,
+       0,
+       "E"
+      ]
+     ],
+     "side": [
+      [
+       0,
+       "thinnest · highest sound"
+      ],
+      [
+       5,
+       "thickest · lowest sound"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "index": 3,
+   "p": 0,
+   "title": "FRETS",
+   "body": "A fret is a metal bar across the neck. Press a string just behind one and the note rises by one semitone — the smallest step in music. Fret 0 means the string is played open, no finger.",
+   "tip": "Each fret = 1 semitone. Moving toward the body = higher.",
+   "boards": [
+    {
+     "frets": 7,
+     "w": 1400,
+     "h": 300,
+     "nums": 1,
+     "names": 1,
+     "glow": 5,
+     "marks": [
+      [
+       5,
+       0,
+       "@",
+       "r"
+      ],
+      [
+       5,
+       1,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       2,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       3,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       4,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       5,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       6,
+       "@",
+       "n"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "index": 4,
+   "p": 0,
+   "title": "READING THE BOARD",
+   "body": "FretNoodle draws the thinnest string (high E) on top, like guitar tab — the number-based notation guitarists use instead of sheet music. Notes left of the thick line (the nut) are open strings; after it, each column is a fret: 1, 2, 3…",
+   "tip": "Picture looking down at a guitar resting on your lap.",
+   "boards": [
+    {
+     "frets": 7,
+     "w": 1400,
+     "h": 300,
+     "nums": 1,
+     "names": 1,
+     "marks": [
+      [
+       2,
+       2,
+       "@"
+      ]
+     ],
+     "side": [
+      [
+       0,
+       "high E on top"
+      ],
+      [
+       5,
+       "low E at the bottom"
+      ]
+     ],
+     "cap": "G string, fret 2 = A"
+    }
+   ]
+  },
+  {
+   "index": 5,
+   "p": 0,
+   "title": "TRY IT",
+   "body": "Tap fret 3 on the A string. The A string is second from the bottom — it’s glowing.",
+   "tip": "Count the frets after the thick line: 1, 2, 3.",
+   "boards": [
+    {
+     "frets": 7,
+     "w": 1400,
+     "h": 300,
+     "nums": 1,
+     "names": 1,
+     "glow": 4,
+     "marks": [],
+     "tap": {
+      "mode": "note",
+      "need": [
+       "C"
+      ],
+      "strings": [
+       4
+      ],
+      "ok": "That’s C — fret 3 on the A string. Your first note!",
+      "ask": "Tap fret 3 on the glowing A string"
+     }
+    }
+   ]
+  },
+  {
+   "index": 6,
+   "p": 1,
+   "light": 1,
+   "kicker": "PART B",
+   "title": "NOTES",
+   "sub": "Twelve names. That’s the whole alphabet.",
+   "topics": [
+    "Why there are only 12",
+    "Sharps (#)",
+    "Octaves",
+    "Landmark notes",
+    "Try it: find G"
+   ],
+   "guides": [
+    "duchess"
+   ]
+  },
+  {
+   "index": 7,
+   "p": 1,
+   "title": "ONLY 12 NOTES",
+   "body": "Music uses just 12 notes. Climb one semitone (one fret) at a time and after G# you land on A again — the same note, only higher.",
+   "w": "chroma",
+   "tip": "Seven letters, A to G, plus five sharps in between."
+  },
+  {
+   "index": 8,
+   "p": 1,
+   "title": "SHARPS  #",
+   "body": "# means sharp: one semitone higher. A# sits between A and B. But B→C and E→F are already one semitone apart, so no sharp fits between them.",
+   "w": "sharps",
+   "tip": "FretNoodle only uses sharps, so you’ll never see B# or E#."
+  },
+  {
+   "index": 9,
+   "p": 1,
+   "title": "OCTAVES",
+   "body": "Fret 12 plays the open string’s note again, just higher. That distance — 12 semitones — is an octave. Past fret 12 the whole pattern repeats.",
+   "tip": "Same letter, one octave apart.",
+   "boards": [
+    {
+     "frets": 13,
+     "w": 1580,
+     "h": 330,
+     "nums": 1,
+     "names": 1,
+     "glow": 5,
+     "marks": [
+      [
+       5,
+       0,
+       "@",
+       "r"
+      ],
+      [
+       5,
+       1,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       2,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       3,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       4,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       5,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       6,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       7,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       8,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       9,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       10,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       11,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       12,
+       "@",
+       "r"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "index": 10,
+   "p": 1,
+   "title": "LANDMARKS",
+   "body": "Learn the two thickest strings first: low E and A. Notes Level 1 tests exactly these. Start with the natural notes — the ones without #.",
+   "tip": "Need a sharp? It’s one fret past its letter: F# is one fret above F.",
+   "boards": [
+    {
+     "frets": 13,
+     "w": 1580,
+     "h": 330,
+     "nums": 1,
+     "names": 1,
+     "marks": [
+      [
+       4,
+       0,
+       "A",
+       "r"
+      ],
+      [
+       4,
+       2,
+       "B",
+       "n"
+      ],
+      [
+       4,
+       3,
+       "C",
+       "n"
+      ],
+      [
+       4,
+       5,
+       "D",
+       "n"
+      ],
+      [
+       4,
+       7,
+       "E",
+       "n"
+      ],
+      [
+       4,
+       8,
+       "F",
+       "n"
+      ],
+      [
+       4,
+       10,
+       "G",
+       "n"
+      ],
+      [
+       4,
+       12,
+       "A",
+       "r"
+      ],
+      [
+       5,
+       0,
+       "E",
+       "r"
+      ],
+      [
+       5,
+       1,
+       "F",
+       "n"
+      ],
+      [
+       5,
+       3,
+       "G",
+       "n"
+      ],
+      [
+       5,
+       5,
+       "A",
+       "n"
+      ],
+      [
+       5,
+       7,
+       "B",
+       "n"
+      ],
+      [
+       5,
+       8,
+       "C",
+       "n"
+      ],
+      [
+       5,
+       10,
+       "D",
+       "n"
+      ],
+      [
+       5,
+       12,
+       "E",
+       "r"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "index": 11,
+   "p": 1,
+   "title": "TRY IT",
+   "body": "Find G on the low E string.",
+   "tip": "Start from a landmark: F is fret 1, so G is two frets higher.",
+   "boards": [
+    {
+     "frets": 13,
+     "w": 1580,
+     "h": 330,
+     "nums": 1,
+     "names": 1,
+     "glow": 5,
+     "marks": [],
+     "tap": {
+      "mode": "note",
+      "need": [
+       "G"
+      ],
+      "strings": [
+       5
+      ],
+      "ok": "G — fret 3. You’re ready for Notes Level 1.",
+      "ask": "Tap G on the glowing low E string"
+     }
+    }
+   ]
+  },
+  {
+   "index": 12,
+   "p": 2,
+   "light": 1,
+   "kicker": "PART C",
+   "title": "INTERVALS",
+   "sub": "The distance between notes — the key to improvising.",
+   "topics": [
+    "What an interval is",
+    "All 12 names",
+    "Shapes that move",
+    "P5, M3 and b3",
+    "Try it: find the P5"
+   ],
+   "guides": [
+    "mohawk"
+   ]
+  },
+  {
+   "index": 13,
+   "p": 2,
+   "title": "WHAT’S AN INTERVAL?",
+   "body": "An interval is the distance between two notes, counted in semitones. The note you measure from is the root, marked R.",
+   "tip": "Interval = distance. Root = your starting point.",
+   "boards": [
+    {
+     "frets": 7,
+     "w": 1400,
+     "h": 300,
+     "nums": 1,
+     "glow": 5,
+     "marks": [
+      [
+       5,
+       1,
+       "R",
+       "r"
+      ],
+      [
+       5,
+       2,
+       "1",
+       "g"
+      ],
+      [
+       5,
+       3,
+       "2",
+       "g"
+      ],
+      [
+       5,
+       4,
+       "3",
+       "g"
+      ],
+      [
+       5,
+       5,
+       "M3"
+      ]
+     ],
+     "cap": "4 semitones up from R = M3 (major 3rd)"
+    }
+   ]
+  },
+  {
+   "index": 14,
+   "p": 2,
+   "title": "ALL 12 INTERVALS",
+   "body": "Every distance has a name. b means flat — one semitone lower. M = major, P = perfect. They’re just names, not grades.",
+   "w": "ladder",
+   "tip": "At 12 semitones you’re back to R, one octave up."
+  },
+  {
+   "index": 15,
+   "p": 2,
+   "title": "SAME SHAPE, ANYWHERE",
+   "body": "Move a shape anywhere on the neck and it’s still the same interval. One catch: the B string is tuned one fret lower, so a shape crossing onto B shifts up one fret.",
+   "tip": "That’s the only exception. Everything else slides freely.",
+   "boards": [
+    {
+     "frets": 7,
+     "w": 1400,
+     "h": 310,
+     "names": 1,
+     "marks": [
+      [
+       5,
+       1,
+       "R",
+       "r"
+      ],
+      [
+       4,
+       1,
+       "P4"
+      ],
+      [
+       4,
+       3,
+       "R",
+       "r"
+      ],
+      [
+       3,
+       3,
+       "P4"
+      ],
+      [
+       3,
+       5,
+       "R",
+       "r"
+      ],
+      [
+       2,
+       5,
+       "P4"
+      ],
+      [
+       2,
+       1,
+       "R",
+       "r"
+      ],
+      [
+       1,
+       2,
+       "P4"
+      ]
+     ],
+     "cap": "P4: same fret, next string up — onto B, one fret higher"
+    }
+   ]
+  },
+  {
+   "index": 16,
+   "p": 2,
+   "title": "THE P5",
+   "body": "The perfect 5th (P5) is 7 semitones up. It’s the sound of rock power chords — and Intervals Level 1 starts with it.",
+   "tip": "Up: one string, two frets higher. Or: same fret, one string down.",
+   "boards": [
+    {
+     "frets": 7,
+     "w": 1400,
+     "h": 310,
+     "names": 1,
+     "marks": [
+      [
+       5,
+       1,
+       "R",
+       "r"
+      ],
+      [
+       4,
+       3,
+       "P5"
+      ],
+      [
+       3,
+       4,
+       "R",
+       "r"
+      ],
+      [
+       2,
+       6,
+       "P5"
+      ],
+      [
+       4,
+       4,
+       "P5"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "index": 17,
+   "p": 2,
+   "title": "M3 vs b3",
+   "body": "The major 3rd (M3) sounds bright and happy. The minor 3rd (b3), one fret lower, sounds darker. That one fret decides whether a chord is major or minor.",
+   "tip": "Intervals Level 2 adds exactly this pair.",
+   "boards": [
+    {
+     "frets": 5,
+     "w": 640,
+     "h": 280,
+     "names": 1,
+     "marks": [
+      [
+       4,
+       3,
+       "R",
+       "r"
+      ],
+      [
+       3,
+       2,
+       "M3"
+      ]
+     ],
+     "cap": "M3 · 4 semitones · bright"
+    },
+    {
+     "frets": 5,
+     "w": 640,
+     "h": 280,
+     "names": 1,
+     "marks": [
+      [
+       4,
+       3,
+       "R",
+       "r"
+      ],
+      [
+       3,
+       1,
+       "b3"
+      ]
+     ],
+     "cap": "b3 · 3 semitones · dark"
+    }
+   ]
+  },
+  {
+   "index": 18,
+   "p": 2,
+   "title": "TRY IT",
+   "body": "Tap the P5 above this root, on the glowing string.",
+   "tip": "One string up, two frets higher.",
+   "boards": [
+    {
+     "frets": 7,
+     "w": 1400,
+     "h": 300,
+     "names": 1,
+     "glow": 4,
+     "marks": [
+      [
+       5,
+       1,
+       "R",
+       "r"
+      ]
+     ],
+     "tap": {
+      "mode": "iv",
+      "root": [
+       5,
+       1
+      ],
+      "need": [
+       "P5"
+      ],
+      "strings": [
+       4
+      ],
+      "ok": "P5! Intervals Level 1 is just R and P5 — go get it.",
+      "ask": "Tap the P5 on the glowing A string"
+     }
+    }
+   ]
+  },
+  {
+   "index": 19,
+   "p": 3,
+   "light": 1,
+   "kicker": "PART D",
+   "title": "CHORDS",
+   "sub": "Stack intervals on a root. That’s a chord.",
+   "topics": [
+    "Chords as stacks",
+    "The Level 1 six",
+    "Sevenths and beyond",
+    "Try it: build a minor"
+   ],
+   "guides": [
+    "duchess",
+    "mohawk"
+   ]
+  },
+  {
+   "index": 20,
+   "p": 3,
+   "title": "A CHORD IS A STACK",
+   "body": "A chord is three or more notes played together, built from intervals above one root. Major = R + M3 + P5. Minor = R + b3 + P5.",
+   "tip": "Only the 3rd changes — the bright/dark switch from Part C.",
+   "boards": [
+    {
+     "frets": 5,
+     "w": 640,
+     "h": 280,
+     "names": 1,
+     "marks": [
+      [
+       4,
+       3,
+       "R",
+       "r"
+      ],
+      [
+       3,
+       2,
+       "M3"
+      ],
+      [
+       2,
+       0,
+       "P5"
+      ],
+      [
+       1,
+       1,
+       "R",
+       "r"
+      ],
+      [
+       0,
+       0,
+       "M3"
+      ]
+     ],
+     "cap": "MAJOR · R + M3 + P5"
+    },
+    {
+     "frets": 5,
+     "w": 640,
+     "h": 280,
+     "names": 1,
+     "marks": [
+      [
+       4,
+       3,
+       "R",
+       "r"
+      ],
+      [
+       3,
+       1,
+       "b3"
+      ],
+      [
+       2,
+       0,
+       "P5"
+      ],
+      [
+       1,
+       1,
+       "R",
+       "r"
+      ]
+     ],
+     "cap": "MINOR · R + b3 + P5"
+    }
+   ]
+  },
+  {
+   "index": 21,
+   "p": 3,
+   "title": "THE LEVEL 1 SIX",
+   "body": "Tap a chord type to see its formula and shape. These are the six chords in Chords Level 1.",
+   "w": "picker",
+   "tip": "Same root every time — only the intervals change."
+  },
+  {
+   "index": 22,
+   "p": 3,
+   "title": "7THS and BEYOND",
+   "body": "Add a fourth note — a 7th — and you get a seventh chord. Each later level keeps stacking.",
+   "w": "ext",
+   "tip": "Every formula uses intervals you already know."
+  },
+  {
+   "index": 23,
+   "p": 3,
+   "title": "TRY IT",
+   "body": "Build a Minor chord. The root is given — tap a b3 and a P5 anywhere on the board.",
+   "tip": "b3: one string up, two frets back. P5: G string, open.",
+   "boards": [
+    {
+     "frets": 5,
+     "w": 1100,
+     "h": 300,
+     "nums": 1,
+     "names": 1,
+     "marks": [
+      [
+       4,
+       3,
+       "R",
+       "r"
+      ]
+     ],
+     "tap": {
+      "mode": "iv",
+      "root": [
+       4,
+       3
+      ],
+      "need": [
+       "b3",
+       "P5"
+      ],
+      "accept": [
+       "R",
+       "b3",
+       "P5"
+      ],
+      "ok": "That’s C minor! In Chords mode you tap every chord note in view.",
+      "ask": "Find one b3 and one P5"
+     }
+    }
+   ]
+  },
+  {
+   "index": 24,
+   "p": 4,
+   "light": 1,
+   "kicker": "PART E",
+   "title": "HOW TO PLAY",
+   "sub": "Modes, rules, and what you win.",
+   "topics": [
+    "The three modes",
+    "Reading the HUD",
+    "Health and score",
+    "Collecting characters",
+    "Tuning"
+   ],
+   "guides": [
+    "boy"
+   ]
+  },
+  {
+   "index": 25,
+   "p": 4,
+   "title": "THREE MODES",
+   "body": "Each mode has Levels 1–4 plus Custom, and opens in Learn Mode first: answers shown, no clock. Study, then hit START.",
+   "w": "modes",
+   "tip": "Custom lets you pick exactly what to drill."
+  },
+  {
+   "index": 26,
+   "p": 4,
+   "title": "THE HUD",
+   "body": "During play, the HUD (heads-up display) along the bottom shows your time, score and health.",
+   "w": "hud",
+   "tip": "Fast answers score double — but a right answer beats a fast guess."
+  },
+  {
+   "index": 27,
+   "p": 4,
+   "title": "HEALTH and SCORE",
+   "body": "Answer right to score. Answer wrong or too slowly and you lose health. Beat the target score to clear the level.",
+   "w": "rules",
+   "tip": "4 wrong answers or 3 timeouts and it’s game over."
+  },
+  {
+   "index": 28,
+   "p": 4,
+   "title": "COLLECT THE CREW",
+   "body": "No coins, no XP — just characters. Finish your first game to get one. Clear any level to unlock another: 12 levels, in any order.",
+   "w": "avatars",
+   "tip": "Locked characters show as silhouettes with a “?”."
+  },
+  {
+   "index": 29,
+   "p": 4,
+   "title": "TUNING",
+   "body": "Tap the gear on the menu to re-tune any string up or down, up to 12 semitones. Match your real guitar — like Drop D — and every note on the board follows.",
+   "w": "tuning",
+   "tip": "Not sure? Leave it on standard: E A D G B E.",
+   "boards": [
+    {
+     "frets": 6,
+     "w": 900,
+     "h": 300,
+     "names": 1,
+     "tuning": [
+      "E",
+      "B",
+      "G",
+      "D",
+      "A",
+      "D"
+     ],
+     "marks": [
+      [
+       5,
+       0,
+       "@",
+       "r"
+      ],
+      [
+       5,
+       1,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       2,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       3,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       4,
+       "@",
+       "n"
+      ],
+      [
+       5,
+       5,
+       "@",
+       "n"
+      ]
+     ],
+     "cap": "Drop D: the low string starts on D"
+    }
+   ]
+  },
+  {
+   "index": 30,
+   "p": 4,
+   "light": 1,
+   "kicker": "ALL DONE",
+   "title": "YOU’RE READY",
+   "sub": "Start with Notes Level 1: just the low E and A strings. Target: 80 points.",
+   "finish": 1,
+   "guides": [
+    "boy"
+   ]
+  }
+ ],
+ "chordsLevel1": [
+  {
+   "name": "Major",
+   "f": [
+    "R",
+    "M3",
+    "P5"
+   ],
+   "feel": "Bright and settled — the default chord.",
+   "m": [
+    [
+     4,
+     3,
+     "R",
+     "r"
+    ],
+    [
+     3,
+     2,
+     "M3"
+    ],
+    [
+     2,
+     0,
+     "P5"
+    ],
+    [
+     1,
+     1,
+     "R",
+     "r"
+    ],
+    [
+     0,
+     0,
+     "M3"
+    ]
+   ]
+  },
+  {
+   "name": "Minor",
+   "f": [
+    "R",
+    "b3",
+    "P5"
+   ],
+   "feel": "Darker, more emotional.",
+   "m": [
+    [
+     4,
+     3,
+     "R",
+     "r"
+    ],
+    [
+     3,
+     1,
+     "b3"
+    ],
+    [
+     2,
+     0,
+     "P5"
+    ],
+    [
+     1,
+     1,
+     "R",
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "Diminished",
+   "f": [
+    "R",
+    "b3",
+    "b5"
+   ],
+   "feel": "Tense and unstable — it wants to move on.",
+   "m": [
+    [
+     4,
+     3,
+     "R",
+     "r"
+    ],
+    [
+     3,
+     1,
+     "b3"
+    ],
+    [
+     5,
+     2,
+     "b5"
+    ],
+    [
+     3,
+     4,
+     "b5"
+    ],
+    [
+     1,
+     1,
+     "R",
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "Sus2",
+   "f": [
+    "R",
+    "M2",
+    "P5"
+   ],
+   "feel": "Open and floaty: the 3rd is swapped for an M2.",
+   "m": [
+    [
+     4,
+     3,
+     "R",
+     "r"
+    ],
+    [
+     3,
+     0,
+     "M2"
+    ],
+    [
+     2,
+     0,
+     "P5"
+    ],
+    [
+     1,
+     1,
+     "R",
+     "r"
+    ],
+    [
+     1,
+     3,
+     "M2"
+    ]
+   ]
+  },
+  {
+   "name": "Sus4",
+   "f": [
+    "R",
+    "P4",
+    "P5"
+   ],
+   "feel": "“Suspended”: the 3rd is swapped for a P4.",
+   "m": [
+    [
+     4,
+     3,
+     "R",
+     "r"
+    ],
+    [
+     3,
+     3,
+     "P4"
+    ],
+    [
+     2,
+     0,
+     "P5"
+    ],
+    [
+     1,
+     1,
+     "R",
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "Augmented",
+   "f": [
+    "R",
+    "M3",
+    "b6"
+   ],
+   "feel": "Dreamy and strange. The b6 here is also called #5.",
+   "m": [
+    [
+     4,
+     3,
+     "R",
+     "r"
+    ],
+    [
+     3,
+     2,
+     "M3"
+    ],
+    [
+     2,
+     1,
+     "b6"
+    ],
+    [
+     1,
+     1,
+     "R",
+     "r"
+    ],
+    [
+     0,
+     0,
+     "M3"
+    ]
+   ]
+  }
+ ],
+ "level2Sevenths": [
+  [
+   "maj7",
+   [
+    "R",
+    "M3",
+    "P5",
+    "M7"
+   ]
+  ],
+  [
+   "dom7",
+   [
+    "R",
+    "M3",
+    "P5",
+    "b7"
+   ]
+  ],
+  [
+   "min7",
+   [
+    "R",
+    "b3",
+    "P5",
+    "b7"
+   ]
+  ],
+  [
+   "min7b5",
+   [
+    "R",
+    "b3",
+    "b5",
+    "b7"
+   ]
+  ],
+  [
+   "dim7",
+   [
+    "R",
+    "b3",
+    "b5",
+    "M6"
+   ]
+  ],
+  [
+   "minMaj7",
+   [
+    "R",
+    "b3",
+    "P5",
+    "M7"
+   ]
+  ]
+ ],
+ "intervalLadder": [
+  [
+   "R",
+   "root"
+  ],
+  [
+   "b2",
+   "minor 2nd"
+  ],
+  [
+   "M2",
+   "major 2nd"
+  ],
+  [
+   "b3",
+   "minor 3rd"
+  ],
+  [
+   "M3",
+   "major 3rd"
+  ],
+  [
+   "P4",
+   "perfect 4th"
+  ],
+  [
+   "b5",
+   "flat 5th"
+  ],
+  [
+   "P5",
+   "perfect 5th"
+  ],
+  [
+   "b6",
+   "minor 6th"
+  ],
+  [
+   "M6",
+   "major 6th"
+  ],
+  [
+   "b7",
+   "minor 7th"
+  ],
+  [
+   "M7",
+   "major 7th"
+  ],
+  [
+   "R",
+   "octave"
+  ]
+ ],
+ "widgets": {
+  "chromaAgain": "again",
+  "sharpsBrackets": [
+   [
+    2,
+    "B→C: no sharp"
+   ],
+   [
+    7,
+    "E→F: no sharp"
+   ]
+  ],
+  "ladderLegend": [
+   "top row = semitones from R",
+   "b = flat",
+   "M = major",
+   "P = perfect"
+  ],
+  "extHeading": "LEVEL 2 · SEVENTH CHORDS",
+  "extLines": [
+   [
+    "LEVEL 3 · ",
+    "9ths and 6ths — min9, maj9, dom9, maj6, min6, minb6. A 9 is the M2, one octave up."
+   ],
+   [
+    "LEVEL 4 · ",
+    "Whole scales — Major, Melodic Minor, Harmonic Minor, Half-Whole, Whole-Half, Whole Tone."
+   ]
+  ],
+  "modes": [
+   {
+    "name": "NOTES",
+    "what": "Learn where every note lives on the neck.",
+    "qs": [
+     "Press the note: tap where it is",
+     "Guess the note: name the marked spot"
+    ],
+    "meta": "13 frets · 10 s per question"
+   },
+   {
+    "name": "INTERVALS",
+    "what": "Measure the distance from a root, R.",
+    "qs": [
+     "Press the named interval on the glowing string",
+     "Name the marked interval"
+    ],
+    "meta": "7 frets · 10 s per question"
+   },
+   {
+    "name": "CHORDS",
+    "what": "Build chord shapes from their formulas.",
+    "qs": [
+     "One root is shown",
+     "Tap every other note of the chord"
+    ],
+    "meta": "5 frets · 20 s per question"
+   }
+  ],
+  "hud": {
+   "question": "A",
+   "questionCallout": "← the question: find an A",
+   "callouts": [
+    "Seconds left\n10 per question · 20 in Chords",
+    "Score\nbeat the level’s target",
+    "Health\n0% = game over"
+   ],
+   "time": "7",
+   "score": "420",
+   "health": "100%"
+  },
+  "rules": {
+   "cards": [
+    {
+     "title": "HEALTH · starts at 100",
+     "color": "coral",
+     "rows": [
+      [
+       "Wrong answer",
+       "−25"
+      ],
+      [
+       "Timer runs out",
+       "−34"
+      ],
+      [
+       "Health hits 0",
+       "game over"
+      ]
+     ]
+    },
+    {
+     "title": "SCORE",
+     "color": "green",
+     "rows": [
+      [
+       "Answered with 7+ s left",
+       "+10"
+      ],
+      [
+       "Answered slower",
+       "+5"
+      ],
+      [
+       "Chords: each correct note",
+       "+10"
+      ]
+     ]
+    }
+   ],
+   "ticketTitle": "TARGET SCORES",
+   "ticketHeader": [
+    "",
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "ticketRows": [
+    [
+     "NOTES",
+     "80",
+     "150",
+     "250",
+     "400"
+    ],
+    [
+     "INTERVALS",
+     "100",
+     "200",
+     "350",
+     "550"
+    ],
+    [
+     "CHORDS",
+     "120",
+     "240",
+     "420",
+     "650"
+    ]
+   ]
+  },
+  "avatars": {
+   "slots": [
+    {
+     "guide": "boy",
+     "name": "GUITAR NOVICE",
+     "how": "first game",
+     "unlocked": 1
+    },
+    {
+     "guide": "duchess",
+     "name": "DISCO DUCHESS",
+     "how": "clear a level",
+     "unlocked": 1
+    },
+    {
+     "guide": "mohawk",
+     "name": "MOHAWK MAVEN",
+     "how": "clear a level",
+     "unlocked": 1
+    },
+    {
+     "guide": "riff",
+     "name": "RIFF RAGER",
+     "how": "locked",
+     "unlocked": 0
+    },
+    {
+     "guide": "bluesman",
+     "name": "MIDNIGHT BLUESMAN",
+     "how": "locked",
+     "unlocked": 0
+    }
+   ],
+   "footer": "14 characters to collect — all the way up to Fretboard Zeus."
+  },
+  "tuningTitle": "TUNING",
+  "tipGuideByPart": [
+   "boy",
+   "duchess",
+   "mohawk",
+   "duchess",
+   "boy"
+  ],
+  "finishPlay": "PLAY NOTES L1",
+  "finishReplay": "REPLAY",
+  "nextLabel": "NEXT",
+  "wrongTap": "That’s {0} — try again"
+ }
+}
